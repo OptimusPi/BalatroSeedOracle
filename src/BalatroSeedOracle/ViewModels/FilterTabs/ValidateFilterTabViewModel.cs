@@ -230,17 +230,13 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                                 // Add children to MustNot
                                 foreach (var child in operatorItem.Children)
                                 {
-                                    var config = _parentViewModel.ItemConfigs.ContainsKey(
+                                    var clause = _parentViewModel.ItemConfigs.ContainsKey(
                                         $"{child.Category}:{child.Name}"
                                     )
                                         ? _parentViewModel.ItemConfigs[
                                             $"{child.Category}:{child.Name}"
                                         ]
-                                        : new ItemConfig();
-                                    var clause = _clauseConversionService.ConvertFilterItemToClause(
-                                        child,
-                                        config
-                                    );
+                                        : null;
                                     if (clause is not null)
                                     {
                                         var clauseRow =
@@ -256,15 +252,11 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                             }
                             else
                             {
-                                var config = _parentViewModel.ItemConfigs.ContainsKey(
+                                var clause = _parentViewModel.ItemConfigs.ContainsKey(
                                     $"{item.Category}:{item.Name}"
                                 )
                                     ? _parentViewModel.ItemConfigs[$"{item.Category}:{item.Name}"]
-                                    : new ItemConfig();
-                                var clause = _clauseConversionService.ConvertFilterItemToClause(
-                                    item,
-                                    config
-                                );
+                                    : null;
                                 if (clause is not null)
                                 {
                                     var clauseRow =
@@ -282,15 +274,11 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                         // Convert Should items
                         foreach (var item in visualVm.SelectedShould)
                         {
-                            var config = _parentViewModel.ItemConfigs.ContainsKey(
+                            var clause = _parentViewModel.ItemConfigs.ContainsKey(
                                 $"{item.Category}:{item.Name}"
                             )
                                 ? _parentViewModel.ItemConfigs[$"{item.Category}:{item.Name}"]
-                                : new ItemConfig();
-                            var clause = _clauseConversionService.ConvertFilterItemToClause(
-                                item,
-                                config
-                            );
+                                : null;
                             if (clause is not null)
                             {
                                 var clauseRow = _clauseConversionService.ConvertToClauseViewModel(
@@ -318,9 +306,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                         // Convert Must items from keys
                         foreach (var itemKey in _parentViewModel.SelectedMust)
                         {
-                            if (_parentViewModel.ItemConfigs.TryGetValue(itemKey, out var config))
+                            if (_parentViewModel.ItemConfigs.TryGetValue(itemKey, out var clause))
                             {
-                                var clauseRow = ConvertItemConfigDirectly(config, itemKey, 0);
+                                var category = itemKey.Contains(':') ? itemKey.Substring(0, itemKey.IndexOf(':')) : "";
+                                var clauseRow = _clauseConversionService.ConvertToClauseViewModel(clause, category, 0);
                                 if (clauseRow is not null)
                                     MustClauses.Add(clauseRow);
                             }
@@ -329,9 +318,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                         // Convert MustNot items
                         foreach (var itemKey in _parentViewModel.SelectedMustNot)
                         {
-                            if (_parentViewModel.ItemConfigs.TryGetValue(itemKey, out var config))
+                            if (_parentViewModel.ItemConfigs.TryGetValue(itemKey, out var clause))
                             {
-                                var clauseRow = ConvertItemConfigDirectly(config, itemKey, 0);
+                                var category = itemKey.Contains(':') ? itemKey.Substring(0, itemKey.IndexOf(':')) : "";
+                                var clauseRow = _clauseConversionService.ConvertToClauseViewModel(clause, category, 0);
                                 if (clauseRow is not null)
                                     MustNotClauses.Add(clauseRow);
                             }
@@ -340,9 +330,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                         // Convert Should items
                         foreach (var itemKey in _parentViewModel.SelectedShould)
                         {
-                            if (_parentViewModel.ItemConfigs.TryGetValue(itemKey, out var config))
+                            if (_parentViewModel.ItemConfigs.TryGetValue(itemKey, out var clause))
                             {
-                                var clauseRow = ConvertItemConfigDirectly(config, itemKey, 0);
+                                var category = itemKey.Contains(':') ? itemKey.Substring(0, itemKey.IndexOf(':')) : "";
+                                var clauseRow = _clauseConversionService.ConvertToClauseViewModel(clause, category, 0);
                                 if (clauseRow is not null)
                                     ShouldClauses.Add(clauseRow);
                             }
@@ -360,84 +351,9 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             });
         }
 
-        private ClauseRowViewModel? ConvertItemConfigDirectly(
-            ItemConfig config,
-            string itemKey,
-            int nestingLevel
-        )
-        {
-            try
-            {
-                // Extract category and name from item key (format: "category:name")
-                var parts = itemKey.Split(':');
-                if (parts.Length != 2)
-                {
-                    DebugLogger.LogError(
-                        "ValidateFilterTab",
-                        $"Invalid itemKey format '{itemKey}' - expected 'category:name'"
-                    );
-                    return null;
-                }
-
-                var category = parts[0];
-                var name = parts[1];
-
-                // Create a FilterItem to pass to the conversion service
-                var filterItem = new FilterItem
-                {
-                    Category = category,
-                    Name = name,
-                    ItemKey = itemKey,
-                };
-
-                // Use the conversion service to create the clause
-                var clause = _clauseConversionService.ConvertFilterItemToClause(filterItem, config);
-                if (clause is null)
-                {
-                    DebugLogger.LogError(
-                        "ValidateFilterTab",
-                        $"ConvertFilterItemToClause returned null for itemKey '{itemKey}' (category: {category}, name: {name})"
-                    );
-                    return null;
-                }
-
-                // Convert the clause to a view model
-                var clauseRow = _clauseConversionService.ConvertToClauseViewModel(
-                    clause,
-                    category,
-                    nestingLevel
-                );
-
-                if (clauseRow is null)
-                {
-                    DebugLogger.LogError(
-                        "ValidateFilterTab",
-                        $"ConvertToClauseViewModel returned null for itemKey '{itemKey}'"
-                    );
-                    return null;
-                }
-
-                // Wire up commands if the row was created successfully
-                clauseRow.EditClauseCommand = new RelayCommand(() => EditClause(clauseRow));
-                clauseRow.RemoveClauseCommand = new RelayCommand(() => RemoveClause(clauseRow));
-
-                return clauseRow;
-            }
-            catch (Exception ex)
-            {
-                // Don't crash the whole tab - just skip this item and log the error
-                DebugLogger.LogError(
-                    "ValidateFilterTab",
-                    $"❌ Failed to convert itemKey '{itemKey}': {ex.Message}"
-                );
-                DebugLogger.LogError("ValidateFilterTab", $"Stack trace: {ex.StackTrace}");
-                return null; // Skip this item, continue with others
-            }
-        }
-
         private void EditClause(ClauseRowViewModel row)
         {
-            // Find the ItemConfig
+            // Find the clause
             if (_parentViewModel.ItemConfigs.TryGetValue(row.ItemKey, out var config))
             {
                 // Item configuration from ValidateFilterTab is not yet implemented.
@@ -453,7 +369,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             {
                 DebugLogger.LogError(
                     "ValidateFilterTab",
-                    $"ItemConfig not found for clause: {row.ItemKey}"
+                    $"Clause not found for key: {row.ItemKey}"
                 );
             }
         }

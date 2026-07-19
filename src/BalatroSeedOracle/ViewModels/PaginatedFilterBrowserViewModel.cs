@@ -6,7 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using BalatroSeedOracle.Helpers;
-using BalatroSeedOracle.Models;
+
 using BalatroSeedOracle.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -375,29 +375,29 @@ namespace BalatroSeedOracle.ViewModels
                 }
             }
 
-            // Remove duplicates by ItemName while preserving first occurrence's data
+            // Remove duplicates by value name while preserving first occurrence's data
             collections.Jokers = collections
-                .Jokers.GroupBy(x => x.ItemName)
+                .Jokers.GroupBy(x => x.GetValueName())
                 .Select(g => g.First())
                 .ToList();
             collections.Consumables = collections
-                .Consumables.GroupBy(x => x.ItemName)
+                .Consumables.GroupBy(x => x.GetValueName())
                 .Select(g => g.First())
                 .ToList();
             collections.Vouchers = collections
-                .Vouchers.GroupBy(x => x.ItemName)
+                .Vouchers.GroupBy(x => x.GetValueName())
                 .Select(g => g.First())
                 .ToList();
             collections.Tags = collections
-                .Tags.GroupBy(x => x.ItemName)
+                .Tags.GroupBy(x => x.GetValueName())
                 .Select(g => g.First())
                 .ToList();
             collections.Bosses = collections
-                .Bosses.GroupBy(x => x.ItemName)
+                .Bosses.GroupBy(x => x.GetValueName())
                 .Select(g => g.First())
                 .ToList();
             collections.StandardCards = collections
-                .StandardCards.GroupBy(x => x.ItemName)
+                .StandardCards.GroupBy(x => x.GetValueName())
                 .Select(g => g.First())
                 .ToList();
 
@@ -406,7 +406,6 @@ namespace BalatroSeedOracle.ViewModels
 
         /// <summary>
         /// Adds an item to the appropriate collection based on its type
-        /// Creates a full ItemConfig from the clause data
         /// </summary>
         private void AddItemToCollection(
             FilterItemCollections collections,
@@ -418,51 +417,35 @@ namespace BalatroSeedOracle.ViewModels
             var typeName = clause.GetTypeName() ?? "";
             var itemType = typeName.ToLowerInvariant();
 
-            var itemConfig = new ItemConfig
-            {
-                ItemKey = itemValue,
-                ItemType = typeName,
-                ItemName = itemValue,
-                Antes = clause.GetAntes().ToList(),
-                Edition = clause.GetEditionString() ?? "none",
-                Seal = clause.GetSealString() ?? "None",
-                Enhancement = clause.GetEnhancementString() ?? "None",
-                Rank = clause is StandardCardClause sc ? sc.Rank?.ToString() : clause is StartingDrawClause sd ? sd.Rank?.ToString() : null,
-                Suit = clause is StandardCardClause sc2 ? sc2.Suit?.ToString() : clause is StartingDrawClause sd2 ? sd2.Suit?.ToString() : null,
-                Score = scoreOverride ?? (clause.Score > 0 ? clause.Score : 1),
-                Label = clause.Label,
-                Stickers = clause.GetStickerStrings()?.ToList(),
-            };
-
             switch (itemType)
             {
                 case "joker":
                 case "souljoker":
-                    collections.Jokers.Add(itemConfig);
+                    collections.Jokers.Add(clause);
                     break;
 
                 case "tarotcard":
                 case "planetcard":
                 case "spectralcard":
-                    collections.Consumables.Add(itemConfig);
+                    collections.Consumables.Add(clause);
                     break;
 
                 case "voucher":
-                    collections.Vouchers.Add(itemConfig);
+                    collections.Vouchers.Add(clause);
                     break;
 
                 case "tag":
                 case "smallblindtag":
                 case "bigblindtag":
-                    collections.Tags.Add(itemConfig);
+                    collections.Tags.Add(clause);
                     break;
 
                 case "boss":
-                    collections.Bosses.Add(itemConfig);
+                    collections.Bosses.Add(clause);
                     break;
 
                 case "standardcard":
-                    collections.StandardCards.Add(itemConfig);
+                    collections.StandardCards.Add(clause);
                     break;
             }
         }
@@ -555,17 +538,17 @@ namespace BalatroSeedOracle.ViewModels
     /// </summary>
     public class FilterItemCollections
     {
-        public List<ItemConfig> Jokers { get; set; } = new();
-        public List<ItemConfig> Consumables { get; set; } = new();
-        public List<ItemConfig> Vouchers { get; set; } = new();
-        public List<ItemConfig> Tags { get; set; } = new();
-        public List<ItemConfig> Bosses { get; set; } = new();
-        public List<ItemConfig> StandardCards { get; set; } = new();
+        public List<IJamlClause> Jokers { get; set; } = new();
+        public List<IJamlClause> Consumables { get; set; } = new();
+        public List<IJamlClause> Vouchers { get; set; } = new();
+        public List<IJamlClause> Tags { get; set; } = new();
+        public List<IJamlClause> Bosses { get; set; } = new();
+        public List<IJamlClause> StandardCards { get; set; } = new();
 
         /// <summary>
         /// All items combined for fanned card hand display
         /// </summary>
-        public List<ItemConfig> AllItems =>
+        public List<IJamlClause> AllItems =>
             Jokers
                 .Concat(Vouchers)
                 .Concat(Consumables)

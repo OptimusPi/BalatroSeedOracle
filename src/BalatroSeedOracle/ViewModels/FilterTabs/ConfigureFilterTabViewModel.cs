@@ -11,6 +11,8 @@ using BalatroSeedOracle.Controls;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Services;
+using Motely.Filters;
+using Motely.Filters.Jaml;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
@@ -154,7 +156,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         public ObservableCollection<FilterItem> SelectedMustNot { get; }
 
         // Item configurations
-        public Dictionary<string, ItemConfig> ItemConfigs { get; }
+        public Dictionary<string, IJamlClause> ItemConfigs { get; }
 
         public ConfigureFilterTabViewModel(
             FiltersModalViewModel? parentViewModel = null,
@@ -217,7 +219,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             SelectedMust = new ObservableCollection<FilterItem>();
             SelectedMustNot = new ObservableCollection<FilterItem>();
 
-            ItemConfigs = new Dictionary<string, ItemConfig>();
+            ItemConfigs = new Dictionary<string, IJamlClause>();
 
             // Subscribe to collection changes for auto-save
             SelectedMust.CollectionChanged += OnZoneCollectionChanged;
@@ -469,13 +471,9 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 else
                 {
                     var itemKey = _parentViewModel.GenerateNextItemKey();
-                    var itemConfig = new ItemConfig
-                    {
-                        ItemKey = itemKey,
-                        ItemType = item.Type,
-                        ItemName = item.Name,
-                    };
-                    _parentViewModel.ItemConfigs[itemKey] = itemConfig;
+                    var clause = _parentViewModel.CreateClauseFromFilterItem(item);
+                    if (clause is not null)
+                        _parentViewModel.ItemConfigs[itemKey] = clause;
                     _parentViewModel.SelectedMust.Add(itemKey);
                 }
             }
@@ -500,13 +498,9 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 else
                 {
                     var itemKey = _parentViewModel.GenerateNextItemKey();
-                    var itemConfig = new ItemConfig
-                    {
-                        ItemKey = itemKey,
-                        ItemType = item.Type,
-                        ItemName = item.Name,
-                    };
-                    _parentViewModel.ItemConfigs[itemKey] = itemConfig;
+                    var clause = _parentViewModel.CreateClauseFromFilterItem(item);
+                    if (clause is not null)
+                        _parentViewModel.ItemConfigs[itemKey] = clause;
                     _parentViewModel.SelectedMustNot.Add(itemKey);
                 }
             }
@@ -551,7 +545,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
             var itemKey = _parentViewModel
                 .ItemConfigs.FirstOrDefault(kvp =>
-                    kvp.Value.ItemName == item.Name && kvp.Value.ItemType == item.Type
+                    kvp.Value.GetValueName() == item.Name && kvp.Value.GetTypeName() == item.Type
                 )
                 .Key;
 
@@ -577,23 +571,18 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             );
 
             var itemKey = _parentViewModel.GenerateNextItemKey();
-            var operatorConfig = new ItemConfig
-            {
-                ItemKey = itemKey,
-                ItemType = "Operator",
-                ItemName = operatorItem.OperatorType,
-                OperatorType = operatorItem.OperatorType,
-                Mode = operatorItem.OperatorType == "OR" ? "Max" : null,
-                Children = new List<ItemConfig>(),
-            };
 
-            foreach (var child in operatorItem.Children)
-            {
-                var childConfig = new ItemConfig { ItemType = child.Type, ItemName = child.Name };
-                operatorConfig.Children.Add(childConfig);
-            }
+            var childClauses = operatorItem.Children
+                .Select(child => _parentViewModel.CreateClauseFromFilterItem(child))
+                .Where(c => c is not null)
+                .Cast<IJamlClause>()
+                .ToArray();
 
-            _parentViewModel.ItemConfigs[itemKey] = operatorConfig;
+            IJamlClause operatorClause = operatorItem.OperatorType == "OR"
+                ? new OrClause { Clauses = childClauses }
+                : new AndClause { Clauses = childClauses };
+
+            _parentViewModel.ItemConfigs[itemKey] = operatorClause;
 
             var targetCollection = targetZone switch
             {
@@ -667,11 +656,11 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         /// <summary>
         /// Update an item's configuration (called from popup dialog)
         /// </summary>
-        public void UpdateItemConfig(string itemKey, ItemConfig config)
+        public void UpdateItemConfig(string itemKey, IJamlClause clause)
         {
             if (ItemConfigs.ContainsKey(itemKey))
             {
-                ItemConfigs[itemKey] = config;
+                ItemConfigs[itemKey] = clause;
                 DebugLogger.Log("ConfigureFilterTab", $"Updated config for item: {itemKey}");
 
                 // Also update parent's ItemConfigs if available
@@ -680,7 +669,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     && _parentViewModel.ItemConfigs.ContainsKey(itemKey)
                 )
                 {
-                    _parentViewModel.ItemConfigs[itemKey] = config;
+                    _parentViewModel.ItemConfigs[itemKey] = clause;
                 }
 
                 // Trigger auto-sync to JSON Editor

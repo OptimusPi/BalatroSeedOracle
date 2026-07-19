@@ -12,8 +12,8 @@ using Motely.Filters.Jaml;
 namespace BalatroSeedOracle.Services;
 
 /// <summary>
-/// Converts between the UI's FilterItem/ItemConfig model and the engine's polymorphic IJamlClause types.
-/// No JamlClauseUnion glue — directly constructs the concrete clause subtype the engine expects.
+/// Builds the engine's polymorphic IJamlClause types directly from FilterItem.
+/// Single entry point: <see cref="BuildClauseFromFilterItem(FilterItem)"/>.
 /// </summary>
 public sealed class ClauseConversionService
 {
@@ -78,68 +78,7 @@ public sealed class ClauseConversionService
         return vm;
     }
 
-    public IJamlClause? ConvertItemConfigToClause(ItemConfig config)
-    {
-        if (config is null)
-            return null;
-
-        if (config.ItemType == "Operator" && !string.IsNullOrEmpty(config.OperatorType))
-        {
-            var isOr = config.OperatorType.Equals("Or", StringComparison.OrdinalIgnoreCase);
-            var logic = isOr ? (LogicClause)new OrClause() : new AndClause();
-            var children = new List<IJamlClause>();
-            if (config.Children is not null)
-            {
-                foreach (var child in config.Children)
-                {
-                    var childClause = ConvertItemConfigToClause(child);
-                    if (childClause is not null)
-                        children.Add(childClause);
-                }
-            }
-            logic.Clauses = children.ToArray();
-            logic.Label = config.Label;
-            logic.Score = config.Score;
-            return logic;
-        }
-
-        var filterItem = new FilterItem
-        {
-            Name = config.IsSoulJoker ? "Any" : config.ItemName,
-            Type = config.ItemType,
-            Category = MapCategory(config.ItemType),
-            Antes = config.Antes?.ToArray(),
-            Edition = config.Edition,
-            Seal = config.Seal,
-            Enhancement = config.Enhancement,
-            Rank = config.Rank,
-            Suit = config.Suit,
-            Stickers = config.Stickers?.ToList(),
-            Score = config.Score,
-            MinCount = config.Min ?? 1,
-            Label = config.Label,
-        };
-        return ConvertFilterItemToClause(filterItem, config);
-    }
-
-    private static string MapCategory(string itemType)
-    {
-        return itemType?.ToLowerInvariant() switch
-        {
-            "joker" => "Jokers",
-            "souljoker" => "SoulJokers",
-            "tarot" => "Tarots",
-            "planet" => "Planets",
-            "spectral" => "Spectrals",
-            "voucher" => "Vouchers",
-            "tag" => "Tags",
-            "boss" => "Bosses",
-            "playingcard" => "PlayingCards",
-            _ => "Other",
-        };
-    }
-
-    public IJamlClause? ConvertFilterItemToClause(FilterItem filterItem, ItemConfig config)
+    public IJamlClause? BuildClauseFromFilterItem(FilterItem filterItem)
     {
         if (filterItem is null)
             return null;
@@ -154,7 +93,7 @@ public sealed class ClauseConversionService
             var children = new List<IJamlClause>();
             foreach (var child in operatorItem.Children)
             {
-                var childClause = ConvertFilterItemToClause(child, new ItemConfig());
+                var childClause = BuildClauseFromFilterItem(child);
                 if (childClause is not null)
                     children.Add(childClause);
             }
@@ -162,33 +101,31 @@ public sealed class ClauseConversionService
             return logic;
         }
 
-        var discriminator = MapCategoryToDiscriminator(filterItem.Category, filterItem.Name, config.TagType);
-        var antes = config.Antes?.ToArray() ?? [1, 2, 3, 4, 5, 6, 7, 8];
-        var min = config.Min > 0 ? config.Min : 1;
+        var discriminator = MapCategoryToDiscriminator(filterItem.Category, filterItem.Name, filterItem.Type);
+        var antes = filterItem.Antes?.Length > 0 ? filterItem.Antes : [1, 2, 3, 4, 5, 6, 7, 8];
+        var min = filterItem.MinCount > 0 ? filterItem.MinCount : 1;
 
-        var clause = BuildClause(filterItem, config, discriminator, antes, min ?? 1);
+        var clause = BuildClause(filterItem, discriminator, antes, min);
         if (clause is null)
             return null;
 
-        // Apply common IJamlClause fields
-        clause.Label = config.Label;
-        clause.Score = config.Score;
+        clause.Label = filterItem.Label;
+        clause.Score = filterItem.Score;
 
         return clause;
     }
 
     private IJamlClause? BuildClause(
         FilterItem filterItem,
-        ItemConfig config,
         string discriminator,
         int[] antes,
         int min
     )
     {
-        var edition = ParseEdition(config.Edition);
-        var stickers = ParseStickers(config.Stickers);
-        var rank = ParseEnumNullable<MotelyStandardcardRank>(config.Rank);
-        var suit = ParseEnumNullable<MotelyStandardcardSuit>(config.Suit);
+        var edition = ParseEdition(filterItem.Edition);
+        var stickers = ParseStickers(filterItem.Stickers);
+        var rank = ParseEnumNullable<MotelyStandardcardRank>(filterItem.Rank);
+        var suit = ParseEnumNullable<MotelyStandardcardSuit>(filterItem.Suit);
 
         switch (discriminator.ToLowerInvariant())
         {
@@ -200,7 +137,7 @@ public sealed class ClauseConversionService
                     Jokers = ParseEnumArray<MotelyJoker>(filterItem.Name),
                     Edition = edition,
                     Stickers = stickers,
-                    Sources = BuildJokerSources(config),
+                    Sources = BuildJokerSources(filterItem),
                 };
             case "commonjoker":
                 return new CommonJokerClause
@@ -210,7 +147,7 @@ public sealed class ClauseConversionService
                     Jokers = ParseEnumArray<MotelyJokerCommon>(filterItem.Name),
                     Edition = edition,
                     Stickers = stickers,
-                    Sources = BuildJokerSources(config),
+                    Sources = BuildJokerSources(filterItem),
                 };
             case "uncommonjoker":
                 return new UncommonJokerClause
@@ -220,7 +157,7 @@ public sealed class ClauseConversionService
                     Jokers = ParseEnumArray<MotelyJokerUncommon>(filterItem.Name),
                     Edition = edition,
                     Stickers = stickers,
-                    Sources = BuildJokerSources(config),
+                    Sources = BuildJokerSources(filterItem),
                 };
             case "rarejoker":
                 return new RareJokerClause
@@ -230,7 +167,7 @@ public sealed class ClauseConversionService
                     Jokers = ParseEnumArray<MotelyJokerRare>(filterItem.Name),
                     Edition = edition,
                     Stickers = stickers,
-                    Sources = BuildJokerSources(config),
+                    Sources = BuildJokerSources(filterItem),
                 };
             case "legendaryjoker":
                 return new LegendaryJokerClause
@@ -239,7 +176,7 @@ public sealed class ClauseConversionService
                     Min = min,
                     Jokers = ParseEnumArray<MotelyJoker>(filterItem.Name),
                     Edition = edition,
-                    Sources = BuildLegendarySources(config),
+                    Sources = BuildLegendarySources(filterItem),
                 };
             case "voucher":
                 return new VoucherClause
@@ -255,7 +192,7 @@ public sealed class ClauseConversionService
                     Antes = antes,
                     Min = min,
                     Tarots = ParseEnumArray<MotelyTarotCard>(filterItem.Name),
-                    Sources = BuildTarotSources(config),
+                    Sources = BuildTarotSources(filterItem),
                 };
             case "spectralcard":
                 return new SpectralCardClause
@@ -263,7 +200,7 @@ public sealed class ClauseConversionService
                     Antes = antes,
                     Min = min,
                     Spectrals = ParseEnumArray<MotelySpectralCard>(filterItem.Name),
-                    Sources = BuildSpectralSources(config),
+                    Sources = BuildSpectralSources(filterItem),
                 };
             case "planetcard":
                 return new PlanetCardClause
@@ -271,7 +208,7 @@ public sealed class ClauseConversionService
                     Antes = antes,
                     Min = min,
                     Planets = ParseEnumArray<MotelyPlanetCard>(filterItem.Name),
-                    Sources = BuildPlanetSources(config),
+                    Sources = BuildPlanetSources(filterItem),
                 };
             case "standardcard":
                 return new StandardCardClause
@@ -281,9 +218,9 @@ public sealed class ClauseConversionService
                     Rank = rank,
                     Suit = suit,
                     Edition = edition,
-                    Seal = ParseEnumNullable<MotelyItemSeal>(config.Seal),
-                    Enhancement = ParseEnumNullable<MotelyItemEnhancement>(config.Enhancement),
-                    Sources = BuildStandardSources(config),
+                    Seal = ParseEnumNullable<MotelyItemSeal>(filterItem.Seal),
+                    Enhancement = ParseEnumNullable<MotelyItemEnhancement>(filterItem.Enhancement),
+                    Sources = BuildStandardSources(filterItem),
                 };
             case "boss":
                 return new BossClause
@@ -407,79 +344,75 @@ public sealed class ClauseConversionService
             .ToArray();
     }
 
-    private static JokerSourceConfig? BuildJokerSources(ItemConfig config)
+    private static JokerSourceConfig? BuildJokerSources(FilterItem filterItem)
     {
-        if (!HasAnySource(config))
+        if (!HasAnySource(filterItem))
             return null;
         return new JokerSourceConfig
         {
-            ShopItems = config.ShopSlots?.ToArray() ?? [],
-            BoosterPacks = config.PackSlots?.ToArray() ?? [],
+            ShopItems = filterItem.ShopSlots ?? [],
+            BoosterPacks = filterItem.PackPositions ?? [],
         };
     }
 
-    private static LegendaryJokerSourceConfig? BuildLegendarySources(ItemConfig config)
+    private static LegendaryJokerSourceConfig? BuildLegendarySources(FilterItem filterItem)
     {
-        if (!HasAnySource(config))
+        if (!HasAnySource(filterItem))
             return null;
         return new LegendaryJokerSourceConfig
         {
-            BoosterPacks = config.PackSlots?.ToArray() ?? [],
-            RequireMegaPack = config.IsMegaArcana,
+            BoosterPacks = filterItem.PackPositions ?? [],
         };
     }
 
-    private static TarotCardSourceConfig? BuildTarotSources(ItemConfig config)
+    private static TarotCardSourceConfig? BuildTarotSources(FilterItem filterItem)
     {
-        if (!HasAnySource(config))
+        if (!HasAnySource(filterItem))
             return null;
         return new TarotCardSourceConfig
         {
-            ShopItems = config.ShopSlots?.ToArray() ?? [],
-            BoosterPacks = config.PackSlots?.ToArray() ?? [],
+            ShopItems = filterItem.ShopSlots ?? [],
+            BoosterPacks = filterItem.PackPositions ?? [],
         };
     }
 
-    private static SpectralCardSourceConfig? BuildSpectralSources(ItemConfig config)
+    private static SpectralCardSourceConfig? BuildSpectralSources(FilterItem filterItem)
     {
-        if (!HasAnySource(config))
+        if (!HasAnySource(filterItem))
             return null;
         return new SpectralCardSourceConfig
         {
-            ShopItems = config.ShopSlots?.ToArray() ?? [],
-            BoosterPacks = config.PackSlots?.ToArray() ?? [],
-            RequireMegaPack = config.IsMegaArcana,
+            ShopItems = filterItem.ShopSlots ?? [],
+            BoosterPacks = filterItem.PackPositions ?? [],
         };
     }
 
-    private static PlanetSourceConfig? BuildPlanetSources(ItemConfig config)
+    private static PlanetSourceConfig? BuildPlanetSources(FilterItem filterItem)
     {
-        if (!HasAnySource(config))
+        if (!HasAnySource(filterItem))
             return null;
         return new PlanetSourceConfig
         {
-            ShopItems = config.ShopSlots?.ToArray() ?? [],
-            BoosterPacks = config.PackSlots?.ToArray() ?? [],
+            ShopItems = filterItem.ShopSlots ?? [],
+            BoosterPacks = filterItem.PackPositions ?? [],
         };
     }
 
-    private static StandardCardSourceConfig? BuildStandardSources(ItemConfig config)
+    private static StandardCardSourceConfig? BuildStandardSources(FilterItem filterItem)
     {
-        if (!HasAnySource(config))
+        if (!HasAnySource(filterItem))
             return null;
         return new StandardCardSourceConfig
         {
-            ShopItems = config.ShopSlots?.ToArray() ?? [],
-            BoosterPacks = config.PackSlots?.ToArray() ?? [],
+            ShopItems = filterItem.ShopSlots ?? [],
+            BoosterPacks = filterItem.PackPositions ?? [],
         };
     }
 
-    private static bool HasAnySource(ItemConfig config)
+    private static bool HasAnySource(FilterItem filterItem)
     {
-        return (config.ShopSlots?.Count > 0)
-            || (config.PackSlots?.Count > 0)
-            || config.SkipBlindTags
-            || config.IsMegaArcana;
+        return (filterItem.ShopSlots?.Length > 0)
+            || (filterItem.PackPositions?.Length > 0);
     }
 
     #endregion

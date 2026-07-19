@@ -989,6 +989,37 @@ namespace BalatroSeedOracle.ViewModels
             }
         }
 
+        /// <summary>
+        /// After a filter is loaded for an opened search that has NO live context — the
+        /// resume-from-disk case (a restored desktop icon after an app restart) — turn on
+        /// Continue so the button reads "Resume Search" and the saved batch is picked up
+        /// instead of silently restarting at batch 0. Only fires when saved progress exists
+        /// for exactly this filter, so a plain fresh open is untouched.
+        /// </summary>
+        public void EnableResumeIfSavedProgress()
+        {
+            if (IsSearching)
+                return; // already attached to a running search — nothing to resume
+
+            var state = _userProfileService.GetSearchState();
+            if (
+                state is not null
+                && !string.IsNullOrEmpty(CurrentFilterPath)
+                && string.Equals(
+                    state.ConfigPath,
+                    CurrentFilterPath,
+                    StringComparison.OrdinalIgnoreCase
+                )
+            )
+            {
+                ContinueFromLast = true; // OnContinueFromLastChanged surfaces the saved progress
+                BsoLogger.Log(
+                    "SearchModalViewModel",
+                    $"Resume armed: saved progress found for {CurrentFilterPath} at batch {state.LastCompletedBatch:N0}"
+                );
+            }
+        }
+
         private void SwitchTab(string? tabName)
         {
             if (!string.IsNullOrEmpty(tabName))

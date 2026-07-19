@@ -129,7 +129,7 @@ namespace BalatroSeedOracle.ViewModels
         public ObservableCollection<string> SelectedMust { get; } = new();
         public ObservableCollection<string> SelectedShould { get; } = new();
         public ObservableCollection<string> SelectedMustNot { get; } = new();
-        public Dictionary<string, ItemConfig> ItemConfigs { get; } = new();
+        public Dictionary<string, IJamlClause> ItemConfigs { get; } = new();
 
         // Counters
         private int _itemKeyCounter = 0;
@@ -1016,18 +1016,11 @@ namespace BalatroSeedOracle.ViewModels
         {
             foreach (var itemKey in itemKeys)
             {
-                if (!ItemConfigs.TryGetValue(itemKey, out var itemConfig))
+                if (!ItemConfigs.TryGetValue(itemKey, out var clause))
                     continue;
 
-                var clause = ConvertItemConfigToClause(itemConfig);
-                if (clause is not null)
-                    target.Add(clause);
+                target.Add(clause);
             }
-        }
-
-        private IJamlClause? ConvertItemConfigToClause(ItemConfig itemConfig)
-        {
-            return _clauseConversion.ConvertItemConfigToClause(itemConfig);
         }
 
         private IJamlClause? ConvertFilterItemToClause(Models.FilterItem filterItem)
@@ -1124,6 +1117,11 @@ namespace BalatroSeedOracle.ViewModels
             }
         }
 
+        public IJamlClause? CreateClauseFromFilterItem(Models.FilterItem filterItem)
+        {
+            return _clauseConversion.BuildClauseFromFilterItem(filterItem);
+        }
+
         // Each clause is registered in ItemConfigs under a freshly generated key,
         // and the key is appended to the appropriate selection collection.
         private void LoadClausesIntoSelection(
@@ -1137,81 +1135,9 @@ namespace BalatroSeedOracle.ViewModels
             foreach (var clause in clauses)
             {
                 var itemKey = GenerateNextItemKey();
-                ItemConfigs[itemKey] = ConvertClauseToItemConfig(clause, itemKey);
+                ItemConfigs[itemKey] = clause;
                 selection.Add(itemKey);
             }
-        }
-
-        private ItemConfig ConvertClauseToItemConfig(
-            IJamlClause clause,
-            string itemKey
-        )
-        {
-            var normalizedType = NormalizeItemType(clause.GetTypeName());
-            var childClauses = clause.GetClauses();
-
-            if (
-                (
-                    normalizedType.Equals("and", StringComparison.OrdinalIgnoreCase)
-                    || normalizedType.Equals("or", StringComparison.OrdinalIgnoreCase)
-                )
-                && childClauses?.Length > 0
-            )
-            {
-                var operatorConfig = new ItemConfig
-                {
-                    ItemKey = itemKey,
-                    ItemType = "Operator",
-                    ItemName = $"{normalizedType.ToUpper()} ({childClauses.Length} items)",
-                    OperatorType =
-                        normalizedType.Substring(0, 1).ToUpper()
-                        + normalizedType.Substring(1).ToLower(),
-                    Score = clause.Score > 0 ? clause.Score : 1,
-                    Label = clause.Label,
-                    Antes = clause.GetAntes().ToList(),
-                    Children = new List<ItemConfig>(),
-                };
-
-                int childIndex = 0;
-                foreach (var childClause in childClauses)
-                {
-                    var childKey = $"{itemKey}_child_{++childIndex}";
-                    var childConfig = ConvertClauseToItemConfig(childClause, childKey);
-                    operatorConfig.Children.Add(childConfig);
-                }
-
-                return operatorConfig;
-            }
-
-            string itemName = clause.GetValueName() ?? "";
-            if (
-                itemName.Equals("Any", StringComparison.OrdinalIgnoreCase)
-                && normalizedType == "SoulJoker"
-            )
-            {
-                itemName = "Wildcard_JokerLegendary";
-            }
-
-            var itemConfig = new ItemConfig
-            {
-                ItemKey = itemKey,
-                ItemType = normalizedType,
-                ItemName = itemName,
-                Score = clause.Score > 0 ? clause.Score : 1,
-                Label = clause.Label,
-                Min = clause.Min,
-                Edition = clause.GetEditionString() ?? "none",
-                Antes = clause.GetAntes().ToList(),
-                Stickers = clause.GetStickerStrings()?.ToList(),
-            };
-
-            if (normalizedType == "SoulJoker")
-            {
-                itemConfig.ItemType = "Joker";
-                itemConfig.IsSoulJoker = true;
-            }
-
-            return itemConfig;
         }
 
         private void ClearAllSelections()
@@ -1543,9 +1469,9 @@ namespace BalatroSeedOracle.ViewModels
                     // Convert Must items
                     foreach (var itemKey in SelectedMust)
                     {
-                        if (ItemConfigs.TryGetValue(itemKey, out var itemConfig))
+                        if (ItemConfigs.TryGetValue(itemKey, out var clause))
                         {
-                            var filterItem = await ConvertItemConfigToFilterItem(itemConfig);
+                            var filterItem = ConvertClauseToFilterItem(clause, itemKey);
                             if (filterItem is not null)
                             {
                                 visualVm.SelectedMust.Add(filterItem);
@@ -1556,9 +1482,9 @@ namespace BalatroSeedOracle.ViewModels
                     // Convert Should items
                     foreach (var itemKey in SelectedShould)
                     {
-                        if (ItemConfigs.TryGetValue(itemKey, out var itemConfig))
+                        if (ItemConfigs.TryGetValue(itemKey, out var clause))
                         {
-                            var filterItem = await ConvertItemConfigToFilterItem(itemConfig);
+                            var filterItem = ConvertClauseToFilterItem(clause, itemKey);
                             if (filterItem is not null)
                             {
                                 visualVm.SelectedShould.Add(filterItem);
@@ -1578,9 +1504,9 @@ namespace BalatroSeedOracle.ViewModels
 
                         foreach (var itemKey in SelectedMustNot)
                         {
-                            if (ItemConfigs.TryGetValue(itemKey, out var itemConfig))
+                            if (ItemConfigs.TryGetValue(itemKey, out var clause))
                             {
-                                var filterItem = await ConvertItemConfigToFilterItem(itemConfig);
+                                var filterItem = ConvertClauseToFilterItem(clause, itemKey);
                                 if (filterItem is not null)
                                 {
                                     // Set IsInBannedItemsTray flag for debuffed overlay
@@ -1618,56 +1544,52 @@ namespace BalatroSeedOracle.ViewModels
         }
 
         /// <summary>
-        /// Convert ItemConfig to FilterItem for Visual Builder
+        /// Convert IJamlClause to FilterItem for Visual Builder
         /// </summary>
-        private async Task<Models.FilterItem?> ConvertItemConfigToFilterItem(ItemConfig itemConfig)
+        private Models.FilterItem? ConvertClauseToFilterItem(IJamlClause clause, string itemKey)
         {
             try
             {
                 var spriteService = SpriteService.Instance;
 
-                var normalizedType = NormalizeItemType(itemConfig.ItemType);
-                var effectiveType = itemConfig.IsSoulJoker ? "SoulJoker" : normalizedType;
+                var typeName = clause.GetTypeName() ?? "Unknown";
+                var normalizedType = NormalizeItemType(typeName);
+                var isSoulJoker = clause is LegendaryJokerClause;
+                var effectiveType = isSoulJoker ? "SoulJoker" : normalizedType;
+                var itemName = clause.GetValueName() ?? "";
 
-                // Determine category for layout behavior
                 var category = DetermineCategoryFromType(effectiveType);
+                var edition = clause.GetEditionString();
 
-                // Create FilterItem - ItemImage and SoulFaceImage are computed properties based on Type and Name
                 var filterItem = new Models.FilterItem
                 {
-                    Name = itemConfig.ItemName,
+                    Name = itemName,
                     Type = effectiveType,
                     Category = category,
-                    ItemKey = itemConfig.ItemKey,
-                    DisplayName = BalatroData.GetDisplayNameFromSprite(itemConfig.ItemName),
-                    // Get appropriate sprite image based on type
+                    ItemKey = itemKey,
+                    DisplayName = BalatroData.GetDisplayNameFromSprite(itemName),
                     ItemImage = effectiveType switch
                     {
-                        "Joker" or "SoulJoker" => spriteService.GetJokerImage(
-                            itemConfig.ItemName,
-                            itemConfig.Edition
-                        ),
-                        "SmallBlindTag" or "BigBlindTag" => spriteService.GetTagImage(
-                            itemConfig.ItemName
-                        ),
-                        "Voucher" => spriteService.GetVoucherImage(itemConfig.ItemName),
-                        "Tarot" => spriteService.GetTarotImage(itemConfig.ItemName),
-                        "Planet" => spriteService.GetPlanetCardImage(itemConfig.ItemName),
-                        "Spectral" => spriteService.GetSpectralImage(itemConfig.ItemName),
-                        "Boss" => spriteService.GetBossImage(itemConfig.ItemName),
+                        "Joker" or "SoulJoker" => spriteService.GetJokerImage(itemName, edition),
+                        "SmallBlindTag" or "BigBlindTag" => spriteService.GetTagImage(itemName),
+                        "Voucher" => spriteService.GetVoucherImage(itemName),
+                        "Tarot" => spriteService.GetTarotImage(itemName),
+                        "Planet" => spriteService.GetPlanetCardImage(itemName),
+                        "Spectral" => spriteService.GetSpectralImage(itemName),
+                        "Boss" => spriteService.GetBossImage(itemName),
                         _ => null,
                     },
                 };
 
-                return await Task.FromResult<Models.FilterItem?>(filterItem);
+                return filterItem;
             }
             catch (Exception ex)
             {
                 BsoLogger.LogError(
                     "FiltersModalViewModel",
-                    $"Error converting ItemConfig to FilterItem: {ex.Message}"
+                    $"Error converting IJamlClause to FilterItem: {ex.Message}"
                 );
-                return await Task.FromResult<Models.FilterItem?>(null);
+                return null;
             }
         }
 

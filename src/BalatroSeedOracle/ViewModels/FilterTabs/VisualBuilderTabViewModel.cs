@@ -15,6 +15,8 @@ using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Services;
 using BalatroSeedOracle.ViewModels;
 using CommunityToolkit.Mvvm.ComponentModel;
+using Motely.Filters;
+using Motely.Filters.Jaml;
 using CommunityToolkit.Mvvm.Input;
 
 namespace BalatroSeedOracle.ViewModels.FilterTabs
@@ -387,9 +389,6 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         public ObservableCollection<FilterItem> OrTrayItems { get; }
         public ObservableCollection<FilterItem> AndTrayItems { get; }
 
-        // Item configurations
-        public Dictionary<string, ItemConfig> ItemConfigs { get; }
-
         public VisualBuilderTabViewModel(
             FiltersModalViewModel? parentViewModel = null,
             FavoritesService? favoritesService = null,
@@ -526,8 +525,6 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             // Initialize operator trays
             OrTrayItems = new ObservableCollection<FilterItem>();
             AndTrayItems = new ObservableCollection<FilterItem>();
-
-            ItemConfigs = new Dictionary<string, ItemConfig>();
 
             // Subscribe to collection changes for auto-save
             SelectedMust.CollectionChanged += OnZoneCollectionChanged;
@@ -1065,17 +1062,13 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 else
                 {
                     var itemKey = _parentViewModel.GenerateNextItemKey();
-                    var itemConfig = new ItemConfig
-                    {
-                        ItemKey = itemKey,
-                        ItemType = item.Type,
-                        ItemName = item.Name,
-                    };
 
-                    // Phase 3: Apply currently selected edition/stickers/seal
-                    ApplyEditionStickersSeal(itemConfig, item);
+                    // Phase 3: Apply currently selected edition/stickers/seal to item
+                    ApplyEditionStickersSeal(item);
 
-                    _parentViewModel.ItemConfigs[itemKey] = itemConfig;
+                    var clause = _parentViewModel.CreateClauseFromFilterItem(item);
+                    if (clause is not null)
+                        _parentViewModel.ItemConfigs[itemKey] = clause;
                     _parentViewModel.SelectedMust.Add(itemKey);
                 }
             }
@@ -1140,17 +1133,13 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 else
                 {
                     var itemKey = _parentViewModel.GenerateNextItemKey();
-                    var itemConfig = new ItemConfig
-                    {
-                        ItemKey = itemKey,
-                        ItemType = item.Type,
-                        ItemName = item.Name,
-                    };
 
-                    // Phase 3: Apply currently selected edition/stickers/seal
-                    ApplyEditionStickersSeal(itemConfig, item);
+                    // Phase 3: Apply currently selected edition/stickers/seal to item
+                    ApplyEditionStickersSeal(item);
 
-                    _parentViewModel.ItemConfigs[itemKey] = itemConfig;
+                    var clause = _parentViewModel.CreateClauseFromFilterItem(item);
+                    if (clause is not null)
+                        _parentViewModel.ItemConfigs[itemKey] = clause;
                     _parentViewModel.SelectedShould.Add(itemKey);
                 }
             }
@@ -1231,16 +1220,12 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             {
                 // Create item config for MUST NOT item
                 var itemKey = _parentViewModel.GenerateNextItemKey();
-                var itemConfig = new ItemConfig
-                {
-                    ItemKey = itemKey,
-                    ItemType = item.Type,
-                    ItemName = item.Name,
-                };
 
-                ApplyEditionStickersSeal(itemConfig, item);
+                ApplyEditionStickersSeal(item);
 
-                _parentViewModel.ItemConfigs[itemKey] = itemConfig;
+                var clause = _parentViewModel.CreateClauseFromFilterItem(item);
+                if (clause is not null)
+                    _parentViewModel.ItemConfigs[itemKey] = clause;
                 _parentViewModel.SelectedMustNot.Add(itemKey);
             }
 
@@ -1282,19 +1267,16 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             // Add to OR tray
             OrTrayItems.Add(item);
 
-            // Create ItemConfig and apply current edition/sticker/seal settings
+            // Create clause and apply current edition/sticker/seal settings
             if (_parentViewModel is not null)
             {
                 var itemKey = _parentViewModel.GenerateNextItemKey();
-                var itemConfig = new ItemConfig
-                {
-                    ItemKey = itemKey,
-                    ItemType = item.Type,
-                    ItemName = item.Name,
-                };
 
-                ApplyEditionStickersSeal(itemConfig, item);
-                _parentViewModel.ItemConfigs[itemKey] = itemConfig;
+                ApplyEditionStickersSeal(item);
+
+                var clause = _parentViewModel.CreateClauseFromFilterItem(item);
+                if (clause is not null)
+                    _parentViewModel.ItemConfigs[itemKey] = clause;
             }
 
             DebugLogger.Log("VisualBuilderTab", $"Added {item.Name} to OR tray");
@@ -1318,19 +1300,16 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             // Add to AND tray
             AndTrayItems.Add(item);
 
-            // Create ItemConfig and apply current edition/sticker/seal settings
+            // Create clause and apply current edition/sticker/seal settings
             if (_parentViewModel is not null)
             {
                 var itemKey = _parentViewModel.GenerateNextItemKey();
-                var itemConfig = new ItemConfig
-                {
-                    ItemKey = itemKey,
-                    ItemType = item.Type,
-                    ItemName = item.Name,
-                };
 
-                ApplyEditionStickersSeal(itemConfig, item);
-                _parentViewModel.ItemConfigs[itemKey] = itemConfig;
+                ApplyEditionStickersSeal(item);
+
+                var clause = _parentViewModel.CreateClauseFromFilterItem(item);
+                if (clause is not null)
+                    _parentViewModel.ItemConfigs[itemKey] = clause;
             }
 
             DebugLogger.Log("VisualBuilderTab", $"Added {item.Name} to AND tray");
@@ -1375,33 +1354,23 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 return;
             }
 
-            // Create grouped ItemConfig with OperatorType="Or" and Children
-            var groupedConfig = new ItemConfig
-            {
-                ItemKey = $"or_clause_{Guid.NewGuid():N}",
-                ItemType = "Operator",
-                ItemName = $"OR ({OrTrayItems.Count} items)",
-                OperatorType = "Or",
-                Mode = "Max",
-                Children = new List<ItemConfig>(),
-            };
+            // Create OrClause with IJamlClause children
+            var orClause = new OrClause();
+            var childClauses = new List<IJamlClause>();
 
-            // Add each item in OR tray as a child
+            // Build child clauses from OR tray items
             if (_parentViewModel is not null)
             {
                 foreach (var item in OrTrayItems.ToList())
                 {
-                    // Find the ItemConfig for this item
-                    var existingConfig = _parentViewModel.ItemConfigs.FirstOrDefault(kvp =>
-                        kvp.Value.ItemName == item.Name && kvp.Value.ItemType == item.Type
-                    );
-
-                    if (existingConfig.Value is not null)
-                    {
-                        groupedConfig.Children.Add(existingConfig.Value);
-                    }
+                    var childClause = _parentViewModel.CreateClauseFromFilterItem(item);
+                    if (childClause is not null)
+                        childClauses.Add(childClause);
                 }
             }
+
+            orClause.Clauses = childClauses.ToArray();
+            var itemKey = _parentViewModel?.GenerateNextItemKey() ?? $"or_clause_{Guid.NewGuid():N}";
 
             // Create FilterOperatorItem for UI display
             var operatorItem = new FilterOperatorItem("OR")
@@ -1418,11 +1387,11 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             // Add to local SelectedShould for UI binding
             SelectedShould.Add(operatorItem);
 
-            // Add grouped config to parent for persistence
+            // Add OrClause to parent for persistence
             if (_parentViewModel is not null)
             {
-                _parentViewModel.ItemConfigs[groupedConfig.ItemKey] = groupedConfig;
-                _parentViewModel.SelectedShould.Add(groupedConfig.ItemKey);
+                _parentViewModel.ItemConfigs[itemKey] = orClause;
+                _parentViewModel.SelectedShould.Add(itemKey);
             }
 
             // Clear OR tray
@@ -1434,7 +1403,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
             DebugLogger.Log(
                 "VisualBuilderTab",
-                $"Committed OR clause with {groupedConfig.Children.Count} children to SHOULD"
+                $"Committed OR clause with {childClauses.Count} children to SHOULD"
             );
 
             NotifyJsonEditorOfChanges();
@@ -1451,32 +1420,23 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 return;
             }
 
-            // Create grouped ItemConfig with OperatorType="And" and Children
-            var groupedConfig = new ItemConfig
-            {
-                ItemKey = $"and_clause_{Guid.NewGuid():N}",
-                ItemType = "Operator",
-                ItemName = $"AND ({AndTrayItems.Count} items)",
-                OperatorType = "And",
-                Children = new List<ItemConfig>(),
-            };
+            // Create AndClause with IJamlClause children
+            var andClause = new AndClause();
+            var childClauses = new List<IJamlClause>();
 
-            // Add each item in AND tray as a child
+            // Build child clauses from AND tray items
             if (_parentViewModel is not null)
             {
                 foreach (var item in AndTrayItems.ToList())
                 {
-                    // Find the ItemConfig for this item
-                    var existingConfig = _parentViewModel.ItemConfigs.FirstOrDefault(kvp =>
-                        kvp.Value.ItemName == item.Name && kvp.Value.ItemType == item.Type
-                    );
-
-                    if (existingConfig.Value is not null)
-                    {
-                        groupedConfig.Children.Add(existingConfig.Value);
-                    }
+                    var childClause = _parentViewModel.CreateClauseFromFilterItem(item);
+                    if (childClause is not null)
+                        childClauses.Add(childClause);
                 }
             }
+
+            andClause.Clauses = childClauses.ToArray();
+            var itemKey = _parentViewModel?.GenerateNextItemKey() ?? $"and_clause_{Guid.NewGuid():N}";
 
             // Create FilterOperatorItem for UI display
             var operatorItem = new FilterOperatorItem("AND")
@@ -1493,11 +1453,11 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             // Add to local SelectedShould for UI binding
             SelectedShould.Add(operatorItem);
 
-            // Add grouped config to parent for persistence
+            // Add AndClause to parent for persistence
             if (_parentViewModel is not null)
             {
-                _parentViewModel.ItemConfigs[groupedConfig.ItemKey] = groupedConfig;
-                _parentViewModel.SelectedShould.Add(groupedConfig.ItemKey);
+                _parentViewModel.ItemConfigs[itemKey] = andClause;
+                _parentViewModel.SelectedShould.Add(itemKey);
             }
 
             // Clear AND tray
@@ -1509,7 +1469,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
             DebugLogger.Log(
                 "VisualBuilderTab",
-                $"Committed AND clause with {groupedConfig.Children.Count} children to SHOULD"
+                $"Committed AND clause with {childClauses.Count} children to SHOULD"
             );
 
             NotifyJsonEditorOfChanges();
@@ -1557,7 +1517,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             // Find the item key in parent's ItemConfigs
             var itemKey = _parentViewModel
                 .ItemConfigs.FirstOrDefault(kvp =>
-                    kvp.Value.ItemName == item.Name && kvp.Value.ItemType == item.Type
+                    kvp.Value.GetValueName() == item.Name && kvp.Value.GetTypeName() == item.Type
                 )
                 .Key;
 
@@ -1575,7 +1535,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
         /// <summary>
         /// Syncs a FilterOperatorItem to the parent's collections as a single operator with nested children.
-        /// Creates a single ItemConfig with OperatorType and Children properties.
+        /// Creates a single operator clause with Children properties.
         /// </summary>
         private void SyncOperatorToParent(FilterOperatorItem operatorItem, string targetZone)
         {
@@ -1587,31 +1547,24 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 $"Syncing {operatorItem.OperatorType} operator with {operatorItem.Children.Count} children to {targetZone}"
             );
 
-            // Create a single ItemConfig representing the operator with its children
+            // Create a single LogicClause representing the operator with its children
             var itemKey = _parentViewModel.GenerateNextItemKey();
-            var operatorConfig = new ItemConfig
-            {
-                ItemKey = itemKey,
-                ItemType = "Operator",
-                ItemName = operatorItem.OperatorType,
-                OperatorType = operatorItem.OperatorType,
-                Mode = operatorItem.OperatorType == "OR" ? "Max" : null,
-                Children = new List<ItemConfig>(),
-            };
+            var isOr = operatorItem.OperatorType == "OR";
+            LogicClause operatorClause = isOr ? new OrClause() : new AndClause();
 
-            // Convert each child FilterItem to an ItemConfig
+            // Convert each child FilterItem to an IJamlClause
+            var childClauses = new List<IJamlClause>();
             foreach (var child in operatorItem.Children)
             {
-                var childConfig = new ItemConfig { ItemType = child.Type, ItemName = child.Name };
-
-                // CRITICAL FIX: Preserve edition, stickers, seals from the FilterItem
-                ApplyEditionStickersSeal(childConfig, child);
-
-                operatorConfig.Children.Add(childConfig);
+                var childClause = _parentViewModel.CreateClauseFromFilterItem(child);
+                if (childClause is not null)
+                    childClauses.Add(childClause);
             }
 
-            // Store the operator config
-            _parentViewModel.ItemConfigs[itemKey] = operatorConfig;
+            operatorClause.Clauses = childClauses.ToArray();
+
+            // Store the operator clause
+            _parentViewModel.ItemConfigs[itemKey] = operatorClause;
 
             // Add to the zone where the user dropped it
             var targetCollection = targetZone switch
@@ -2388,14 +2341,12 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             RefreshFilteredItems();
         }
 
-        public void UpdateItemConfig(string itemKey, ItemConfig config)
+        public void UpdateItemConfig(string itemKey, IJamlClause clause)
         {
-            ItemConfigs[itemKey] = config;
-
             // Sync with parent ViewModel if available
             if (_parentViewModel is not null && _parentViewModel.ItemConfigs.ContainsKey(itemKey))
             {
-                _parentViewModel.ItemConfigs[itemKey] = config;
+                _parentViewModel.ItemConfigs[itemKey] = clause;
             }
 
             DebugLogger.Log("VisualBuilderTab", $"Updated config for item: {itemKey}");
@@ -2440,7 +2391,6 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             // Remove associated config and sync with parent
             if (!string.IsNullOrEmpty(itemKeyToRemove) && _parentViewModel is not null)
             {
-                ItemConfigs.Remove(itemKeyToRemove);
                 _parentViewModel.ItemConfigs.Remove(itemKeyToRemove);
 
                 // Remove from parent's zone collections (only the specific zone)
@@ -3093,13 +3043,13 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
                     item.Stickers = stickers.Count > 0 ? stickers : null;
 
-                    // Also update ItemConfig if it exists (for when item gets dropped to zones)
+                    // Also update IJamlClause if it exists (for when item gets dropped to zones)
                     if (
                         _parentViewModel is not null
-                        && _parentViewModel.ItemConfigs.TryGetValue(item.ItemKey, out var config)
+                        && _parentViewModel.ItemConfigs.TryGetValue(item.ItemKey, out var clause)
                     )
                     {
-                        config.Stickers = item.Stickers;
+                        clause.SetStickerStrings(item.Stickers?.ToArray() ?? []);
                     }
                 }
             }
@@ -3111,8 +3061,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         /// <summary>
         /// Helper method to apply sticker logic with Eternal restrictions
         /// </summary>
-        private void ApplyStickerLogic(
-            ItemConfig config,
+        private List<string>? ApplyStickerLogic(
+            string itemType,
             string itemName,
             HashSet<string> eternalRestrictedJokers
         )
@@ -3141,7 +3091,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             else if (StickerEternal && !isSoulJoker)
             {
                 // Check if item type can be eternal
-                bool canTypeBeEternal = config.ItemType switch
+                bool canTypeBeEternal = itemType switch
                 {
                     "Joker" or "SoulJoker" => true,
                     "Tarot" or "Planet" or "Spectral" => true,
@@ -3154,7 +3104,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
                 // Check if specific joker is restricted from Eternal
                 bool isRestrictedJoker =
-                    (config.ItemType == "Joker" || config.ItemType == "SoulJoker")
+                    (itemType == "Joker" || itemType == "SoulJoker")
                     && eternalRestrictedJokers.Contains(itemName);
 
                 if (canTypeBeEternal && !isRestrictedJoker)
@@ -3169,26 +3119,24 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 stickers.Add("rental");
             }
 
-            // Apply stickers (or clear if none selected)
-            config.Stickers = stickers.Any() ? stickers : null;
+            return stickers.Any() ? stickers : null;
         }
 
         /// <summary>
-        /// Applies the currently selected edition, stickers, and seal to an ItemConfig
+        /// Applies the currently selected edition, stickers, and seal to a FilterItem
         /// Called when an item is added to a drop zone
         /// Respects Eternal restrictions for specific jokers
         /// </summary>
-        private void ApplyEditionStickersSeal(ItemConfig config, FilterItem item)
+        private void ApplyEditionStickersSeal(FilterItem item)
         {
             // Apply Edition (if not None)
             if (SelectedEdition != "None")
             {
-                config.Edition = SelectedEdition.ToLower();
-                item.Edition = config.Edition; // CRITICAL: Update item to trigger EditionImage binding
+                item.Edition = SelectedEdition.ToLower(); // CRITICAL: Update item to trigger EditionImage binding
 
                 // For Negative edition, reload the base ItemImage from negative sprite sheet
                 if (
-                    config.Edition == "negative"
+                    item.Edition == "negative"
                     && (item.Type == "Joker" || item.Type == "SoulJoker")
                 )
                 {
@@ -3255,21 +3203,17 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 stickers.Add("rental");
             }
 
-            if (stickers.Any())
-            {
-                config.Stickers = stickers;
-                item.Stickers = config.Stickers; // CRITICAL: Update item to trigger sticker image bindings
-            }
+            item.Stickers = stickers.Any() ? stickers : null; // CRITICAL: Update item to trigger sticker image bindings
 
             // Apply Seal (for StandardCards only)
             if (item.Type == "StandardCard" && SelectedSeal != "None")
             {
-                config.Seal = SelectedSeal;
+                item.Seal = SelectedSeal;
             }
 
             DebugLogger.Log(
                 "VisualBuilderTab",
-                $"Applied edition={config.Edition}, stickers=[{string.Join(",", config.Stickers ?? new List<string>())}], seal={config.Seal} to {item.Name}"
+                $"Applied edition={item.Edition}, stickers=[{string.Join(",", item.Stickers ?? new List<string>())}], seal={item.Seal} to {item.Name}"
             );
         }
 
@@ -3301,9 +3245,9 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             // Load MUST items
             foreach (var itemKey in _parentViewModel.SelectedMust)
             {
-                if (_parentViewModel.ItemConfigs.TryGetValue(itemKey, out var config))
+                if (_parentViewModel.ItemConfigs.TryGetValue(itemKey, out var clause))
                 {
-                    var filterItem = CreateFilterItemFromConfig(config);
+                    var filterItem = CreateFilterItemFromClause(itemKey, clause);
                     if (filterItem is not null)
                     {
                         SelectedMust.Add(filterItem);
@@ -3315,9 +3259,9 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             // Load SHOULD items
             foreach (var itemKey in _parentViewModel.SelectedShould)
             {
-                if (_parentViewModel.ItemConfigs.TryGetValue(itemKey, out var config))
+                if (_parentViewModel.ItemConfigs.TryGetValue(itemKey, out var clause))
                 {
-                    var filterItem = CreateFilterItemFromConfig(config);
+                    var filterItem = CreateFilterItemFromClause(itemKey, clause);
                     if (filterItem is not null)
                     {
                         SelectedShould.Add(filterItem);
@@ -3346,14 +3290,33 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             OnPropertyChanged(nameof(IsShouldExpanded));
         }
 
-        private FilterItem? CreateFilterItemFromConfig(ItemConfig config)
+        private FilterItem? CreateFilterItemFromClause(string itemKey, IJamlClause clause)
         {
             var ss = SpriteService.Instance;
 
-            // FIX: Use effective type that checks IsSoulJoker flag
-            var effectiveType = config.IsSoulJoker ? "SoulJoker" : config.ItemType;
+            if (clause is LogicClause logic)
+            {
+                var op = clause is OrClause ? "OR" : "AND";
+                var operatorItem = new FilterOperatorItem(op)
+                {
+                    DisplayName = $"{op} ({logic.Clauses.Length} items)",
+                    ItemKey = itemKey,
+                };
+                foreach (var child in logic.Clauses)
+                {
+                    var childItem = CreateFilterItemFromClause(itemKey, child);
+                    if (childItem is not null)
+                        operatorItem.Children.Add(childItem);
+                }
+                return operatorItem;
+            }
 
-            // Determine category from effective type (not raw ItemType)
+            var typeName = clause.GetTypeName() ?? "";
+            var valueName = clause.GetValueName() ?? "";
+            var isSoulJoker = clause is LegendaryJokerClause;
+
+            var effectiveType = isSoulJoker ? "SoulJoker" : typeName;
+
             string category = effectiveType switch
             {
                 "SoulJoker" => "SoulJokers",
@@ -3368,52 +3331,70 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 _ => effectiveType,
             };
 
+            var stickerStrings = clause.GetStickerStrings();
+            var stickers = stickerStrings.Length > 0 ? stickerStrings.ToList() : null;
+            var antes = clause.GetAntes();
+            var edition = clause.GetEditionString();
+            var enhancement = clause.GetEnhancementString();
+            var seal = clause.GetSealString();
+
+            string? rank = null;
+            string? suit = null;
+            if (clause is StandardCardClause sc)
+            {
+                rank = sc.Rank?.ToString();
+                suit = sc.Suit?.ToString();
+            }
+
             var filterItem = new FilterItem
             {
-                Name = config.ItemName,
-                DisplayName = config.ItemName,
-                Type = effectiveType, // FIX: Use effective type that respects IsSoulJoker
+                Name = valueName,
+                DisplayName = valueName,
+                Type = effectiveType,
                 Category = category,
-                ItemKey = config.ItemKey,
-                Edition = config.Edition,
-                Stickers = config.Stickers,
-                Antes = config.Antes?.ToArray(),
+                ItemKey = itemKey,
+                Edition = edition,
+                Stickers = stickers,
+                Antes = antes.Length > 0 ? antes : null,
+                Rank = rank,
+                Suit = suit,
+                Enhancement = enhancement,
+                Seal = seal,
             };
 
-            // Get sprite image (use effectiveType for consistent handling)
             if (effectiveType == "Joker" || effectiveType == "SoulJoker")
             {
-                filterItem.ItemImage = ss.GetJokerImage(config.ItemName);
+                filterItem.ItemImage = ss.GetJokerImage(valueName);
             }
             else if (effectiveType == "Voucher")
             {
-                filterItem.ItemImage = ss.GetVoucherImage(config.ItemName);
+                filterItem.ItemImage = ss.GetVoucherImage(valueName);
             }
             else if (effectiveType.Contains("Tarot"))
             {
-                filterItem.ItemImage = ss.GetTarotImage(config.ItemName);
+                filterItem.ItemImage = ss.GetTarotImage(valueName);
             }
             else if (effectiveType.Contains("Spectral"))
             {
-                filterItem.ItemImage = ss.GetSpectralImage(config.ItemName);
+                filterItem.ItemImage = ss.GetSpectralImage(valueName);
             }
             else if (effectiveType.Contains("Planet"))
             {
-                filterItem.ItemImage = ss.GetPlanetCardImage(config.ItemName);
+                filterItem.ItemImage = ss.GetPlanetCardImage(valueName);
             }
             else if (effectiveType.Contains("Tag"))
             {
-                filterItem.ItemImage = ss.GetTagImage(config.ItemName);
+                filterItem.ItemImage = ss.GetTagImage(valueName);
             }
             else if (effectiveType == "Boss")
             {
-                filterItem.ItemImage = ss.GetBossImage(config.ItemName);
+                filterItem.ItemImage = ss.GetBossImage(valueName);
             }
             else if (effectiveType == "PlayingCard" || effectiveType == "StandardCard")
             {
-                var suit = string.IsNullOrWhiteSpace(config.Suit) ? "Spades" : config.Suit;
-                var rank = string.IsNullOrWhiteSpace(config.Rank) ? "10" : config.Rank;
-                filterItem.ItemImage = ss.GetPlayingCardImage(suit, rank, config.Enhancement);
+                var s = string.IsNullOrWhiteSpace(suit) ? "Spades" : suit;
+                var r = string.IsNullOrWhiteSpace(rank) ? "10" : rank;
+                filterItem.ItemImage = ss.GetPlayingCardImage(s!, r!, enhancement);
             }
 
             return filterItem;

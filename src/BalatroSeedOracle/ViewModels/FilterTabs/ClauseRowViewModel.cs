@@ -18,7 +18,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         private string _displayText = ""; // Human-readable description
 
         [ObservableProperty]
-        private string _itemKey = ""; // Reference to ItemConfig
+        private string _itemKey = "";
 
         [ObservableProperty]
         private bool _isExpanded = false; // For nested OR/AND

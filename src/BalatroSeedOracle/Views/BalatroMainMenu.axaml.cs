@@ -1480,6 +1480,9 @@ namespace BalatroSeedOracle.Views
                 if (!string.IsNullOrEmpty(configPath))
                 {
                     await searchContent.ViewModel.LoadFilterAsync(configPath);
+                    // No live search was attached (restored icon after restart) — arm resume
+                    // so the saved batch is continued instead of restarting from zero.
+                    searchContent.ViewModel.EnableResumeIfSavedProgress();
                 }
 
                 searchContent.ViewModel.CreateShortcutRequested += (sender, cfgPath) =>

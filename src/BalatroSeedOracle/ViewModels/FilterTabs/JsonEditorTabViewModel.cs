@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Media;
 using BalatroSeedOracle.Helpers;
-using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -103,7 +102,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 // Generate Must clauses from visual builder
                 foreach (var item in visualTab.SelectedMust)
                 {
-                    var clause = _clauseConversion.ConvertFilterItemToClause(item, new ItemConfig());
+                    var clause = _clauseConversion.BuildClauseFromFilterItem(item);
                     if (clause is not null)
                         config.Must.Add(clause);
                 }
@@ -111,7 +110,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 // Generate Should clauses from visual builder
                 foreach (var item in visualTab.SelectedShould)
                 {
-                    var clause = _clauseConversion.ConvertFilterItemToClause(item, new ItemConfig());
+                    var clause = _clauseConversion.BuildClauseFromFilterItem(item);
                     if (clause is not null)
                         config.Should.Add(clause);
                 }
@@ -174,7 +173,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 // Generate Must clauses from visual builder
                 foreach (var item in visualTab.SelectedMust)
                 {
-                    var clause = _clauseConversion.ConvertFilterItemToClause(item, new ItemConfig());
+                    var clause = _clauseConversion.BuildClauseFromFilterItem(item);
                     if (clause is not null)
                         config.Must.Add(clause);
                 }
@@ -182,7 +181,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 // Generate Should clauses from visual builder
                 foreach (var item in visualTab.SelectedShould)
                 {
-                    var clause = _clauseConversion.ConvertFilterItemToClause(item, new ItemConfig());
+                    var clause = _clauseConversion.BuildClauseFromFilterItem(item);
                     if (clause is not null)
                         config.Should.Add(clause);
                 }

@@ -1436,7 +1436,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 {
                     // Trigger auto-save when config changes
                     vm.TriggerAutoSave();
-                    DebugLogger.Log("ItemConfig", $"Configuration applied for {item.DisplayName}");
+                    DebugLogger.Log("FilterConfig", $"Configuration applied for {item.DisplayName}");
                 },
                 onClose: () =>
                 {
@@ -1460,7 +1460,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
             PopupContent.Content = configPanel;
             PopupOverlay.IsVisible = true;
 
-            DebugLogger.Log("ItemConfig", $"Opened configuration panel for {item.DisplayName}");
+                    DebugLogger.Log("FilterConfig", $"Opened configuration panel for {item.DisplayName}");
         }
 
         /// <summary>

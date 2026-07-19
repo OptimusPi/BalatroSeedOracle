@@ -6,6 +6,7 @@ using Avalonia.Media.Imaging;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Services;
+using Motely.Filters.Jaml;
 
 namespace BalatroSeedOracle.Converters
 {
@@ -204,7 +205,7 @@ namespace BalatroSeedOracle.Converters
             string? itemName = value switch
             {
                 string str => str,
-                ItemConfig config => config.ItemName,
+                IJamlClause clause => clause.GetValueName(),
                 _ => null,
             };
 
@@ -270,10 +271,9 @@ namespace BalatroSeedOracle.Converters
                     // Check if this string joker name is a legendary joker
                     isSoulJoker = LegendaryJokers.Contains(str.ToLowerInvariant());
                     break;
-                case ItemConfig config:
-                    itemName = config.ItemName;
-                    // Check both IsSoulJoker property AND ItemType == "SoulJoker"
-                    isSoulJoker = config.IsSoulJoker || config.ItemType == "SoulJoker";
+                case IJamlClause clause:
+                    itemName = clause.GetValueName();
+                    isSoulJoker = clause is LegendaryJokerClause;
                     break;
                 default:
                     return null;
@@ -327,7 +327,7 @@ namespace BalatroSeedOracle.Converters
             string? itemName = value switch
             {
                 string str => str,
-                ItemConfig config => config.ItemName,
+                IJamlClause clause => clause.GetValueName(),
                 _ => null,
             };
 
@@ -376,7 +376,7 @@ namespace BalatroSeedOracle.Converters
             string? itemName = value switch
             {
                 string str => str,
-                ItemConfig config => config.ItemName,
+                IJamlClause clause => clause.GetValueName(),
                 _ => null,
             };
 

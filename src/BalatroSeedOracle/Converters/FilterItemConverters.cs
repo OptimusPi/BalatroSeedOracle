@@ -3,14 +3,15 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using Avalonia.Data.Converters;
-using BalatroSeedOracle.Models;
+using BalatroSeedOracle.Services;
 using Motely;
+using Motely.Filters.Jaml;
 
 namespace BalatroSeedOracle.Converters
 {
     /// <summary>
     /// Converts an item name string to a formatted display string using FormatUtils.FormatItem().
-    /// Supports ItemConfig, string, and handles Edition/Stickers/Seal/Enhancement formatting.
+    /// Supports IJamlClause, string, and handles Edition/Stickers/Seal/Enhancement formatting.
     /// </summary>
     public class ItemNameToFormattedStringConverter : IValueConverter
     {
@@ -23,40 +24,100 @@ namespace BalatroSeedOracle.Converters
         {
             return value switch
             {
-                ItemConfig config => FormatItemConfig(config),
+                IJamlClause clause => FormatJamlClause(clause),
                 string str => FormatUtils.FormatDisplayName(str),
                 _ => value?.ToString() ?? "",
             };
         }
 
-        private static string FormatItemConfig(ItemConfig config)
+        private static string FormatJamlClause(IJamlClause clause)
         {
-            // Check if this is a wildcard item (needs special formatting)
-            if (IsWildcardItem(config.ItemName))
+            var itemName = clause.GetValueName();
+            var stickers = clause.GetStickerStrings();
+            var edition = clause.GetEditionString();
+            bool isSoulJoker = clause is LegendaryJokerClause;
+
+            if (IsWildcardItem(itemName))
             {
-                // For wildcard items, use special formatting
                 var parts = new List<string>();
 
-                // Add stickers for wildcard jokers
-                if (config.Stickers != null && config.Stickers.Count > 0)
+                if (stickers != null && stickers.Length > 0)
                 {
-                    parts.AddRange(config.Stickers);
+                    parts.AddRange(stickers);
                 }
 
-                // Add edition for wildcard jokers
-                if (!string.IsNullOrEmpty(config.Edition) && config.Edition != "none")
+                if (!string.IsNullOrEmpty(edition) && edition != "none")
                 {
-                    parts.Add(config.Edition);
+                    parts.Add(edition);
                 }
 
-                // Add the wildcard name
-                parts.Add(FormatItemNameWithWildcards(config.ItemName, config.IsSoulJoker));
+                parts.Add(FormatItemNameWithWildcards(itemName, isSoulJoker));
 
                 return string.Join(" ", parts);
             }
 
-            // For non-wildcard items, use the ItemConfig.ToString() method
-            return config.ToString();
+            var typeName = clause.GetTypeName() ?? "";
+            bool isJoker = typeName is "joker" or "souljoker";
+            bool isStandardCard = typeName is "standardcard";
+
+            var cardParts = new List<string>();
+
+            if (isJoker)
+            {
+                if (stickers != null && stickers.Length > 0)
+                {
+                    cardParts.AddRange(stickers);
+                }
+
+                if (!string.IsNullOrEmpty(edition) && !edition.Equals("none", StringComparison.OrdinalIgnoreCase))
+                {
+                    cardParts.Add(edition);
+                }
+
+                cardParts.Add(!string.IsNullOrEmpty(itemName) ? itemName : "Unknown");
+            }
+            else if (isStandardCard)
+            {
+                var seal = clause.GetSealString();
+                var enhancement = clause.GetEnhancementString();
+                string? rank = clause is StandardCardClause sc ? sc.Rank?.ToString() : null;
+                string? suit = clause is StandardCardClause sc2 ? sc2.Suit?.ToString() : null;
+
+                if (!string.IsNullOrEmpty(seal))
+                {
+                    cardParts.Add($"{seal} Seal");
+                }
+
+                if (!string.IsNullOrEmpty(enhancement) && enhancement != "None")
+                {
+                    cardParts.Add(enhancement);
+                }
+
+                if (!string.IsNullOrEmpty(edition) && edition != "Negative")
+                {
+                    cardParts.Add(edition);
+                }
+
+                if (!string.IsNullOrEmpty(rank) && !string.IsNullOrEmpty(suit))
+                {
+                    cardParts.Add($"{rank} of {suit}");
+                }
+                else if (!string.IsNullOrEmpty(itemName))
+                {
+                    cardParts.Add(itemName);
+                }
+            }
+            else
+            {
+                if (!string.IsNullOrEmpty(edition) && !edition.Equals("none", StringComparison.OrdinalIgnoreCase))
+                {
+                    cardParts.Add(edition);
+                }
+
+                cardParts.Add(!string.IsNullOrEmpty(itemName) ? itemName : "Unknown");
+            }
+
+            return string.Join(" ", cardParts);
         }
 
         private static bool IsWildcardItem(string? itemName)
@@ -141,7 +202,7 @@ namespace BalatroSeedOracle.Converters
     /// <summary>
     /// Formats a list of ante integers into a human-readable range string.
     /// Examples: [1] -> "1", [1,2,3] -> "1-3", [1,2,3,5,8] -> "1-3, 5, 8"
-    /// Supports ItemConfig, List<int>, and int[] types.
+    /// Supports IJamlClause, List<int>, and int[] types.
     /// </summary>
     public class AntesFormatterConverter : IValueConverter
     {
@@ -154,7 +215,7 @@ namespace BalatroSeedOracle.Converters
         {
             List<int>? antes = value switch
             {
-                ItemConfig config => config.Antes,
+                IJamlClause clause => clause.GetAntes()?.ToList(),
                 List<int> list => list,
                 int[] array => array.ToList(),
                 _ => null,

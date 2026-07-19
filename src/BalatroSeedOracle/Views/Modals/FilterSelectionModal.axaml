@@ -332,7 +332,7 @@
                                                                                    FontFamily="{StaticResource BalatroFont}"
                                                                                    FontSize="13"
                                                                                    Foreground="Black"
-                                                                                   Text="{Binding Antes, Converter={StaticResource AntesFormatterConverter}}"
+                                                                                   Text="{Binding ., Converter={StaticResource AntesFormatterConverter}}"
                                                                                    HorizontalAlignment="Left"/>
                                                                     </Grid>
                                                                 </DataTemplate>
@@ -354,7 +354,7 @@
                                                                                    FontFamily="{StaticResource BalatroFont}"
                                                                                    FontSize="13"
                                                                                    Foreground="Black"
-                                                                                   Text="{Binding Antes, Converter={StaticResource AntesFormatterConverter}}"
+                                                                                   Text="{Binding ., Converter={StaticResource AntesFormatterConverter}}"
                                                                                    HorizontalAlignment="Left"/>
                                                                     </Grid>
                                                                 </DataTemplate>
@@ -376,7 +376,7 @@
                                                                                    FontFamily="{StaticResource BalatroFont}"
                                                                                    FontSize="13"
                                                                                    Foreground="Black"
-                                                                                   Text="{Binding Antes, Converter={StaticResource AntesFormatterConverter}}"
+                                                                                   Text="{Binding ., Converter={StaticResource AntesFormatterConverter}}"
                                                                                    HorizontalAlignment="Left"/>
                                                                     </Grid>
                                                                 </DataTemplate>
@@ -400,7 +400,7 @@
                                                                                    FontFamily="{StaticResource BalatroFont}"
                                                                                    FontSize="13"
                                                                                    Foreground="{StaticResource Red}"
-                                                                                   Text="{Binding Antes, Converter={StaticResource AntesFormatterConverter}}"
+                                                                                   Text="{Binding ., Converter={StaticResource AntesFormatterConverter}}"
                                                                                    HorizontalAlignment="Left"/>
                                                                     </Grid>
                                                                 </DataTemplate>
@@ -424,7 +424,7 @@
                                                                                    FontFamily="{StaticResource BalatroFont}"
                                                                                    FontSize="13"
                                                                                    Foreground="{StaticResource Red}"
-                                                                                   Text="{Binding Antes, Converter={StaticResource AntesFormatterConverter}}"
+                                                                                   Text="{Binding ., Converter={StaticResource AntesFormatterConverter}}"
                                                                                    HorizontalAlignment="Left"/>
                                                                     </Grid>
                                                                 </DataTemplate>
@@ -448,7 +448,7 @@
                                                                                    FontFamily="{StaticResource BalatroFont}"
                                                                                    FontSize="13"
                                                                                    Foreground="{StaticResource Red}"
-                                                                                   Text="{Binding Antes, Converter={StaticResource AntesFormatterConverter}}"
+                                                                                   Text="{Binding ., Converter={StaticResource AntesFormatterConverter}}"
                                                                                    HorizontalAlignment="Left"/>
                                                                     </Grid>
                                                                 </DataTemplate>
@@ -565,7 +565,7 @@
                                                                                    FontFamily="{StaticResource BalatroFont}"
                                                                                    FontSize="13"
                                                                                    Foreground="Black"
-                                                                                   Text="{Binding Antes, Converter={StaticResource AntesFormatterConverter}}"
+                                                                                   Text="{Binding ., Converter={StaticResource AntesFormatterConverter}}"
                                                                                    HorizontalAlignment="Left"/>
                                                                     </Grid>
                                                                 </DataTemplate>
@@ -587,7 +587,7 @@
                                                                                    FontFamily="{StaticResource BalatroFont}"
                                                                                    FontSize="13"
                                                                                    Foreground="Black"
-                                                                                   Text="{Binding Antes, Converter={StaticResource AntesFormatterConverter}}"
+                                                                                   Text="{Binding ., Converter={StaticResource AntesFormatterConverter}}"
                                                                                    HorizontalAlignment="Left"/>
                                                                     </Grid>
                                                                 </DataTemplate>
@@ -609,7 +609,7 @@
                                                                                    FontFamily="{StaticResource BalatroFont}"
                                                                                    FontSize="13"
                                                                                    Foreground="Black"
-                                                                                   Text="{Binding Antes, Converter={StaticResource AntesFormatterConverter}}"
+                                                                                   Text="{Binding ., Converter={StaticResource AntesFormatterConverter}}"
                                                                                    HorizontalAlignment="Left"/>
                                                                     </Grid>
                                                                 </DataTemplate>
@@ -631,7 +631,7 @@
                                                                                    FontFamily="{StaticResource BalatroFont}"
                                                                                    FontSize="13"
                                                                                    Foreground="Black"
-                                                                                   Text="{Binding Antes, Converter={StaticResource AntesFormatterConverter}}"
+                                                                                   Text="{Binding ., Converter={StaticResource AntesFormatterConverter}}"
                                                                                    HorizontalAlignment="Left"/>
                                                                     </Grid>
                                                                 </DataTemplate>

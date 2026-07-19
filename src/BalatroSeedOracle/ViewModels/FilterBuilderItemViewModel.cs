@@ -1,15 +1,16 @@
 using System.Collections.ObjectModel;
 using System.Linq;
 using Avalonia.Media;
-using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
+using Motely.Filters;
+using Motely.Filters.Jaml;
 
 namespace BalatroSeedOracle.ViewModels
 {
     /// <summary>
-    /// MVVM ViewModel wrapper around ItemConfig for the Visual Builder tab.
-    /// ItemConfig remains the single source of truth for filter data.
+    /// MVVM ViewModel wrapper around IJamlClause for the Visual Builder tab.
+    /// IJamlClause remains the single source of truth for filter data.
     /// This wrapper adds: selection state, drag state, images, and observable children.
     /// </summary>
     public partial class FilterBuilderItemViewModel : ObservableObject
@@ -17,7 +18,7 @@ namespace BalatroSeedOracle.ViewModels
         /// <summary>
         /// The actual domain model - single source of truth for filter configuration
         /// </summary>
-        public ItemConfig Config { get; }
+        public IJamlClause Clause { get; }
 
         // UI-only state (NOT persisted to JSON)
         [ObservableProperty]
@@ -32,63 +33,69 @@ namespace BalatroSeedOracle.ViewModels
         [ObservableProperty]
         private IImage? _soulFaceImage;
 
-        // Computed display properties that delegate to Config
-        public string DisplayName => Config.ItemName;
-        public string Name => Config.ItemName; // Alias for compatibility
-        public string ItemType => Config.ItemType;
-        public string Type => Config.ItemType; // Alias for compatibility
-        public string ItemKey => Config.ItemKey;
-        public string Category => Config.ItemType; // For filtering/grouping
+        // Computed display properties that delegate to Clause via extension methods
+        public string DisplayName => Clause.GetValueName() ?? "";
+        public string Name => Clause.GetValueName() ?? "";
+        public string ItemType => Clause.GetTypeName() ?? "";
+        public string Type => Clause.GetTypeName() ?? "";
+        public string ItemKey => Clause.GetValueName() ?? "";
+        public string Category => Clause.GetTypeName() ?? "";
 
         // Additional UI-only properties for compatibility with existing code
         public bool IsFavorite { get; set; }
 
-        // For OR/AND operators - wraps Config.Children
+        // For OR/AND operators - wraps LogicClause.Clauses
         public ObservableCollection<FilterBuilderItemViewModel>? ChildViewModels { get; set; }
 
         // Check if this is an operator clause
-        public bool IsOperatorClause => Config.OperatorType is not null;
-        public string? OperatorType => Config.OperatorType;
-
-        public FilterBuilderItemViewModel(ItemConfig config)
+        public bool IsOperatorClause => Clause is LogicClause;
+        public string? OperatorType => Clause switch
         {
-            Config = config;
+            AndClause => "And",
+            OrClause => "Or",
+            _ => null
+        };
+
+        public FilterBuilderItemViewModel(IJamlClause clause)
+        {
+            Clause = clause;
 
             // Load images synchronously (they're already cached by SpriteService)
             LoadImages();
 
-            // Wrap children if this is an OR/AND operator
-            if (config.Children is not null && config.Children.Count > 0)
+            // Wrap children if this is a LogicClause (OR/AND)
+            if (clause is LogicClause logic && logic.Clauses.Length > 0)
             {
                 ChildViewModels = new ObservableCollection<FilterBuilderItemViewModel>(
-                    config.Children.Select(child => new FilterBuilderItemViewModel(child))
+                    logic.Clauses.Select(child => new FilterBuilderItemViewModel(child))
                 );
             }
         }
 
         private void LoadImages()
         {
-            // Load main item image
-            if (!string.IsNullOrEmpty(Config.ItemType) && !string.IsNullOrEmpty(Config.ItemName))
-            {
-                ItemImage = SpriteService.Instance.GetItemImage(Config.ItemName, Config.ItemType);
+            var valueName = Clause.GetValueName();
+            var typeName = Clause.GetTypeName();
 
-                // Check for soul face variants (legendary jokers)
-                if (Config.ItemType == "Joker")
+            if (!string.IsNullOrEmpty(typeName) && !string.IsNullOrEmpty(valueName))
+            {
+                ItemImage = SpriteService.Instance.GetItemImage(valueName, typeName);
+
+                if (typeName == "joker" || typeName == "legendaryJoker")
                 {
-                    SoulFaceImage = SpriteService.Instance.GetJokerSoulImage(Config.ItemName);
+                    SoulFaceImage = SpriteService.Instance.GetJokerSoulImage(valueName);
                 }
             }
         }
 
         /// <summary>
-        /// Update Config.Children from ChildViewModels (when user modifies OR/AND clause)
+        /// Update LogicClause.Clauses from ChildViewModels (when user modifies OR/AND clause)
         /// </summary>
         public void SyncChildrenToConfig()
         {
-            if (ChildViewModels is not null)
+            if (ChildViewModels is not null && Clause is LogicClause logic)
             {
-                Config.Children = ChildViewModels.Select(vm => vm.Config).ToList();
+                logic.Clauses = ChildViewModels.Select(vm => vm.Clause).ToArray();
             }
         }
     }

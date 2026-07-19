@@ -1,6 +1,5 @@
 using System;
 using System.Linq;
-using BalatroSeedOracle.Models;
 using Motely;
 using Motely.Filters;
 using Motely.Filters.Jaml;
@@ -183,50 +182,9 @@ public static class JamlClauseExtensions
         };
     }
 
-    public static void SetDiscriminator(this IJamlClause clause, string discriminator, string value)
-    {
-        // The concrete type already encodes the discriminator; this method just populates the value.
-        // For cases where the caller created a generic placeholder, we replace the concrete values.
-        switch (clause)
-        {
-            case JokerClause c: c.Jokers = ParseEnumArray<MotelyJoker>(value); break;
-            case CommonJokerClause c: c.Jokers = ParseEnumArray<MotelyJokerCommon>(value); break;
-            case UncommonJokerClause c: c.Jokers = ParseEnumArray<MotelyJokerUncommon>(value); break;
-            case RareJokerClause c: c.Jokers = ParseEnumArray<MotelyJokerRare>(value); break;
-            case LegendaryJokerClause c: c.Jokers = ParseEnumArray<MotelyJoker>(value); break;
-            case VoucherClause c: c.Vouchers = ParseEnumArray<MotelyVoucher>(value); break;
-            case TarotCardClause c: c.Tarots = ParseEnumArray<MotelyTarotCard>(value); break;
-            case SpectralCardClause c: c.Spectrals = ParseEnumArray<MotelySpectralCard>(value); break;
-            case PlanetCardClause c: c.Planets = ParseEnumArray<MotelyPlanetCard>(value); break;
-            case BossClause c: c.Bosses = ParseEnumArray<MotelyBossBlind>(value); break;
-            case TagClause c: c.Tags = ParseEnumArray<MotelyTag>(value); break;
-        }
-    }
-
     public static IJamlClause[]? GetClauses(this IJamlClause clause)
     {
         return clause is LogicClause logic ? logic.Clauses : null;
-    }
-
-    public static bool IsOr(this IJamlClause clause) => clause is OrClause;
-    public static bool IsAnd(this IJamlClause clause) => clause is AndClause;
-
-    public static void SetClauses(this IJamlClause clause, IJamlClause[] clauses)
-    {
-        if (clause is LogicClause logic)
-            logic.Clauses = clauses;
-    }
-
-    public static void AddOr(this IJamlClause clause, IJamlClause child)
-    {
-        if (clause is OrClause logic)
-            logic.Clauses = [.. logic.Clauses, child];
-    }
-
-    public static void AddAnd(this IJamlClause clause, IJamlClause child)
-    {
-        if (clause is AndClause logic)
-            logic.Clauses = [.. logic.Clauses, child];
     }
 
     private static string? FirstOrNone<T>(T[] values) where T : struct, Enum
