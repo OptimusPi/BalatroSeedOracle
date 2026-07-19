@@ -53,14 +53,28 @@
                                   FontSize="18"
                                   HorizontalAlignment="Center"/>
 
-                        <TextBlock Text="{Binding ItemsText}"
-                                  FontSize="18"
-                                  HorizontalAlignment="Center"
-                                  TextWrapping="Wrap"
-                                  MaxWidth="90"
-                                  Opacity="0.8"
-                                  Margin="0,2,0,0"
-                                  IsVisible="{Binding HasItems}"/>
+                        <!-- Pack contents render as sprites, matching the shop row -->
+                        <ItemsControl ItemsSource="{Binding Items}"
+                                      MaxWidth="130"
+                                      Margin="0,2,0,0"
+                                      IsVisible="{Binding HasItems}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel Orientation="Horizontal"
+                                               HorizontalAlignment="Center"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="models:ShopItemModel">
+                                    <Image Source="{Binding Converter={StaticResource ShopItemSpriteConverter}}"
+                                           Width="28"
+                                           Height="38"
+                                           Margin="1"
+                                           Stretch="Uniform"
+                                           ToolTip.Tip="{Binding ItemName}"/>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
                     </StackPanel>
                 </StackPanel>
             </Border>

@@ -492,23 +492,19 @@ public partial class AnalyzerViewModel : ObservableObject
 
             foreach (var item in ante.ShopQueue)
             {
-                anteModel.ShopItems.Add(
-                    new ShopItemModel
-                    {
-                        TypeCategory = item.TypeCategory,
-                        ItemType = item.Type,
-                        Edition = item.Edition,
-                    }
-                );
+                anteModel.ShopItems.Add(ShopItemModel.From(item));
             }
 
             foreach (var pack in ante.Packs)
             {
-                var packModel = new BoosterPackModel { PackType = pack.Type.GetPackType() };
+                // Keep the whole pack value: PackName and the sprite key both read the size
+                // (Jumbo/Mega) off it, which GetPackType() drops.
+                var packModel = new BoosterPackModel { Pack = pack.Type };
 
                 foreach (var packItem in pack.Items)
                 {
-                    packModel.Items.Add(packItem.ToString());
+                    // The item itself, so the pack draws the same sprites the shop row does.
+                    packModel.Items.Add(ShopItemModel.From(packItem));
                 }
 
                 anteModel.BoosterPacks.Add(packModel);

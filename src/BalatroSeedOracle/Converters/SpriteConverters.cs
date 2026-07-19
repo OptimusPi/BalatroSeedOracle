@@ -42,6 +42,16 @@ namespace BalatroSeedOracle.Converters
                     Motely.Enums.MotelyItemTypeCategory.SpectralCard => spriteService.GetSpectralImage(
                         item.SpriteKey
                     ),
+                    // Playing cards composite from the packed item's own suit/rank plus its
+                    // enhancement, seal and edition — the fields a name string throws away.
+                    Motely.Enums.MotelyItemTypeCategory.Standardcard =>
+                        spriteService.GetPlayingCardImage(
+                            item.SpriteSuit,
+                            item.SpriteRank,
+                            item.HasEnhancement ? item.EnhancementName : null,
+                            item.HasSeal ? item.SealName : null,
+                            item.HasEdition ? item.EditionName : null
+                        ),
                     _ => null,
                 };
             }

@@ -170,27 +170,21 @@ namespace BalatroSeedOracle.ViewModels
                         // Convert shop items
                         foreach (var shopItem in motelyAnte.ShopQueue)
                         {
-                            anteModel.ShopItems.Add(
-                                new ShopItemModel
-                                {
-                                    TypeCategory = shopItem.TypeCategory,
-                                    ItemType = shopItem.Type,
-                                    Edition = shopItem.Edition,
-                                }
-                            );
+                            anteModel.ShopItems.Add(ShopItemModel.From(shopItem));
                         }
 
                         // Convert booster packs
                         foreach (var pack in motelyAnte.Packs)
                         {
-                            var packModel = new BoosterPackModel
-                            {
-                                PackType = (MotelyBoosterPackType)pack.Type,
-                            };
+                            // Keep the whole pack value: PackName and the sprite key both read
+                            // the size (Jumbo/Mega) off it, which the pack-type cast drops.
+                            var packModel = new BoosterPackModel { Pack = pack.Type };
 
                             foreach (var item in pack.Items)
                             {
-                                packModel.Items.Add(item.ToString());
+                                // The item itself, so the pack draws the same sprites the shop
+                                // row does instead of a struct dump.
+                                packModel.Items.Add(ShopItemModel.From(item));
                             }
 
                             anteModel.BoosterPacks.Add(packModel);
