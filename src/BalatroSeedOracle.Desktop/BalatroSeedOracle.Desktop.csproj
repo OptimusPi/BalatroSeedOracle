@@ -45,11 +45,7 @@
     <PackageReference Include="Avalonia.Desktop" />
     <PackageReference Include="Avalonia.Fonts.Inter" />
     <PackageReference Include="AvaloniaUI.DiagnosticsSupport" />
-  </ItemGroup>
-
-  <!-- Desktop-only packages (native dependencies that don't work in browser) -->
-  <ItemGroup>
-    <PackageReference Include="SoundFlow" />
+    <PackageReference Include="Avalonia.Controls.MediaPlayer" />
   </ItemGroup>
 
   <ItemGroup>

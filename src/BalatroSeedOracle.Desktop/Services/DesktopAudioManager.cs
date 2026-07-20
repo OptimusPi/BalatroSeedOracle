@@ -1,35 +1,25 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Threading;
+using System.Text.Json;
 using System.Threading.Tasks;
+using Avalonia.Media;
+using Avalonia.Threading;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Services;
-using SoundFlow.Abstracts;
-using SoundFlow.Abstracts.Devices;
-using SoundFlow.Backends.MiniAudio;
-using SoundFlow.Components;
-using SoundFlow.Enums;
-using SoundFlow.Providers;
-using SoundFlow.Structs;
-using SoundFlow.Visualization;
 
 namespace BalatroSeedOracle.Desktop.Services;
 
 /// <summary>
-/// Desktop implementation of IAudioManager using SoundFlow library.
-/// Registered via DI in Desktop Program.cs
+/// Desktop implementation of IAudioManager on the Avalonia Accelerate MediaPlayer.
+/// Eight stem players (Bass/Drums/Chords/Melody x2) loop in lockstep so the per-stem
+/// volume mixer keeps working. Shader reactivity comes from precomputed 30Hz RMS
+/// envelopes (Assets/Audio/envelopes.json) sampled at the playback position — no
+/// runtime FFT, no native audio-analysis dependency.
 /// </summary>
 public class DesktopAudioManager : IAudioManager, IDisposable
 {
-    private const int UPDATE_RATE_MS = 16;
-    private AudioEngine? _engine;
-    private AudioPlaybackDevice? _device;
-    private readonly Dictionary<string, SoundPlayer> _players = new();
-    private readonly Dictionary<string, SpectrumAnalyzer> _analyzers = new();
-    private readonly Dictionary<string, SoundPlayer> _sfxPlayers = new();
-    private readonly string[] _trackNames =
+    private static readonly string[] TrackNames =
     {
         "Bass1",
         "Bass2",
@@ -40,10 +30,18 @@ public class DesktopAudioManager : IAudioManager, IDisposable
         "Melody1",
         "Melody2",
     };
-    private readonly string[] _sfxNames = { "highlight1", "paper1", "button" };
-    private CancellationTokenSource? _cancellationTokenSource;
-    private Task? _updateTask;
+    private static readonly string[] SfxNames = { "highlight1", "paper1", "button" };
+
+    private readonly Dictionary<string, MediaPlayer> _players = new();
+    private readonly Dictionary<string, MediaPlayer> _sfxPlayers = new();
+    private readonly Dictionary<string, float> _trackGains = new();
+    private readonly Dictionary<string, bool> _trackMuted = new();
+    private Dictionary<string, float[]> _envelopes = new();
+    private double _envelopeRateHz = 30.0;
+    private DispatcherTimer? _intensityTimer;
+    private bool _isPaused;
     private bool _isDisposed;
+    private bool _initialized;
 
     public float Bass1Intensity { get; private set; }
     public float Bass2Intensity { get; private set; }
@@ -65,44 +63,82 @@ public class DesktopAudioManager : IAudioManager, IDisposable
         set
         {
             _masterVolume = Math.Clamp(value, 0f, 1f);
-            if (_device != null)
-                _device.MasterMixer.Volume = _masterVolume * 2.5f;
+            ApplyVolumes();
         }
     }
 
-    public bool IsPlaying => _device?.IsRunning == true;
+    public bool IsPlaying => _initialized && !_isPaused;
     public event Action<float, float, float, float>? AudioAnalysisUpdated;
 
-    // Constructor does no work (Avalonia/Cleary: constructors must not block, and this service
-    // is a ctor dependency of the main-menu ViewModel built on the UI thread). Real device init
-    // happens in InitializeAsync, awaited from startup after the window is shown.
     public DesktopAudioManager() { }
 
     /// <summary>
-    /// Initializes the SoundFlow/MiniAudio backend. The blocking native device init runs on a
-    /// background thread (Task.Run) and is awaited by the caller, so it never freezes the UI
-    /// thread. Failures are swallowed → audio is simply silent (e.g. no audio device present).
+    /// Initializes MediaPlayer instances. Runs on the UI thread (MediaPlayer is an Avalonia
+    /// component and is awaited from startup after the window is shown). Failures are logged
+    /// and degrade to silent audio, never a crash.
     /// </summary>
-    public async System.Threading.Tasks.Task InitializeAsync()
+    public async Task InitializeAsync()
     {
         try
         {
-            await Task.Run(() =>
+            var audioDir = Path.Combine(AppContext.BaseDirectory, "Assets", "Audio");
+            if (!Directory.Exists(audioDir))
             {
-                _engine = new MiniAudioEngine();
-                var format = AudioFormat.Cd;
-                var defaultDevice = _engine.PlaybackDevices.FirstOrDefault(x => x.IsDefault);
-                _device = _engine.InitializePlaybackDevice(defaultDevice, format);
-                LoadTracks(format);
-                LoadSoundEffects(format);
-                // Apply whatever volume was set before the device existed (saved settings
-                // land in _masterVolume during startup, while _device is still null).
-                // Zeroing here instead used to permanently mute the music on every launch.
-                _device.MasterMixer.Volume = _masterVolume * 2.5f;
-                _device.Start();
-                _cancellationTokenSource = new CancellationTokenSource();
-                _updateTask = Task.Run(AnalysisUpdateLoop, _cancellationTokenSource.Token);
-            });
+                DebugLogger.LogError("DesktopAudioManager", $"Audio dir missing: {audioDir}");
+                return;
+            }
+
+            LoadEnvelopes(Path.Combine(audioDir, "envelopes.json"));
+
+            foreach (var name in TrackNames)
+            {
+                var path = Path.Combine(audioDir, $"{name}.ogg");
+                if (!File.Exists(path))
+                    continue;
+                var player = new MediaPlayer();
+                await player.InitializeAsync();
+                await player.SetSourceAsync(new UriSource(new Uri(path).AbsoluteUri));
+                await player.PrepareAsync();
+                player.IsLoopingEnabled = true;
+                _players[name] = player;
+                _trackGains[name] = 1.0f;
+                _trackMuted[name] = false;
+            }
+
+            var sfxDir = Path.Combine(audioDir, "SFX");
+            foreach (var name in SfxNames)
+            {
+                var path = Path.Combine(sfxDir, $"{name}.ogg");
+                if (!File.Exists(path))
+                    continue;
+                var player = new MediaPlayer();
+                await player.InitializeAsync();
+                await player.SetSourceAsync(new UriSource(new Uri(path).AbsoluteUri));
+                await player.PrepareAsync();
+                _sfxPlayers[name] = player;
+            }
+
+            if (_players.Count == 0)
+            {
+                DebugLogger.LogError("DesktopAudioManager", "No stems loaded — silent run");
+                return;
+            }
+
+            ApplyVolumes();
+            await StartAllStemsAsync();
+
+            // 30Hz intensity sampling from precomputed envelopes, driven off stem[0]'s clock.
+            _intensityTimer = new DispatcherTimer(
+                TimeSpan.FromMilliseconds(33),
+                DispatcherPriority.Background,
+                (_, _) => UpdateIntensities()
+            );
+            _intensityTimer.Start();
+            _initialized = true;
+            DebugLogger.Log(
+                "DesktopAudioManager",
+                $"MediaPlayer audio up: {_players.Count} stems, {_sfxPlayers.Count} sfx"
+            );
         }
         catch (Exception ex)
         {
@@ -110,93 +146,65 @@ public class DesktopAudioManager : IAudioManager, IDisposable
         }
     }
 
-    private void LoadTracks(AudioFormat format)
+    private void LoadEnvelopes(string path)
     {
-        var audioDir = Path.Combine(AppContext.BaseDirectory, "Assets", "Audio");
-        if (!Directory.Exists(audioDir))
+        try
+        {
+            if (!File.Exists(path))
+            {
+                DebugLogger.LogError("DesktopAudioManager", $"envelopes.json missing: {path}");
+                return;
+            }
+            // JsonDocument, not the reflection serializer — the Desktop head builds with
+            // JsonSerializerIsReflectionEnabledByDefault=false.
+            using var doc = JsonDocument.Parse(File.ReadAllText(path));
+            var root = doc.RootElement;
+            _envelopeRateHz = root.GetProperty("rateHz").GetDouble();
+            var stems = new Dictionary<string, float[]>();
+            foreach (var stem in root.GetProperty("stems").EnumerateObject())
+            {
+                var arr = new float[stem.Value.GetArrayLength()];
+                int i = 0;
+                foreach (var v in stem.Value.EnumerateArray())
+                    arr[i++] = (float)v.GetDouble();
+                stems[stem.Name] = arr;
+            }
+            _envelopes = stems;
+        }
+        catch (Exception ex)
+        {
+            DebugLogger.LogError("DesktopAudioManager", $"envelopes.json unreadable: {ex.Message}");
+        }
+    }
+
+    private async Task StartAllStemsAsync()
+    {
+        // Stems loop natively (IsLoopingEnabled); this only starts the initial lockstep run.
+        foreach (var player in _players.Values)
+            await player.PlayAsync();
+    }
+
+    private void UpdateIntensities()
+    {
+        if (_isPaused || _players.Count == 0)
             return;
-
-        foreach (var trackName in _trackNames)
+        // One clock for all stems: the first player's position.
+        TimeSpan pos = TimeSpan.Zero;
+        foreach (var player in _players.Values)
         {
-            var filePath = Path.Combine(audioDir, $"{trackName}.ogg");
-            if (!File.Exists(filePath))
-                continue;
-            try
-            {
-                var fileStream = File.OpenRead(filePath);
-                var dataProvider = new StreamDataProvider(_engine!, format, fileStream);
-                var player = new SoundPlayer(_engine!, format, dataProvider)
-                {
-                    Name = trackName,
-                    Volume = 1.0f,
-                    IsLooping = true,
-                };
-                var analyzer = new SpectrumAnalyzer(format, 2048, visualizer: null);
-                player.AddAnalyzer(analyzer);
-                _device!.MasterMixer.AddComponent(player);
-                player.Play();
-                _players[trackName] = player;
-                _analyzers[trackName] = analyzer;
-            }
-            catch { }
+            pos = player.Position;
+            break;
         }
-    }
 
-    private void LoadSoundEffects(AudioFormat format)
-    {
-        var sfxDir = Path.Combine(AppContext.BaseDirectory, "Assets", "Audio", "SFX");
-        if (!Directory.Exists(sfxDir))
-            return;
+        Bass1Intensity = SampleEnvelope("Bass1", pos);
+        Bass2Intensity = SampleEnvelope("Bass2", pos);
+        Drums1Intensity = SampleEnvelope("Drums1", pos);
+        Drums2Intensity = SampleEnvelope("Drums2", pos);
+        Chords1Intensity = SampleEnvelope("Chords1", pos);
+        Chords2Intensity = SampleEnvelope("Chords2", pos);
+        Melody1Intensity = SampleEnvelope("Melody1", pos);
+        Melody2Intensity = SampleEnvelope("Melody2", pos);
 
-        foreach (var sfxName in _sfxNames)
-        {
-            var filePath = Path.Combine(sfxDir, $"{sfxName}.ogg");
-            if (!File.Exists(filePath))
-                continue;
-            try
-            {
-                var fileStream = File.OpenRead(filePath);
-                var dataProvider = new StreamDataProvider(_engine!, format, fileStream);
-                var player = new SoundPlayer(_engine!, format, dataProvider)
-                {
-                    Name = sfxName,
-                    Volume = 1.0f,
-                    IsLooping = false,
-                };
-                _device!.MasterMixer.AddComponent(player);
-                _sfxPlayers[sfxName] = player;
-            }
-            catch { }
-        }
-    }
-
-    private async Task AnalysisUpdateLoop()
-    {
-        while (!_cancellationTokenSource!.Token.IsCancellationRequested)
-        {
-            try
-            {
-                UpdateTrackIntensities();
-                await Task.Delay(UPDATE_RATE_MS, _cancellationTokenSource.Token);
-            }
-            catch (OperationCanceledException)
-            {
-                break;
-            }
-            catch { }
-        }
-    }
-
-    private void UpdateTrackIntensities()
-    {
-        Bass1Intensity = GetTrackIntensity("Bass1");
-        Bass2Intensity = GetTrackIntensity("Bass2");
-        Drums1Intensity = GetTrackIntensity("Drums1");
-        Drums2Intensity = GetTrackIntensity("Drums2");
-        Chords1Intensity = GetTrackIntensity("Chords1");
-        Chords2Intensity = GetTrackIntensity("Chords2");
-        Melody1Intensity = GetTrackIntensity("Melody1");
-        Melody2Intensity = GetTrackIntensity("Melody2");
         AudioAnalysisUpdated?.Invoke(
             BassIntensity,
             ChordsIntensity,
@@ -205,128 +213,106 @@ public class DesktopAudioManager : IAudioManager, IDisposable
         );
     }
 
-    private float GetTrackIntensity(string trackName)
+    private float SampleEnvelope(string trackName, TimeSpan position)
     {
-        if (!_analyzers.TryGetValue(trackName, out var analyzer))
+        if (!_envelopes.TryGetValue(trackName, out var env) || env.Length == 0)
             return 0f;
-        var fftData = analyzer.SpectrumData;
-        if (fftData.Length == 0)
+        // A muted or silenced stem contributes nothing to the visualizer, same as live FFT did.
+        if (_trackMuted.GetValueOrDefault(trackName) || _trackGains.GetValueOrDefault(trackName) <= 0f)
             return 0f;
-        float sum = 0f;
-        foreach (var magnitude in fftData)
-            sum += magnitude * magnitude;
-        return (float)Math.Sqrt(sum / fftData.Length);
+        int idx = (int)(position.TotalSeconds * _envelopeRateHz);
+        if (idx < 0)
+            idx = 0;
+        if (idx >= env.Length)
+            idx = env.Length - 1;
+        return env[idx] * _trackGains.GetValueOrDefault(trackName, 1f);
     }
 
-    public FrequencyBands GetFrequencyBands(string trackName)
+    private void ApplyVolumes()
     {
-        if (!_analyzers.TryGetValue(trackName, out var analyzer))
-            return new FrequencyBands();
-        var fftData = analyzer.SpectrumData;
-        if (fftData.Length == 0)
-            return new FrequencyBands();
-        const float sampleRate = 44100f;
-        float hzPerBin = sampleRate / 2048f;
-        int bassStart = (int)(20f / hzPerBin),
-            bassEnd = (int)(250f / hzPerBin),
-            midEnd = (int)(2000f / hzPerBin),
-            highEnd = Math.Min((int)(20000f / hzPerBin), fftData.Length - 1);
-        return new FrequencyBands
+        foreach (var (name, player) in _players)
         {
-            BassAvg = CalculateBandAverage(fftData, bassStart, bassEnd),
-            BassPeak = CalculateBandPeak(fftData, bassStart, bassEnd),
-            MidAvg = CalculateBandAverage(fftData, bassEnd, midEnd),
-            MidPeak = CalculateBandPeak(fftData, bassEnd, midEnd),
-            HighAvg = CalculateBandAverage(fftData, midEnd, highEnd),
-            HighPeak = CalculateBandPeak(fftData, midEnd, highEnd),
-        };
-    }
-
-    private float CalculateBandAverage(ReadOnlySpan<float> fftData, int startBin, int endBin)
-    {
-        if (startBin >= endBin || startBin >= fftData.Length)
-            return 0f;
-        endBin = Math.Min(endBin, fftData.Length);
-        float sum = 0f;
-        for (int i = startBin; i < endBin; i++)
-            sum += fftData[i];
-        return sum / (endBin - startBin);
-    }
-
-    private float CalculateBandPeak(ReadOnlySpan<float> fftData, int startBin, int endBin)
-    {
-        if (startBin >= endBin || startBin >= fftData.Length)
-            return 0f;
-        endBin = Math.Min(endBin, fftData.Length);
-        float peak = 0f;
-        for (int i = startBin; i < endBin; i++)
-            if (fftData[i] > peak)
-                peak = fftData[i];
-        return peak;
+            player.Volume = Math.Clamp(_trackGains.GetValueOrDefault(name, 1f) * _masterVolume, 0f, 1f);
+            player.IsMuted = _trackMuted.GetValueOrDefault(name);
+        }
     }
 
     public void SetTrackVolume(string trackName, float volume)
     {
-        if (_players.TryGetValue(trackName, out var player))
-            player.Volume = Math.Clamp(volume, 0f, 1f);
+        _trackGains[trackName] = Math.Clamp(volume, 0f, 1f);
+        ApplyVolumes();
     }
 
-    public void SetTrackPan(string trackName, float pan)
-    {
-        if (_players.TryGetValue(trackName, out var player))
-            player.Pan = Math.Clamp(pan, 0f, 1f);
-    }
+    // MediaPlayer has no per-player pan. No caller in the app uses pan; honest no-op.
+    public void SetTrackPan(string trackName, float pan) { }
 
     public void SetTrackMuted(string trackName, bool muted)
     {
-        if (_players.TryGetValue(trackName, out var player))
-            player.Mute = muted;
+        _trackMuted[trackName] = muted;
+        ApplyVolumes();
     }
 
     public void Pause()
     {
+        _isPaused = true;
         foreach (var player in _players.Values)
-            player.Pause();
+            _ = player.PauseAsync();
     }
 
     public void Resume()
     {
+        _isPaused = false;
         foreach (var player in _players.Values)
-            player.Play();
+            _ = player.PlayAsync();
     }
 
-    public void PlaySfx(string name, float volume = 1.0f)
+    public async void PlaySfx(string name, float volume = 1.0f)
     {
-        if (_sfxPlayers.TryGetValue(name, out var player))
+        if (!_sfxPlayers.TryGetValue(name, out var player))
+            return;
+        try
         {
-            player.Volume = Math.Clamp(volume, 0f, 1f);
-            player.Seek(TimeSpan.Zero);
-            player.Play();
+            player.Volume = Math.Clamp(volume * _masterVolume, 0f, 1f);
+            player.Position = TimeSpan.Zero;
+            await player.PlayAsync();
+        }
+        catch (Exception ex)
+        {
+            DebugLogger.LogError("DesktopAudioManager", $"SFX '{name}' failed: {ex.Message}");
         }
     }
+
+    // Live FFT is gone (envelope-driven reactivity instead) and this has zero callers.
+    // Kept only to satisfy IAudioManager.
+    public FrequencyBands GetFrequencyBands(string trackName) => default;
 
     public void Dispose()
     {
         if (_isDisposed)
             return;
         _isDisposed = true;
-        _cancellationTokenSource?.Cancel();
-        _cancellationTokenSource?.Dispose();
+        _intensityTimer?.Stop();
         foreach (var player in _players.Values)
         {
-            player.Stop();
-            player.Dispose();
+            _ = ShutdownPlayerAsync(player);
         }
         _players.Clear();
-        _analyzers.Clear();
         foreach (var player in _sfxPlayers.Values)
-        {
-            player.Stop();
-            player.Dispose();
-        }
+            _ = ShutdownPlayerAsync(player);
         _sfxPlayers.Clear();
-        _device?.Stop();
-        _device?.Dispose();
-        _engine?.Dispose();
+    }
+
+    private static async Task ShutdownPlayerAsync(MediaPlayer player)
+    {
+        try
+        {
+            await player.StopAsync();
+            await player.ReleaseAsync();
+            await player.UnInitialize();
+        }
+        catch
+        {
+            // App is going down; nothing useful to do with a shutdown failure.
+        }
     }
 }

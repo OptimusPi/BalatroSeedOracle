@@ -371,7 +371,7 @@ public partial class App : Application
                 await PreloadSpritesWithoutTransition();
             }
 
-            // Initialize background music (SoundFlow 8-track). Awaited here — AFTER the window is
+            // Initialize background music (MediaPlayer 8-stem). Awaited here — AFTER the window is
             // shown — so the blocking native device init never freezes startup. InitializeAsync
             // offloads the native init to a background thread internally and never throws.
             try
@@ -379,7 +379,7 @@ public partial class App : Application
                 var audioManager = _serviceProvider?.GetService<Services.IAudioManager>();
                 if (audioManager != null)
                 {
-                    DebugLogger.LogImportant("App", "Initializing 8-track audio with SoundFlow");
+                    DebugLogger.LogImportant("App", "Initializing 8-stem audio with MediaPlayer");
                     await audioManager.InitializeAsync();
                 }
             }

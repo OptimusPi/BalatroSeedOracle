@@ -586,7 +586,7 @@ namespace BalatroSeedOracle.ViewModels
                     Math.Clamp(settings.ColorSaturationSource, 0, 4)
                 );
 
-                // Per-track volume balancing for SoundFlow audio stems
+                // Per-track volume balancing for the audio stems
                 if (_audioManager is not null)
                 {
                     SetTrackVolume("Drums1", Math.Clamp(settings.Drums1Volume, 0f, 1f));

@@ -5,7 +5,7 @@ namespace BalatroSeedOracle.Services
 {
     /// <summary>
     /// Simple wrapper service for playing UI sound effects
-    /// Delegates to SoundFlowAudioManager for actual playback
+    /// Delegates to the platform IAudioManager for actual playback
     /// </summary>
     public class SoundEffectsService
     {
