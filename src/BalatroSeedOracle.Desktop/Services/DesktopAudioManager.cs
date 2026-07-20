@@ -213,6 +213,11 @@ public class DesktopAudioManager : IAudioManager, IDisposable
         );
     }
 
+    // Envelopes are peak-normalized 0..1, but the shader bridge's vibe knobs were tuned
+    // against the old FFT RMS scale (~0.02..0.1). Feeding raw 0..1 made the background
+    // spin ~10x harder than designed. This rescales to the range the tuning expects.
+    private const float EnvelopeToFftScale = 0.1f;
+
     private float SampleEnvelope(string trackName, TimeSpan position)
     {
         if (!_envelopes.TryGetValue(trackName, out var env) || env.Length == 0)
@@ -225,7 +230,7 @@ public class DesktopAudioManager : IAudioManager, IDisposable
             idx = 0;
         if (idx >= env.Length)
             idx = env.Length - 1;
-        return env[idx] * _trackGains.GetValueOrDefault(trackName, 1f);
+        return env[idx] * _trackGains.GetValueOrDefault(trackName, 1f) * EnvelopeToFftScale;
     }
 
     private void ApplyVolumes()
