@@ -16,3 +16,19 @@
 
 # Documentation can use auto
 *.md text=auto
+
+# Binary assets: never text-convert, never diff as text, never touch the bytes.
+# (Ten months of silence came from corrupted committed .ogg blobs. Never again.)
+*.ogg binary
+*.flac binary
+*.mp3 binary
+*.wav binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.otf binary
