@@ -437,7 +437,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             {
                 if (JamlConfigLoader.TryLoad(JamlContent, out var config, out _) && config is not null)
                 {
-                    JamlContent = JamlConfigLoader.ToYaml(config);
+                    JamlContent = JamlConfigLoader.ToJaml(config);
                     ValidationStatus = "✓ Formatted";
                     ValidationStatusColor = Brushes.LightGreen;
                 }
@@ -549,7 +549,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         {
             try
             {
-                return JamlConfigLoader.ToYaml(config);
+                return JamlConfigLoader.ToJaml(config);
             }
             catch (Exception ex)
             {
@@ -563,7 +563,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
         private string GetDefaultJamlContent()
         {
-            return JamlConfigLoader.ToYaml(new JamlConfig
+            return JamlConfigLoader.ToJaml(new JamlConfig
             {
                 Id = Guid.NewGuid().ToString("N"),
                 Name = "New Filter",

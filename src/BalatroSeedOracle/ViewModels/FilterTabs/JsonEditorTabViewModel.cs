@@ -120,7 +120,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 // No separate MustNot collection needed
 
                 // Update JSON content silently using FilterSerializationService for proper formatting
-                JsonContent = _serializationService?.SerializeConfig(config) ?? JamlConfigLoader.ToYaml(config);
+                JsonContent = _serializationService?.SerializeConfig(config) ?? JamlConfigLoader.ToJaml(config);
 
                 // Silent status update (no user-visible message)
                 var totalItems = config.Must.Count + config.Should.Count;
@@ -190,7 +190,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 // MUST-NOT is now handled via IsInvertedFilter flag on items in MUST array
                 // No separate MustNot collection needed
 
-                JsonContent = JamlConfigLoader.ToYaml(config);
+                JsonContent = JamlConfigLoader.ToJaml(config);
 
                 ValidationStatus =
                     $"✓ Generated from visual ({config.Must.Count + config.Should.Count} items)";
@@ -333,7 +333,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             {
                 if (JamlConfigLoader.TryLoad(JsonContent, out var config, out _) && config is not null)
                 {
-                    JsonContent = JamlConfigLoader.ToYaml(config);
+                    JsonContent = JamlConfigLoader.ToJaml(config);
                     ValidationStatus = "✓ YAML formatted";
                     ValidationStatusColor = Brushes.Green;
                 }
@@ -380,7 +380,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
         private string GetDefaultJsonContent()
         {
-            return JamlConfigLoader.ToYaml(new JamlConfig
+            return JamlConfigLoader.ToJaml(new JamlConfig
             {
                 Id = Guid.NewGuid().ToString("N"),
                 Name = "New Filter",

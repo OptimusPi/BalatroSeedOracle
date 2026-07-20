@@ -25,7 +25,7 @@ namespace BalatroSeedOracle.Services
         Task<string> GetFilterNameAsync(string filterId);
 
         /// <summary>Copies an existing filter under a new name and a fresh generated ID
-        /// (<c>{slug}_{guid}</c>), re-serialized through <c>JamlConfigLoader.ToYaml</c>. Returns
+        /// (<c>{slug}_{guid}</c>), re-serialized through <c>JamlConfigLoader.ToJaml</c>. Returns
         /// the new filter's ID, or <see cref="string.Empty"/> if the source doesn't exist or
         /// fails to parse.</summary>
         Task<string> CloneFilterAsync(string filterId, string newName);
@@ -278,7 +278,7 @@ namespace BalatroSeedOracle.Services
 
                 var newId = $"{newName.Replace(" ", "").ToLower()}_{Guid.NewGuid():N}";
                 var newPath = Path.Combine(filtersDir, $"{newId}.json");
-                var newYaml = JamlConfigLoader.ToYaml(config);
+                var newYaml = JamlConfigLoader.ToJaml(config);
                 await File.WriteAllTextAsync(newPath, newYaml);
 
                 Helpers.DebugLogger.Log(

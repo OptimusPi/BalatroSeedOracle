@@ -1400,7 +1400,7 @@ namespace BalatroSeedOracle.ViewModels
                         config.Name = string.IsNullOrWhiteSpace(config.Name)
                             ? candidateName
                             : $"{config.Name} (copy)";
-                        var newYaml = JamlConfigLoader.ToYaml(config);
+                        var newYaml = JamlConfigLoader.ToJaml(config);
                         await File.WriteAllTextAsync(newPath, newYaml);
                     }
                     else

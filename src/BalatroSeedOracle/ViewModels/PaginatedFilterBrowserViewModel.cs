@@ -133,7 +133,7 @@ namespace BalatroSeedOracle.ViewModels
                 MustNot = new System.Collections.Generic.List<Motely.Filters.Jaml.IJamlClause>(),
             };
 
-            var yaml = Motely.Filters.Jaml.JamlConfigLoader.ToYaml(emptyFilter);
+            var yaml = Motely.Filters.Jaml.JamlConfigLoader.ToJaml(emptyFilter);
             await File.WriteAllTextAsync(tempPath, yaml);
 
             return tempPath;

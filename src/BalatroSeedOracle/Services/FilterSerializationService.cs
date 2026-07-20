@@ -25,7 +25,7 @@ public sealed class FilterSerializationService
         if (string.IsNullOrWhiteSpace(config.Author))
             config.Author = _userProfileService?.GetAuthorName() ?? "Jimbo";
 
-        return JamlConfigLoader.ToYaml(config);
+        return JamlConfigLoader.ToJaml(config);
     }
 
     public JamlConfig? DeserializeConfig(string yaml)

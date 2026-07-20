@@ -458,7 +458,7 @@ namespace BalatroSeedOracle.Helpers
                 MustNot = new System.Collections.Generic.List<IJamlClause>(),
             };
 
-            var yaml = JamlConfigLoader.ToYaml(emptyFilter);
+            var yaml = JamlConfigLoader.ToJaml(emptyFilter);
             await System.IO.File.WriteAllTextAsync(tempPath, yaml);
 
             return tempPath;
@@ -484,7 +484,7 @@ namespace BalatroSeedOracle.Helpers
                 config.Author = App.GetService<UserProfileService>()?.GetAuthorName() ?? "Unknown";
 
                 var clonedPath = System.IO.Path.Combine(AppPaths.FiltersDir, $"{config.Id}-copy.yaml");
-                var yaml = JamlConfigLoader.ToYaml(config);
+                var yaml = JamlConfigLoader.ToJaml(config);
                 await System.IO.File.WriteAllTextAsync(clonedPath, yaml);
 
                 return clonedPath;
