@@ -2241,47 +2241,33 @@ namespace BalatroSeedOracle.ViewModels
         {
             try
             {
-                var wordListDir = Path.Combine(
-                    AppContext.BaseDirectory,
-                    "..",
-                    "..",
-                    "..",
-                    "WordLists"
+                // AppPaths, not bin-relative "..\..\.." — that pointed at the project
+                // folder in Debug and at garbage in an installed Release build.
+                var wordListDir = Helpers.AppPaths.WordListsDir;
+                var files = Directory
+                    .GetFiles(wordListDir, "*.db")
+                    .Select(Path.GetFileName)
+                    .Where(f => f is not null)
+                    .Cast<string>()
+                    .OrderBy(f => f);
+
+                AvailableWordLists.Clear();
+                foreach (var file in files)
+                {
+                    AvailableWordLists.Add(file);
+                }
+
+                // Select first one by default
+                if (AvailableWordLists.Count > 0)
+                {
+                    SelectedWordList = AvailableWordLists[0];
+                    SelectedWordListIndex = 0;
+                }
+
+                BsoLogger.Log(
+                    "SearchModalViewModel",
+                    $"Loaded {AvailableWordLists.Count} word lists"
                 );
-                if (Directory.Exists(wordListDir))
-                {
-                    var files = Directory
-                        .GetFiles(wordListDir, "*.db")
-                        .Select(Path.GetFileName)
-                        .Where(f => f is not null)
-                        .Cast<string>()
-                        .OrderBy(f => f);
-
-                    AvailableWordLists.Clear();
-                    foreach (var file in files)
-                    {
-                        AvailableWordLists.Add(file);
-                    }
-
-                    // Select first one by default
-                    if (AvailableWordLists.Count > 0)
-                    {
-                        SelectedWordList = AvailableWordLists[0];
-                        SelectedWordListIndex = 0;
-                    }
-
-                    BsoLogger.Log(
-                        "SearchModalViewModel",
-                        $"Loaded {AvailableWordLists.Count} word lists"
-                    );
-                }
-                else
-                {
-                    BsoLogger.Log(
-                        "SearchModalViewModel",
-                        $"WordLists directory not found: {wordListDir}"
-                    );
-                }
             }
             catch (Exception ex)
             {
@@ -2296,47 +2282,32 @@ namespace BalatroSeedOracle.ViewModels
         {
             try
             {
-                var searchResultsDir = Path.Combine(
-                    AppContext.BaseDirectory,
-                    "..",
-                    "..",
-                    "..",
-                    "SearchResults"
+                // AppPaths, not bin-relative "..\..\.." — same disease as WordLists above.
+                var searchResultsDir = Helpers.AppPaths.SearchResultsDir;
+                var files = Directory
+                    .GetFiles(searchResultsDir, "*.db")
+                    .Select(Path.GetFileName)
+                    .Where(f => f is not null)
+                    .Cast<string>()
+                    .OrderBy(f => f);
+
+                AvailableDbLists.Clear();
+                foreach (var file in files)
+                {
+                    AvailableDbLists.Add(file);
+                }
+
+                // Select first one by default
+                if (AvailableDbLists.Count > 0)
+                {
+                    SelectedDbList = AvailableDbLists[0];
+                    SelectedDbListIndex = 0;
+                }
+
+                BsoLogger.Log(
+                    "SearchModalViewModel",
+                    $"Loaded {AvailableDbLists.Count} DB lists"
                 );
-                if (Directory.Exists(searchResultsDir))
-                {
-                    var files = Directory
-                        .GetFiles(searchResultsDir, "*.db")
-                        .Select(Path.GetFileName)
-                        .Where(f => f is not null)
-                        .Cast<string>()
-                        .OrderBy(f => f);
-
-                    AvailableDbLists.Clear();
-                    foreach (var file in files)
-                    {
-                        AvailableDbLists.Add(file);
-                    }
-
-                    // Select first one by default
-                    if (AvailableDbLists.Count > 0)
-                    {
-                        SelectedDbList = AvailableDbLists[0];
-                        SelectedDbListIndex = 0;
-                    }
-
-                    BsoLogger.Log(
-                        "SearchModalViewModel",
-                        $"Loaded {AvailableDbLists.Count} DB lists"
-                    );
-                }
-                else
-                {
-                    BsoLogger.Log(
-                        "SearchModalViewModel",
-                        $"SearchResults directory not found: {searchResultsDir}"
-                    );
-                }
             }
             catch (Exception ex)
             {

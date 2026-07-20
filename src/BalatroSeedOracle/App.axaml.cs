@@ -444,12 +444,12 @@ public partial class App : Application
             // Track uniform progress task - no fire-and-forget!
             _ = UniformProgressLoopAsync(transitionService, introStart, minIntro);
 
+            // One line per completed category, not one per sprite — 500+ lines of
+            // per-item spam is how real failures stay invisible in this log.
             var progress = new Progress<(string category, int current, int total)>(update =>
             {
-                DebugLogger.Log(
-                    "App",
-                    $"Loading {update.category}: {update.current}/{update.total}"
-                );
+                if (update.current == update.total)
+                    DebugLogger.Log("App", $"Loaded {update.category}: {update.total}");
             });
 
             await spriteService.PreloadAllSpritesAsync(progress);
