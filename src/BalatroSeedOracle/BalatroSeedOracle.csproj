@@ -11,10 +11,7 @@
     <NoWarn>$(NoWarn);CS0108</NoWarn>
   </PropertyGroup>
 
-  <!-- Apply license key from Directory.Build.props for Avalonia Accelerate components -->
-  <ItemGroup>
-    <AvaloniaUILicenseKey Include="$(AvaloniaUILicenseKey)" />
-  </ItemGroup>
+  <!-- License key comes from root Directory.Build.props (avalonia.license / PARCEL_LICENSE). -->
 
   <!-- AvaloniaResource: all Assets (including .ogg) for avares:// in browser; Desktop also uses copied .ogg on disk -->
   <ItemGroup>

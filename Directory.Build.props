@@ -13,11 +13,20 @@
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
 
-  <!-- Avalonia License Key - from PARCEL_LICENSE env var OR avalonia.license file -->
+  <!-- Avalonia Accelerate license (TreeDataGrid / Markdown / Media).
+       Key sources (first wins): PARCEL_LICENSE env, avalonia.license.local, avalonia.license.
+       Both license files are gitignored.
+       Online keys (avln_on_key:*) require a portal subscription that issues tickets; otherwise
+       AVLIC0001 fails Desktop (WinExe) builds. Debug defaults to skipping the build-time
+       licensing task so local work is unblocked; Release still validates when a key is present.
+       Force either way: -p:AvaloniaUILicenseDisableTask=true|false -->
   <PropertyGroup>
-    <_AvaloniaLicenseFile>$([System.IO.File]::ReadAllText('$(MSBuildThisFileDirectory)avalonia.license').Trim())</_AvaloniaLicenseFile>
+    <_AvaloniaLicensePath Condition="Exists('$(MSBuildThisFileDirectory)avalonia.license.local')">$(MSBuildThisFileDirectory)avalonia.license.local</_AvaloniaLicensePath>
+    <_AvaloniaLicensePath Condition="'$(_AvaloniaLicensePath)' == '' AND Exists('$(MSBuildThisFileDirectory)avalonia.license')">$(MSBuildThisFileDirectory)avalonia.license</_AvaloniaLicensePath>
+    <_AvaloniaLicenseFile Condition="'$(_AvaloniaLicensePath)' != ''">$([System.IO.File]::ReadAllText('$(_AvaloniaLicensePath)').Trim())</_AvaloniaLicenseFile>
     <_AvaloniaLicenseKey Condition="'$(PARCEL_LICENSE)' != ''">$(PARCEL_LICENSE)</_AvaloniaLicenseKey>
     <_AvaloniaLicenseKey Condition="'$(_AvaloniaLicenseKey)' == '' AND '$(_AvaloniaLicenseFile)' != ''">$(_AvaloniaLicenseFile)</_AvaloniaLicenseKey>
+    <AvaloniaUILicenseDisableTask Condition="'$(AvaloniaUILicenseDisableTask)' == '' AND '$(Configuration)' != 'Release'">true</AvaloniaUILicenseDisableTask>
   </PropertyGroup>
   <ItemGroup Condition="'$(_AvaloniaLicenseKey)' != ''">
     <AvaloniaUILicenseKey Include="$(_AvaloniaLicenseKey)" />
