@@ -72,6 +72,7 @@
     <PackageReference Include="SkiaSharp" />
     <PackageReference Include="Avalonia.Skia" />
     <PackageReference Include="System.IO.Packaging" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MotelyJAML\Motely\Motely.csproj" />

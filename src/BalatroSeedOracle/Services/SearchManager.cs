@@ -115,6 +115,15 @@ public sealed class SearchManager : IDisposable
             .WithDeck(config.Deck)
             .WithStake(config.Stake);
 
+        if (!string.IsNullOrWhiteSpace(criteria.JimmolateSource))
+        {
+            var compiled = JimmolateCompiler.Compile(criteria.JimmolateSource);
+            if (!compiled.Success)
+                throw new InvalidOperationException(
+                    "Jimmolate predicate failed to compile:\n" + string.Join("\n", compiled.Errors));
+            settings = settings.WithJimmolate(compiled.Predicate!, criteria.JimmolateCutoff);
+        }
+
         var searchId = Guid.NewGuid().ToString("N");
         var bsoContext = new BsoSearchContext(searchId, config.Name ?? "filter");
         var activeContext = new ActiveSearchContext(bsoContext, config);

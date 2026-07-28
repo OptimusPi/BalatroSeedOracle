@@ -82,7 +82,7 @@ dotnet run -- --help
 Use the in-app visual filter designer to create complex filters by dragging and dropping criteria.
 
 ### JAML Configuration
-Filters are authored in **JAML** (Jimbo's Ante Markup Language), a YAML dialect. This is the only format the app loads — there is no JSON load path. Create custom filters manually:
+Filters are authored in **JAML** (Jimbo's Ante Markup Language), a YAML dialect. The app loads JAML only; the underlying Motely engine also understands JSON (they round-trip losslessly), but BSO has no JSON load path. Create custom filters manually:
 
 ```yaml
 name: Negative Perkeo Hunt

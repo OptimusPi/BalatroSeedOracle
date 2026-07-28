@@ -34,4 +34,11 @@ public class SearchCriteria
 
     // similar to MotelyCLI --seed parameter
     public string? DebugSeed { get; set; }
+
+    // Jimmolate: C# predicate source compiled at runtime (JimmolateCompiler) and
+    // chained onto the search as a per-seed filter. Null = no predicate.
+    public string? JimmolateSource { get; set; }
+
+    // Seed is kept when the predicate's returned score is >= this cutoff.
+    public int JimmolateCutoff { get; set; } = 1;
 }
