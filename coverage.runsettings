@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- App-side coverage settings for BalatroSeedOracle.Tests.
+     The engine has its own file at src/MotelyJAML/coverage.runsettings; that one lives in the
+     submodule and must not be edited from here. Keep the two in sync by hand when excludes change. -->
+<RunSettings>
+  <DataCollectionRunSettings>
+    <DataCollectors>
+      <DataCollector friendlyName="XPlat Code Coverage">
+        <Configuration>
+          <Format>cobertura</Format>
+          <!-- Engine assemblies are measured by Motely.Tests; excluding them here keeps the
+               merged report from crediting Motely code to the app's 2 test files. -->
+          <Exclude>[Motely]*,[Motely.DataLake]*,[Motely.Lsp]*,[Motely.Lsp.Core]*,[xunit.*]*</Exclude>
+          <!-- Avalonia XAML codegen and views have no headless test harness yet (matrix row A4). -->
+          <ExcludeByFile>**/*.axaml.cs,**/*.g.cs,**/obj/**/*.cs</ExcludeByFile>
+          <ExcludeByAttribute>GeneratedCodeAttribute,CompilerGeneratedAttribute,ExcludeFromCodeCoverageAttribute</ExcludeByAttribute>
+        </Configuration>
+      </DataCollector>
+    </DataCollectors>
+  </DataCollectionRunSettings>
+</RunSettings>
