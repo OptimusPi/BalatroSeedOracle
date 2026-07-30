@@ -1,0 +1,46 @@
+name: Zerkeo
+deck: Anaglyph
+stake: White
+must:
+  - legendaryJoker: Any
+    edition: Negative
+    sources:
+      boosterPacks: [0,1]
+    antes: [0]
+  - voucher: Hieroglyph
+    antes: [1]
+  - legendaryJoker: Perkeo
+    edition: Negative
+    sources:
+      boosterPacks: [0,1]
+    antes: [0]
+should:
+  - legendaryJoker: Any
+    edition: Negative
+    sources:
+      boosterPacks: [0,1,2,3,4,5]
+    antes: [1,2,3,4,5,6,7,8]
+    score: 100
+  - legendaryJoker: Any
+    edition: Polychrome
+    sources:
+      boosterPacks: [0,1,2,3,4,5]
+    antes: [1,2,3,4,5,6,7,8]
+    score: 33
+  - legendaryJoker: Any
+    edition: Holographic
+    sources:
+      boosterPacks: [0,1,2,3,4,5]
+    antes: [1,2,3,4,5,6,7,8]
+    score: 11
+  - legendaryJoker: Any
+    edition: Foil
+    sources:
+      boosterPacks: [0,1,2,3,4,5]
+    antes: [1,2,3,4,5,6,7,8]
+    score: 7
+  - legendaryJoker: Any
+    sources:
+      boosterPacks: [0,1,2,3,4,5]
+    antes: [1,2,3,4,5,6,7,8]
+    score: 1

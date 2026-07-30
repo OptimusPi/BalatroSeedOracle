@@ -1,0 +1,85 @@
+name: Ghost Perkeo Blueprint Smasher
+author: pifreak
+description: Ghost deck. Negative Perkeo ante 1 into Blueprint/Brainstorm copying machine. Hieroglyph + Petroglyph for deck smashing, Magic Trick for free rerolls. Trickeoglyph energy.
+deck: Ghost
+stake: White
+
+must:
+  - legendaryJoker: Perkeo
+    antes: [1]
+    edition: Negative
+
+  - joker: Blueprint
+    antes: [1, 2, 3, 4, 5, 6, 7, 8]
+
+  - voucher: Hieroglyph
+    antes: [1, 2, 3, 4, 5, 6, 7, 8]
+
+  - voucher: MagicTrick
+    antes: [1, 2, 3, 4, 5, 6, 7, 8]
+
+should:
+  - legendaryJoker: Perkeo
+    antes: [1]
+    edition: Negative
+    score: 5
+
+  - joker: Blueprint
+    antes: [1, 2]
+    score: 20
+
+  - joker: Blueprint
+    antes: [3, 4]
+    score: 10
+
+  - joker: Brainstorm
+    antes: [1, 2, 3, 4, 5, 6, 7, 8]
+    score: 15
+
+  - joker: Blueprint
+    edition: Negative
+    antes: [1, 2, 3, 4, 5, 6, 7, 8]
+    score: 10
+
+  - joker: Brainstorm
+    edition: Negative
+    antes: [1, 2, 3, 4, 5, 6, 7, 8]
+    score: 10
+
+  - voucher: Hieroglyph
+    antes: [1, 2, 3]
+    score: 10
+
+  - voucher: Petroglyph
+    antes: [1, 2, 3, 4, 5, 6, 7, 8]
+    score: 8
+
+  - voucher: MagicTrick
+    antes: [1, 2, 3]
+    score: 8
+
+  - legendaryJoker: Canio
+    antes: [1, 2, 3, 4, 5, 6, 7, 8]
+    score: 5
+
+  - legendaryJoker: Any
+    antes: [1, 2, 3, 4, 5, 6, 7, 8]
+    edition: Negative
+    score: 3
+
+  - joker: InvisibleJoker
+    antes: [1, 2, 3, 4, 5, 6, 7, 8]
+    score: 5
+
+  - tarotCard: Judgement
+    antes: [1, 2]
+    sources:
+      shopItems: [0, 1]
+    score: 4
+
+  - joker: Any
+    edition: Negative
+    sources:
+      judgement: [0, 1]
+    antes: [1, 2, 3]
+    score: 6

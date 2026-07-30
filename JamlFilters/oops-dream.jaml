@@ -1,0 +1,35 @@
+name: Oops Oops Oops
+author: waterbear — for pi (Oops! All 6s, every day, like a drug)
+description: >
+  pi's favorite, and she wants FIVE. min:5 REQUIRES the whole pile instead of
+  scoring-and-hoping. Showman lets them stack past one. shop slots 2+ because she
+  skips the first two items. Anaglyph deck = a Double Tag after every boss, so
+  skipping chains into double the rewards. and Lucky Cat rides along, because
+  pi's Oops and Lola's Cat are married.
+deck: Anaglyph
+stake: White
+must:
+  - uncommonJoker: OopsAll6s
+    min: 5
+    antes:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+      - 6
+    sources:
+      shopItems: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+  - uncommonJoker: Showman
+    antes:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+      - 6
+should:
+  - uncommonJoker: LuckyCat
+    score: 40
+  - tag: NegativeTag
+    score: 20

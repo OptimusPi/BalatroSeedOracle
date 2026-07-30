@@ -1,0 +1,21 @@
+name: Cloud 9 — fifteen nines ☁️9️⃣
+deck: Erratic
+stake: White
+must:
+  - erraticRank: Nine
+    min: 16
+  - joker: Cloud9
+    antes: [1]
+    sources:
+      boosterPacks: [0,1]
+should:
+  - joker: Cloud9
+    antes: [1]
+    sources:
+      boosterPacks: [0,1]
+    score: 100
+    max: 1
+  - erraticRank: Nine
+    score: 1
+
+seeds: []

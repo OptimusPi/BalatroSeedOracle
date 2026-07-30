@@ -1,0 +1,12 @@
+name: Always Pass (any joker) - smoke test
+deck: Red
+stake: White
+must:
+  - joker: Any
+should:
+  - joker: Any
+    score: 1
+
+seeds:
+  - D
+  - X

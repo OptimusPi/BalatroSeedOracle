@@ -1,0 +1,31 @@
+name: Idol
+deck: Erratic
+stake: Black
+must:
+  - legendaryJoker: Perkeo
+should:
+  - joker: TheIdol
+    stickers:
+      - Eternal
+    score: 10
+
+  - joker: Showman
+    edition: Negative
+    stickers:
+      - Eternal
+    score: 10
+
+  - legendaryJoker: Perkeo
+    score: 10
+  - joker: TheIdol
+    edition: Negative
+    stickers:
+      - Eternal
+    score: 10
+  - joker: Showman
+    edition: Negative
+    stickers:
+      - Eternal
+    score: 10
+  - legendaryJoker: Perkeo
+    score: 10

@@ -1,0 +1,57 @@
+name: 2Ethereal4u
+author: Opus 4.6 and pi
+must:
+must:
+  - legendaryJoker: any
+    sources:
+      spectralPacks: [0]
+    edition: Negative
+    ante: 2
+  - legendaryJoker: Perkeo
+    sources:
+      spectralPacks: [0]
+    edition: Negative
+    ante: 2
+
+  - smallBlindTag: EtherealTag
+    ante: 2
+
+should:
+  - legendaryJoker: any
+    edition: Negative
+
+  - smallBlindTag: EtherealTag
+  - luckyMoney: [0, 1]
+    score: 333
+  - luckyMoney: [2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]
+    score: 66
+  - luckyMoney: [2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]
+    score: 20
+    with:
+      luck: X2
+  - luckyMoney: [2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]
+    score: 6
+    with:
+      luck: X4
+
+  - joker: Showman
+    max: 1
+    score: 100
+    antes: [2, 3, 4]
+
+  - jokers: [OopsAll6s, Blueprint, Brainstorm, InvisibleJoker]
+    antes: [4, 5, 6, 7]
+    score: 100
+
+  - tarotCard: any
+    score: 1
+
+seeds:
+  - 1JAMS311
+  - A625ZXUS
+  - YUY2WQUS
+  - XNYHECUM
+  - RVDANKWU
+  - SMEWWCRC
+  - MQUWPEE9
+  - 5VYGUTSH

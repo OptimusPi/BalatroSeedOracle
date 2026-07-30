@@ -1,0 +1,67 @@
+id: sixtid4
+name: sixtid4_replay
+seeds: [WT2AY9K7, O6HPVT91, R5GML3I7, WE8T1P71, 96FVD398, KAGAELK4, MZXGVT48, V5BNUTLA, 4R3FTPV9, G5SQL2F9, PBYNHKR9, TLTV8RR6, U1R6C373, 1JSGZ1J6, F1GFQVV3, IRQ3KK57, KHT3DFI1, 1WA2CPD2, HDU74P44, J6WKYWU2, KC991IY7, KRMBY9U5, P2OB99Q3, RWJBTQL2, 2ZFWIBC4, 81OPE9OA, 8MOQ3MR6, I7BIXDY7, IZLI75R8, RGG3JZ74, SCEDQXP3, TDHD6475, USAAHPY4, V8QXOFG7, VMUUSRG6, ZK6I6484, 2BPVMJQ1, 6YHXHOU1, 7ITPEVKA, 7M6KLI6A, 98BFXA92, 9Y2LDRO6, CIGE5WR1, EF7PWBH2, I5CW95O8, I6YWAA9A, IGPAO9A7, KGDKB4G8, L621V597, LU2R5XK1, ODP2GG12, PX83D9U3, QDBUSZ55, QI295418, UNY1DJE9, 4G9FVYD4, 5SSOS2Z4, 9KPYLRG9, C9S7XHW4, DOHR7FNA, F53FOPH6, FOJGGRM7, FPDRGIAA, HWQPP8Z1, IRB1TOD1, NJ4WC613, R8C628C2, WF8RX1V9, YTBR5X87, Z2GWOF51, ZTH78T44, 26Y3QYV3, 2TPIXM84, 3GATEBQ8, 3WN1KK15, 4HII1YM8, 4RV2ZEG7, 6RH5YFE3, 6ZPS6ZL2, 7UDWDGMA, 7ZTYG6W5, 7ZUMR9H2, 93XQI9U1, 9IY823N5, A42QWVG8, DYUJ22B6, EJ38D9Q1, EPSYMWM6, EQ2ELDO8, GNBRJWX4, GTIQB248, HU1JEO74, HV9V9SU5, JDDTT92A, K7L2YBK1, KI8ZQ8G2, O3PEF7Z9, O5OIX9J5, O69U7VW8, R1ZDFXT3, SOXR2SY8, ST4AIFC2, T2QM1JN8, T8I6QD84, VA7C77Y7, VWAA2743, YB5CNPE1, Z2TES3DA, 45GXJHX3, 4PMY6165, 4XB98TB8, 65OYA3Y2, 6DTPBWB3, 97VUVDB2, CRYM1JB4, D4UCH5T3, DF55KWV2, FM5Z4V48, H6BSKZU6, HLRU2I45, JFH84PA8, KM6ZB6F5, LOFMCCWA, LOTBCU5A, MAOXB163, N8SZQUE9, NHMAZ2A5, NWXYN663, QFEZU6E6, QRFVPRX7, QSO9ZPWA, R8GM79R4, RK18GTI6, U12HD2U9, UEYJF8F4, UIDMCMDA, UPCU33G5, UQ8MYO9A, XE1A4I17, YK8TFGRA, YKGXUK93]
+
+author: pifreak
+deck: Plasma
+stake: White
+description: Perkeo ante 1 + Sixth Sense ante 1 (the 6→Soul pipeline) + Coupon as small blind tag ante 1, plus a King with Steel enhancement and Red Seal somewhere in antes 1-3. Scored on Blueprint and Brainstorm in antes 1-4.
+must:
+  - smallBlindTag: UncommonTag
+    antes: [1]
+  - spectralCard: Cryptid
+    antes: [1]
+    sources:
+      sixthSense: [0]
+  - uncommonJoker: SixthSense
+    antes: [1]
+    sources:
+      uncommonTag: [0]
+  - legendaryJoker: Perkeo
+    antes: [1]
+    sources:
+      boosterPacks: [0,1,2,3]
+  - joker: Baron
+    antes: [1,2,3,4]
+  - joker: Mime
+    antes: [1,2,3,4]
+should:
+  - jokers: [Baron, Mime, Blueprint, Brainstorm, InvisibleJoker]
+    antes: [1,2,3,4]
+    sources:
+      boosterPacks: [0,1,2,3]
+    min: 2
+  - jokers: [Baron, Mime, Blueprint, Brainstorm, InvisibleJoker]
+    antes: [1,2,3,4]
+    sources:
+      boosterPacks: [0,1,2,3]
+  - voucher: Hieroglyph
+    antes: [1,2,3,4]
+  - rareJoker: Baron
+    antes: [2,3,4]
+    sources:
+      shopItems: [0,1,2,3,4,5,6,7,8]
+      boosterPacks: [0,1,2,3,4,5]
+    score: 3
+  - uncommonJoker: Mime
+    antes: [2,3,4]
+    sources:
+      shopItems: [0,1,2,3,4,5,6,7,8]
+      boosterPacks: [0,1,2,3,4,5]
+    score: 2
+
+  - rareJoker: Blueprint
+    antes: [1, 2, 3, 4]
+    score: 4
+  - rareJoker: Brainstorm
+    antes: [1, 2, 3, 4]
+    score: 4
+  - rareJoker: Blueprint
+    antes: [1, 2, 3, 4]
+    edition: Negative
+    score: 3
+  - rareJoker: Brainstorm
+    antes: [1, 2, 3, 4]
+    edition: Negative
+    score: 3
+

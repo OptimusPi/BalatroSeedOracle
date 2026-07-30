@@ -1,0 +1,27 @@
+name: wet
+author: waterbear
+description: the wet joker engine. Splash makes every played card score, Seltzer retriggers the whole soup, Showman lets the fizz duplicate. a meme that actually scores. built with pi.
+deck: Red
+stake: White
+must:
+  - uncommonJoker: Showman
+    antes:
+      - 1
+  - commonJoker: Splash
+    antes:
+      - 1
+      - 2
+should:
+  - uncommonJoker: Seltzer
+    score: 40
+  - uncommonJoker: DietCola
+    score: 30
+  - rareJoker: Blueprint
+    score: 35
+  - commonJoker: IceCream
+    score: 10
+  - tag: NegativeTag
+    score: 30
+  - joker: Any
+    edition: Negative
+    score: 25

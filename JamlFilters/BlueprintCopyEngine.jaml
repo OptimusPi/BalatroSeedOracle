@@ -1,0 +1,28 @@
+name: Blueprint Copy Engine
+author: jammy
+description: Blueprint rare joker with Brainstorm for joker copying synergy
+deck: Red
+stake: White
+must:
+  - rareJoker: Blueprint
+    antes: [1, 2, 3, 4]
+should:
+  - rareJoker: Brainstorm
+    score: 80
+  - rareJoker: Baron
+    score: 55
+  - legendaryJoker: Triboulet
+    score: 55
+  - uncommonJoker: OopsAll6s
+    score: 50
+  - legendaryJoker: Perkeo
+    score: 50
+  - uncommonJoker: Showman
+    score: 35
+  - spectralCard: Hex
+    score: 35
+  - joker: any
+    edition: Negative
+    score: 40
+  - tag: NegativeTag
+    score: 35

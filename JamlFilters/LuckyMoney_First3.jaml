@@ -1,0 +1,6 @@
+name: LuckyMoney_First3
+deck: Red
+stake: White
+must:
+  - luckyMoney: [0, 1, 2]
+    min: 3

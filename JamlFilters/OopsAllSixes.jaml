@@ -1,0 +1,12 @@
+# A lotta Oops! All 6s — every appearance in antes 1-3 tallies one.
+# --cutoff 2 keeps only seeds where Oops shows up at least twice.
+name: OopsAllSixes
+deck: Red
+stake: White
+should:
+  - joker: OopsAll6s
+    antes: [1, 2, 3]
+    score: 1
+    label: oops
+
+seeds: []

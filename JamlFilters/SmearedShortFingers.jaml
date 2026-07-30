@@ -1,0 +1,19 @@
+name: SmearedShortFingers
+author: pifreak
+description: Smeared Joker, Four Fingers, and Shortcut negative in Antes 1,2,3!
+deck: Ghost
+stake: Black
+must:
+  - jokers: [Shortcut, SmearedJoker, FourFingers]
+    antes: [1,2,3]
+should:
+  - joker: Shortcut
+    edition: Negative
+    antes: [1,2,3]
+  - joker: SmearedJoker
+    edition: Negative
+    antes: [1,2,3]
+  - joker: FourFingers
+    edition: Negative
+    antes: [1,2,3]
+

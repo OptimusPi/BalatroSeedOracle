@@ -1,0 +1,85 @@
+id: gg
+name: Perkeo Ankh Immolate Duplicator
+author: pifreak
+deck: Ghost
+stake: White
+description: Early Perkeo with shop Immolate, Ankh, and strong joker copy effects for a Ghost high-roll.
+must:
+  - luckyMoney: [0]
+    score: 100
+  - luckyMoney: [1]
+    score: 95
+  - luckyMoney: [2]
+    score: 90
+  - legendaryJoker: Perkeo
+    antes: [2]
+    sources:
+      boosterPacks: [1]
+  - joker: OopsAll6s
+    antes: [1]
+    sources:
+      boosterPacks: [0]
+
+should:
+  - legendaryJoker: Perkeo
+    antes: [1]
+    score: 15
+  - spectralCard: Immolate
+    antes: [1]
+    sources:
+      shopItems: [0, 1, 2, 3, 4]
+    score: 12
+  - spectralCard: Ankh
+    antes: [1, 2, 3]
+    sources: 
+      shopItems: [0, 1, 2, 3, 4]
+    score: 10
+  - joker: Blueprint
+    antes: [1, 2, 3, 4]
+    score: 9
+  - joker: Brainstorm
+    antes: [1, 2, 3, 4]
+    score: 9
+  - joker: InvisibleJoker
+    antes: [1, 2, 3, 4]
+    score: 2
+  - luckyMoney: [0]
+    score: 100
+  - luckyMoney: [1]
+    score: 95
+  - luckyMoney: [2]
+    score: 90
+  - luckyMoney: [3]
+    score: 85
+  - luckyMoney: [4]
+    score: 80
+  - luckyMoney: [5]
+    score: 75
+  - luckyMoney: [6]
+    score: 70
+  - luckyMoney: [7]
+    score: 65
+  - luckyMoney: [8]
+    score: 60
+  - luckyMoney: [9]
+    score: 55
+  - luckyMoney: [10]
+    score: 50
+  - luckyMoney: [11]
+    score: 45
+  - luckyMoney: [12]
+    score: 40
+  - luckyMoney: [13]
+    score: 35
+  - luckyMoney: [14]
+    score: 30
+  - luckyMoney: [15]
+    score: 25
+  - luckyMoney: [16]
+    score: 20
+  - luckyMoney: [17]
+    score: 15
+  - luckyMoney: [18]
+    score: 10
+  - luckyMoney: [19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31]
+    score: 1

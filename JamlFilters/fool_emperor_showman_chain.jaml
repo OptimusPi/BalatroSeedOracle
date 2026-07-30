@@ -1,0 +1,40 @@
+name: "Fool Emperor Showman Chain"
+deck: Red
+stake: White
+
+must:
+  - smallBlindTag: CharmTag
+  - uncommonJoker: Showman
+    antes: [1]
+    sources:
+      judgement: [0]
+  
+  - tarotCard: TheEmperor
+    antes: [1]
+    sources:
+      boosterPacks: [1]
+  - tarotCard: Judgement
+    antes: [1]
+    sources:
+      emperor: [0]
+      boosterPacks: [1]
+
+should:
+  - tarotCard: TheFool
+    antes: [1]
+    sources:
+      boosterPacks: [1]
+  
+
+  - tarotCard: TheEmperor
+    antes: [1]
+    sources:
+      emperor: [0,1,2,3,4,5,6,7,8]
+  - tarotCard: Judgement
+    antes: [1]
+    sources:
+      emperor: [0,1,2,3,4,5,6,7,8]
+  - tarotCard: TheFool
+    antes: [1]
+    sources:
+      emperor: [0,1,2,3,4,5,6,7,8]

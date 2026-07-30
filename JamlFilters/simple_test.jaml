@@ -1,0 +1,9 @@
+name: simple_test
+author: pifreak
+description: Simple test filter
+deck: Red
+stake: White
+must:
+  - joker: Blueprint
+should:
+  - voucher: Telescope

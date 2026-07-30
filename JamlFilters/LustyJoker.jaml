@@ -1,0 +1,33 @@
+name: Lusty Joker — hearts juice 💗 (Puddl)
+deck: Red
+stake: White
+must:
+  - joker: LustyJoker
+    antes: [1]
+should:
+  # The lady herself, early and editioned
+  - joker: LustyJoker
+    antes: [1]
+    score: 50
+  # Fully juiced heart — polychrome glass red-seal
+  - standardCard:
+      suit: Hearts
+      seal: Red
+      enhancement: Glass
+      edition: Polychrome
+    label: "Polychrome Glass Red-Seal Heart 💎❤️"
+    score: 100
+    antes: [1, 2, 3, 4]
+  # Red-seal hearts
+  - standardCard:
+      suit: Hearts
+      seal: Red
+    label: "Red-Seal Heart ❤️"
+    score: 33
+    antes: [1, 2, 3, 4]
+  # Any heart at all — Lusty loves them
+  - standardCard:
+      suit: Hearts
+    label: "Any Heart ❤️"
+    score: 10
+    antes: [1, 2, 3, 4]

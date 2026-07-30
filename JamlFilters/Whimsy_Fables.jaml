@@ -1,0 +1,395 @@
+name: Whimsy Fables
+author: "for pi — the Dicetricks core, retold luckier — or-branches every ante 2-8"
+description: >
+  Whimsy Dicetricks 314 with wider dice. The must-chain keeps its SIMD teeth
+  (Negative skip-tag ante 4, Perkeo early, Showman holding the door). The
+  stacked-Oops jackpot becomes an or across every ante 2-8 — three hits
+  anywhere in that window pays the 300. The copy core gets the same widening,
+  and the lucky money/mult ladders keep singing 8 to 1. Anaglyph doubles
+  every tag, as always.
+deck: Anaglyph
+stake: White
+
+must:
+  - smallBlindTag: NegativeTag
+    antes: [4]
+  - legendaryJoker: Perkeo
+    antes: [1,2,3]
+  - joker: Showman
+    antes: [1,2,3]
+
+should:
+  - or:
+      - joker: OopsAll6s
+        antes: [2]
+      - joker: OopsAll6s
+        antes: [3]
+      - joker: OopsAll6s
+        antes: [4]
+      - joker: OopsAll6s
+        antes: [5]
+      - joker: OopsAll6s
+        antes: [6]
+      - joker: OopsAll6s
+        antes: [7]
+      - joker: OopsAll6s
+        antes: [8]
+    min: 3
+    score: 300
+  - or:
+      - jokers: [LuckyCat, Blueprint, Brainstorm, InvisibleJoker, SockAndBuskin, HangingChad]
+        antes: [2,3,4]
+      - jokers: [LuckyCat, Blueprint, Brainstorm, InvisibleJoker, SockAndBuskin, HangingChad]
+        antes: [5,6]
+      - jokers: [LuckyCat, Blueprint, Brainstorm, InvisibleJoker, SockAndBuskin, HangingChad]
+        antes: [7,8]
+    min: 2
+    score: 66
+  - luckyMoney: [0]
+    score: 8
+  - luckyMoney: [1]
+    score: 7
+  - luckyMoney: [2]
+    score: 6
+  - luckyMoney: [3]
+    score: 5
+  - luckyMoney: [4]
+    score: 4
+  - luckyMoney: [5]
+    score: 3
+  - luckyMoney: [6]
+    score: 2
+  - luckyMoney: [7]
+    score: 1
+  - luckyMult: [0]
+    score: 8
+  - luckyMult: [1]
+    score: 7
+  - luckyMult: [2]
+    score: 6
+  - luckyMult: [3]
+    score: 5
+  - luckyMult: [4]
+    score: 4
+  - luckyMult: [5]
+    score: 3
+  - luckyMult: [6]
+    score: 2
+  - luckyMult: [7]
+    score: 1
+
+seeds:
+  - HS6M5VE3
+  - RFWP3RR4
+  - R1UP3C33
+  - IR4L18ZL
+  - AH38JCY4
+  - DCSRQY3L
+  - DPL53FCD
+  - Z65I1YYF
+  - OQD59V9I
+  - VYZCJ8DC
+  - 54YAAVT1
+  - R8VVVXF2
+  - WJAMVIH7
+  - QF1U49O2
+  - OD8CLJ82
+  - SD2NOFMF
+  - 4YDHR3S9
+  - LY4EGIUT
+  - U322APUC
+  - N6QB261L
+  - 828RHPHE
+  - VW59ZIWI
+  - BZKGNI6I
+  - 1SFMNC35
+  - UMDAV2M5
+  - W4HJFQT1
+  - WSA8IQ69
+  - 62KZC1Q3
+  - 2HF1CZ3F
+  - 1QATUAZK
+  - BYUFQ8P9
+  - ABIAWCX5
+  - SMG2PFJ1
+  - RRB7O7VB
+  - 6PKK11XC
+  - RVV2HDO2
+  - NZD94EK9
+  - KTCVG9MN
+  - RLZ4L184
+  - ULUJD1DI
+  - 99IJJAPR
+  - H1DZ4528
+  - GI1VBS11
+  - U4E41CDM
+  - 6WR56YN5
+  - 4IXZ1CX6
+  - X2JV1JCE
+  - NOOF2RVZ
+  - 2JANTGLE
+  - YP3SNO26
+  - C45G4HT3
+  - N65L8LC4
+  - LCHREEGG
+  - JQ51XXB7
+  - 179JDMBF
+  - FKAWC1DJ
+  - Q397EZ9J
+  - TLZVXVZK
+  - 3AUEB3L6
+  - 4BBYKK73
+  - OYT2SFFD
+  - 5AK8UBU4
+  - GCX7SIUF
+  - 4BDR9MTF
+  - 2NQK8PJ1
+  - SMG4A1RM
+  - O8H289CV
+  - ODRHS1XS
+  - KE5363DJ
+  - SYPJ77P7
+  - F23FT8YB
+  - G75NYXMK
+  - OQZKWAOB
+  - Q6TI6BZW
+  - J9HWB5IP
+  - LIRIQR55
+  - Y9SEMQ63
+  - HW4J2VF8
+  - JJ8ALWFF
+  - 87WTKJ72
+  - 4I1DFHRB
+  - CROJ5FT6
+  - 9AK29LK2
+  - V1QNK79H
+  - 6FI4RNNH
+  - DWOMEZM1
+  - 8OQ4127E
+  - 8AZT7XUA
+  - MC7E8Y57
+  - OSUKBCOL
+  - AX57GZJ1
+  - MOWSVK24
+  - M5JZ8V35
+  - 5NXR5ZDA
+  - O95AHZB7
+  - 6GWU8X6B
+  - JDXACEXE
+  - 4XGDGY8N
+  - 46UHUDGL
+  - B57O3HT9
+  - OJKMAAVC
+  - VUUVC82A
+  - FKR3RWTB
+  - 2VXLWKB9
+  - 64YIX1Y7
+  - NR8TWWK1
+  - R87DJAKJ
+  - F6XDWCBD
+  - MSLCYDIK
+  - PFCFZI92
+  - YUWH8ZEE
+  - Y9293RAG
+  - C2YYSP41
+  - WTWHBQ6C
+  - I5INYQUL
+  - 1VR8E42O
+  - LCJ52SK5
+  - 7TIAENA5
+  - JPL1BCH8
+  - PIFIUJJK
+  - KQLLN8NA
+  - AX2D8OPM
+  - LNF7QOPJ
+  - JHMT6AAV
+  - JQDS94CD
+  - W57KTXJ6
+  - QS5ZUJ2A
+  - GZQ46T52
+  - O1OGKBH8
+  - 6HQWBB42
+  - 8G657AJ3
+  - 9ZM6D817
+  - 935FYD5B
+  - YFSHQYI1
+  - YW9OLRRL
+  - VUGP88G7
+  - I2MPDF7C
+  - 3J4BGJ1F
+  - VVRAG17E
+  - M3LAD3NF
+  - ZE7AVPB8
+  - BFY1NI8O
+  - 8BN89TGL
+  - HL8U1FY8
+  - Q5TULVBW
+  - WXZJEKR2
+  - OHZ4AYNI
+  - 81ZPGR9E
+  - 1FDAUI9I
+  - G449TOMD
+  - BTZDZJAB
+  - PNDKWIVJ
+  - KVPMIHPH
+  - FO88OAJM
+  - RUL2TEJ5
+  - GOY8FKXE
+  - 3PKQ5924
+  - 6F3GGIIQ
+  - B5FGKAA1
+  - 1MZ7NUKL
+  - JWT6VO97
+  - XJIJKC41
+  - OZDW1NAE
+  - FV2CFQ4G
+  - MWCFAKBT
+  - AG3TDVK2
+  - 3B1O4EUD
+  - F8Q7F1IZ
+  - CG15JSEY
+  - UF64EV5B
+  - TC4E7XT5
+  - IDZXZMB4
+  - BSTDEYK2
+  - FX9PL8WA
+  - 2NKOINI7
+  - TAJTIJEM
+  - BNIMRAF1
+  - 2UQFT5P3
+  - QYK7O1DM
+  - P3LVT3I3
+  - VKP6QNC6
+  - ZIDHTN9H
+  - Y23VKMN3
+  - 4LDPGSCE
+  - 8UELF2N4
+  - CT2P7KD7
+  - 955RO8EF
+  - 8ESS1ODI
+  - TK4ONFN6
+  - GWFN6CPK
+  - OTWM4RPA
+  - SMHFSA9A
+  - 2LO6CUS6
+  - L6MQKYSM
+  - GCMJ5W59
+  - JREPM5MW
+  - VLEUFT8B
+  - WJH9JQ7R
+  - 8IJEXR3M
+  - H6A6H
+  - T3KY39Z4
+  - TKWAJ8BA
+  - WP1HZ5O1
+  - 8QOV8QYA
+  - KTJK96CG
+  - TH65O38M
+  - JYBSXCII
+  - 3SB41CM9
+  - W4U919HA
+  - YCJCH5CL
+  - 6YUNKXF2
+  - 567XNH23
+  - ZJHF8HB5
+  - V2Q3QOB2
+  - TA6JORSL
+  - J9EEIW48
+  - W97PAFLI
+  - 6PR2WJZL
+  - EJ72IJ9B
+  - 9IJLL1V5
+  - Y9POA84H
+  - Y2NZ1SC2
+  - E2HUSQ3I
+  - M9RIT6S5
+  - 8RB78ZN4
+  - 7BG3AVY3
+  - HCFG3XI9
+  - 4SWY54YD
+  - OHVZA1J6
+  - PS7Z9P52
+  - CHHEUBPJ
+  - 984SPNI5
+  - MLERNVDE
+  - RD67AVCF
+  - 3QI5B4O4
+  - 3V4FNWJE
+  - WLRR9TK5
+  - MKSU8CHL
+  - GH8RVMLK
+  - PWBP9S1J
+  - T48PA3E3
+  - SU74GK9A
+  - 4LD32WM4
+  - PIU6FMKE
+  - 9IR15LE4
+  - ICBIKFS2
+  - 3IZCXZV2
+  - TJLDMI44
+  - GKGM78E4
+  - SLEHWJJM
+  - ACB9IFEG
+  - I88OQV6F
+  - SOBUA3HG
+  - Z2A3JI7B
+  - L3YJN4X6
+  - 92GWGT1C
+  - WLOJKC2I
+  - SMOMKUO5
+  - 28UIHFQA
+  - LPWEHG53
+  - XF4F262L
+  - T9WS6TAJ
+  - 161TBL83
+  - 9JXDYV2H
+  - W1KPZ31H
+  - LCBBUYJK
+  - Q7PYYBO9
+  - BTC62PA6
+  - 1TQXZ6SI
+  - LWWRZXY5
+  - 8PTPUT82
+  - 8Q77Q8
+  - EBHT1321
+  - V8691324
+  - UZ34C8MA
+  - H5JQ83U5
+  - 3I9GKEA2
+  - ARLINORL
+  - 2ZFU5J4L
+  - C1RJGFJC
+  - CXWDMCT8
+  - N5HX3WI3
+  - GJQWCRY3
+  - JQCGLRM2
+  - EQA42TKI
+  - NMQY3H2B
+  - 2GE973G8
+  - 91WRL7NH
+  - WF91BE4G
+  - OCDZ5Z3J
+  - 76F2POR9
+  - U4MZ8N1E
+  - QOSEBTK1
+  - ZN9XVDZZ
+  - I8N1GJSK
+  - OCFZRJ9I
+  - HLD943D7
+  - N6FSG57F
+  - LLZ1GGEB
+  - JTMDXDNP
+  - 8F1SO9RM
+  - IJJWSKM1
+  - Q4ZYQSHJ
+  - MB3R6E5M
+  - JUFQ94FF
+  - 4EOHH26C
+  - HBZWVHYL
+  - WSB9BBK8
+  - Y2CCUG72
+  - JKU3O662
+  - T2FA7IK4
+  - YUBVUI57
+  - 15YUSRSA
+  - F18QYSQ5

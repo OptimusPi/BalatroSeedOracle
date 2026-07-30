@@ -1,0 +1,15 @@
+name: Lola's Lucky Cat
+description: Lola's favorite joker. Lucky Cat early, Showman to stack duplicates, scored across all antes.
+deck: Red
+stake: White
+must:
+  - joker: LuckyCat
+    antes: [1, 2, 3]
+should:
+  - joker: LuckyCat
+    antes: [1, 2, 3, 4, 5, 6, 7, 8]
+    score: 125
+  - joker: Showman
+    antes: [1, 2, 3, 4]
+    max: 1
+    score: 50

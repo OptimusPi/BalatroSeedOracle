@@ -1,0 +1,22 @@
+name: DiamondRough
+deck: Erratic
+stake: Black
+must:
+  - joker: RoughGem
+    edition: Negative
+    stickers:
+      - Eternal
+  - legendaryJoker: Perkeo
+should:
+  - joker: RoughGem
+    score: 3
+  - spectralCard: Ankh
+    score: 66
+  - joker: Showman
+    antes: [1, 2]
+    score: 20
+  - uncommonJoker: Any
+    edition: Negative
+    score: 57
+  - tarotCard: Temperance
+    score: 3

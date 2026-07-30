@@ -1,0 +1,41 @@
+name: Loki
+deck: Anaglyph
+stake: White
+must:
+  - standardCard:
+      rank: K
+      seal: Red
+      edition: Polychrome
+  - joker: Baron
+  - joker: Mime
+  - legendaryJoker: Perkeo
+should:
+  - jokers: [Blueprint, Brainstorm]
+  - standardCard:
+      rank: K
+      seal: Red
+      enhancement: Steel
+      edition: Polychrome
+    label: "Polychrome Red Seal Steel King of (Any Suit)"
+    score: 100
+    antes: [1, 2, 3, 4]
+  - standardCard:
+      rank: K
+      seal: Red
+      enhancement: Steel
+    label: "Red Seal Steel King of (Any Suit)"
+    score: 67
+    antes: [1, 2, 3, 4]
+  - standardCard:
+      rank: K
+      seal: Red
+    label: "Red Seal King of (Any Suit)"
+    score: 33
+    antes: [1, 2, 3, 4]
+  - standardCard:
+      rank: K
+      enhancement: Steel
+      edition: Polychrome
+    label: "Polychrome Steel King of (Any Suit)"
+    score: 33
+    antes: [1, 2, 3, 4]

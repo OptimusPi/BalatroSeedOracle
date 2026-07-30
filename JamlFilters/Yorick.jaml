@@ -1,0 +1,9 @@
+name: Yorick hunt
+deck: Red
+stake: White
+must:
+  - legendaryJoker: Yorick
+should:
+  - legendaryJoker: Yorick
+    antes: [1, 2]
+    score: 100

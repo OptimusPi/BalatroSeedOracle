@@ -1,0 +1,104 @@
+name: Diet Cola Negative Farm
+author: for pi and Lola — beat the 60. Anaglyph doubles every boss tag; Diet Cola sells for a free Double Tag; Double Tags copy Negative Tags. Stack the loop, count the negatives.
+description: >
+  The Negative Tag farm engine. Anaglyph deck (Double Tag each boss) + Diet Cola
+  early (sell for another Double Tag) + a heavy Negative Tag supply across every
+  blind. Must: Diet Cola by ante 3 and at least a couple early Negative Tags to
+  seed the loop. Should: every Negative Tag on every blind, scored hard, so the
+  top seed is the one with the most negatives to copy.
+deck: Anaglyph
+stake: White
+
+must:
+  - joker: DietCola
+    antes: [1,2,3]
+  - smallBlindTag: NegativeTag
+    antes: [1,2,3,4,5,6,7,8]
+    min: 2
+
+should:
+  - smallBlindTag: NegativeTag
+    antes: [1]
+    score: 50
+  - smallBlindTag: NegativeTag
+    antes: [2]
+    score: 50
+  - smallBlindTag: NegativeTag
+    antes: [3]
+    score: 50
+  - smallBlindTag: NegativeTag
+    antes: [4]
+    score: 50
+  - smallBlindTag: NegativeTag
+    antes: [5]
+    score: 50
+  - smallBlindTag: NegativeTag
+    antes: [6]
+    score: 50
+  - smallBlindTag: NegativeTag
+    antes: [7]
+    score: 50
+  - smallBlindTag: NegativeTag
+    antes: [8]
+    score: 50
+  - bigBlindTag: NegativeTag
+    antes: [1]
+    score: 50
+  - bigBlindTag: NegativeTag
+    antes: [2]
+    score: 50
+  - bigBlindTag: NegativeTag
+    antes: [3]
+    score: 50
+  - bigBlindTag: NegativeTag
+    antes: [4]
+    score: 50
+  - bigBlindTag: NegativeTag
+    antes: [5]
+    score: 50
+  - bigBlindTag: NegativeTag
+    antes: [6]
+    score: 50
+  - bigBlindTag: NegativeTag
+    antes: [7]
+    score: 50
+  - bigBlindTag: NegativeTag
+    antes: [8]
+    score: 50
+  - joker: DietCola
+    antes: [1,2,3]
+    score: 25
+
+seeds:
+  - 4OPUSDFR
+  - EOPUSFI2
+  - H8OPUSYB
+  - NOPUSVNY
+  - QXOPUSP1
+  - U2LOPUS8
+  - VSOPUS6C
+  - OPUSXJ9I
+  - 3LOLA124
+  - 4W49LOLA
+  - LOLA7R7U
+  - LOLAMHSI
+  - SMLOLAAA
+  - 2CLODCQI
+  - 67CLODSJ
+  - KCLODILG
+  - KCLODOF7
+  - MA4CLOD2
+  - YCLODTFS
+  - KNWBEARH
+  - 255EOPUS
+  - OPUS1DS4
+  - 1ZWOPUSG
+  - 14QOPUSD
+  - 187LOPUS
+  - 11JOOPUS
+  - 1OPUS2LO
+  - 131OPUSS
+  - 143OOPUS
+  - 11DCOPUS
+  - 1OPUS1HU
+  - 116FOPUS

@@ -1,0 +1,183 @@
+name: DailyWees
+description: verifying some dungmot fertilizer seed sources
+author: pifreak
+deck: Erratic
+stake: White
+
+Must:
+  - erraticRank: Two
+    min: 14
+  - joker: WeeJoker
+    antes: [1,2]
+  - joker: HangingChad
+    antes: [1,2]
+  - joker: Hack
+    antes: [1,2]
+Should:
+  - erraticRank: Two
+    score: 1
+  
+  # relevant jokers
+  - joker: WeeJoker
+    antes: [1]
+    score: 100
+  - joker: HangingChad
+    antes: [1]
+    score: 90
+  - joker: Hack
+    antes: [1]
+    score: 90
+  - joker: Showman
+    antes: [1]
+    score: 80
+  - joker: Blueprint
+    antes: [1]
+    score: 70
+  - joker: Brainstorm
+    antes: [1]
+    score: 70
+  - joker: EvenSteven
+    antes: [1]
+    score: 20
+
+  - joker: WeeJoker
+    antes: [2]
+    score: 100
+  - joker: HangingChad
+    antes: [2]
+    score: 90
+  - joker: Hack
+    antes: [2]
+    score: 90
+  - joker: Showman
+    antes: [2]
+    score: 80
+  - joker: Blueprint
+    antes: [2]
+    score: 70
+  - joker: Brainstorm
+    antes: [2]
+    score: 70
+  - joker: EvenSteven
+    antes: [2]
+    score: 20
+
+# Editions - Negative
+  - joker: WeeJoker
+    edition: Negative
+    antes: [1,2]
+    score: 11
+  - joker: HangingChad
+    edition: Negative
+    antes: [1,2]
+    score: 11
+  - joker: Hack
+    edition: Negative
+    antes: [1,2]
+    score: 11
+  - joker: Showman
+    edition: Negative
+    antes: [1,2]
+    score: 11
+  - joker: Blueprint
+    edition: Negative
+    antes: [1,2]
+    score: 11
+  - joker: Brainstorm
+    edition: Negative
+    antes: [1,2]
+    score: 11
+  - joker: EvenSteven
+    edition: Negative
+    antes: [1,2]
+    score: 4
+
+  # Editions - Polychrome
+  - joker: WeeJoker
+    edition: Polychrome
+    antes: [1,2]
+    score: 8
+  - joker: HangingChad
+    edition: Polychrome
+    antes: [1,2]
+    score: 8
+  - joker: Hack
+    edition: Polychrome
+    antes: [1,2]
+    score: 8
+  - joker: Showman
+    edition: Polychrome
+    antes: [1,2]
+    score: 8
+  - joker: Blueprint
+    edition: Polychrome
+    antes: [1,2]
+    score: 8
+  - joker: Brainstorm
+    edition: Polychrome
+    antes: [1,2]
+    score: 8
+  - joker: EvenSteven
+    edition: Polychrome
+    antes: [1,2]
+    score: 8
+  
+  # Editions - Holographic  
+  - joker: WeeJoker
+    edition: Holographic
+    antes: [1,2]
+    score: 6
+  - joker: HangingChad
+    edition: Holographic
+    antes: [1,2]
+    score: 6
+  - joker: Hack
+    edition: Holographic
+    antes: [1,2]
+    score: 6
+  - joker: Showman
+    edition: Holographic
+    antes: [1,2]
+    score: 6
+  - joker: Blueprint
+    edition: Holographic
+    antes: [1,2]
+    score: 6
+  - joker: Brainstorm
+    edition: Holographic
+    antes: [1,2]
+    score: 6
+  - joker: EvenSteven
+    edition: Holographic
+    antes: [1,2]
+    score: 6
+
+  # Editions - Foil
+  - joker: WeeJoker
+    edition: Foil
+    antes: [1,2]
+    score: 4
+  - joker: HangingChad
+    edition: Foil
+    antes: [1,2]
+    score: 4
+  - joker: Hack
+    edition: Foil
+    antes: [1,2]
+    score: 4
+  - joker: Showman
+    edition: Foil
+    antes: [1,2]
+    score: 4
+  - joker: Blueprint
+    edition: Foil
+    antes: [1,2]
+    score: 4
+  - joker: Brainstorm
+    edition: Foil
+    antes: [1,2]
+    score: 4
+  - joker: EvenSteven
+    edition: Foil
+    antes: [1,2]
+    score: 4

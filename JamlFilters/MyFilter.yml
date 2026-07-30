@@ -1,0 +1,7 @@
+name: MyFilter
+deck: Red
+stake: White
+must:
+  - joker: Blueprint
+    antes: [1, 2, 3]
+    max: 1

@@ -1,0 +1,46 @@
+name: naughty turtle
+deck: Ghost
+stake: White
+author: pi
+description: nsfw
+must:
+  - joker: TurtleBean
+    antes: [2]
+    sources:
+      shopItems: [0,1]
+  - joker: Showman
+    antes: [1,2]
+    sources:
+      shopItems: [0,1,2,3]
+      boosterPacks: [0,1,2,3]
+should:
+  - spectralCard: Ouija
+    antes: [1,2]
+    sources:
+      shopItems: [0,1,2,3]
+    score: 99
+  - spectralCard: Ouija
+    antes: [2]
+    sources:
+      shopItems: [0,1]
+      boosterPacks: [0,1]
+    score: 100
+  - joker: TurtleBean
+    antes: [2]
+    sources:
+      shopItems: [0,1]
+    score: 367
+  - joker: TurtleBean
+    antes: [2]
+    sources:
+      shopItems: [2,3]
+    score: 267
+
+  - joker: TurtleBean
+    antes: [1,2,3,4]
+    sources:
+      boosterPacks: [0,1]
+    score: 67
+
+
+

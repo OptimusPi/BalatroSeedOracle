@@ -1,0 +1,27 @@
+id: legendaryJokerAnyEditionNegative
+name: Legendary Joker Any Edition Negative
+author: pifreak
+deck: Ghost
+stake: White
+description: Any legendary j oker with negative edition in early antes and booster packs.
+must:
+  - legendaryJoker: Perkeo
+    sources:
+      requireMega: true
+      boosterPacks: [1]
+    antes: [1]
+  - spectralCard: Ankh
+    antes: [1, 2]
+    sources:
+      requireMega: true
+      boosterPacks: [1]
+
+should:
+  - legendaryJoker: Any
+    edition: Negative
+    antes: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
+    sources:
+      boosterPacks: [0, 1, 2, 3, 4, 5, 6]
+    score: 1
+
+seeds: []

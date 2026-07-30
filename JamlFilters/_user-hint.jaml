@@ -1,0 +1,11 @@
+name: hint-showman-ante1
+deck: Red
+stake: White
+must:
+  - joker: Showman
+    antes: [1]
+    sources:
+      boosterPacks: [0]
+should:
+  - joker: Showman
+    edition: Polychrome

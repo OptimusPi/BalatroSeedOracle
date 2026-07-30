@@ -1,0 +1,32 @@
+name: blue-white-perkeo-blueprint-brainstorm-invisible-showman
+deck: Magic
+stake: White
+must:
+  - smallBlindTag: CharmTag
+    antes: [1]
+  - tarotCard: Judgement
+    antes: [1]
+    sources:
+      boosterPacks: [1]
+  - tarotCard: TheMagician
+    antes: [1]
+    sources:
+      boosterPacks: [1]
+  - joker: RiffRaff
+    antes: [1]
+    sources:
+      judgement: [0]
+  - joker: Showman
+    antes: [1]
+    sources:
+      riffRaff: [0,1]
+  - joker: OopsAll6s
+    antes: [1]
+    sources:
+      riffRaff: [0,1]
+
+should:
+  - luckyMoney: [0]
+  - luckyMoney: [1]
+  - luckyMoney: [2]
+  

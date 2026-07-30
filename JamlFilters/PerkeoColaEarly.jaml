@@ -1,0 +1,86 @@
+name: Perkeo-Cola-Oops-Early
+author: nate
+description: >
+  Ghost White early Perkeo–Cola press with Oops timing toys. Must (cheap→expensive):
+  A4 NegativeTag cashout, Ankh in ante 1–2 shop slots 0–3, Perkeo in ante 1–2 packs
+  0–3, Diet Cola ante 1–3, second Perkeo somewhere in 4–10. Should: late Perkeo
+  tally, early BP/BS, OopsAll6s shop windows (A4 slots 2–7 / A5 0–3 / A6 0–1).
+deck: Ghost
+stake: White
+
+# Must cost law: tags first (vector bouncers), then shop Ankh, Soul Perkeo, Cola,
+# then late Perkeo. Full-space / nsfw hunts pay this every seed — keep musts sparse.
+must:
+  # ~1/24 · free-neg cashout gate (ante 4, not A8)
+  - tag: NegativeTag
+    antes: [4]
+
+  # Early Ankh face — shop only, slots 0–3
+  - spectralCard: Ankh
+    antes: [1, 2]
+    sources:
+      shopItems: [0, 1, 2, 3]
+
+  # Early Soul / pack Perkeo (pack 0 is fixed buffoon — still listed for author clarity)
+  - legendaryJoker: Perkeo
+    antes: [1, 2]
+    sources:
+      boosterPacks: [0, 1, 2, 3]
+
+  # Banked for Ankh-copy / sell → Double Tag
+  - joker: DietCola
+    antes: [1, 2, 3]
+
+  # Second Perkeo later for the Ankh copy / double line
+  - legendaryJoker: Perkeo
+    antes: [4, 5, 6, 7, 8, 9, 10]
+
+# Should only runs after must — rank toys, not search bouncers.
+should:
+  - legendaryJoker: Perkeo
+    antes: [4, 5, 6, 7, 8, 9, 10]
+    score: 1
+    label: perkeo_late
+  - joker: Blueprint
+    antes: [1, 2, 3]
+    score: 10
+    label: bp
+  - joker: Brainstorm
+    antes: [1, 2, 3]
+    score: 10
+    label: bs
+  - or:
+      clauses:
+        - joker: OopsAll6s
+          antes: [4]
+          sources:
+            shopItems: [2, 3, 4, 5, 6, 7]
+          score: 100
+        - joker: OopsAll6s
+          antes: [5]
+          sources:
+            shopItems: [0, 1, 2, 3]
+          score: 100
+        - joker: OopsAll6s
+          antes: [6]
+          sources:
+            shopItems: [0, 1]
+          score: 100
+    label: oops_window
+
+# Proven must-hits. CUM* from --keyword CUM --collect (full pad).
+# 4CUM3WWD — score 11 (BP). Operator run: open SF; A1 DoubleTag + shop Diet Cola (Hex→shiny cola). Reddit fuel.
+# 3SPHSASS — score 11 (BP).
+seeds:
+  - 4CUM3WWD
+  - 258WCCUM
+  - 5I1JTCUM
+  - 1IJCUM98
+  - 3SPHSASS
+  - 6HART838
+  - 56HORK86
+  - 513DRAW1
+  - 69985246
+  - 7981R887
+  - 518OO391
+  - 5253FOOL

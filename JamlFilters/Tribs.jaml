@@ -1,0 +1,16 @@
+name: tribs
+deck: Erratic
+stake: White
+must:
+  - erraticRank: King
+    min: 12
+  - legendaryJoker: Triboulet
+    antes: [1]
+
+should:
+  - erraticRank: King
+    score: 10
+  - erraticRank: Queen
+    score: 9
+
+  

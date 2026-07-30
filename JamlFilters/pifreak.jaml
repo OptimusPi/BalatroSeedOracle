@@ -1,0 +1,23 @@
+name: "Lucky Cat from first Judgement, ante 1 (OopsAll6s + LuckyMoney scoring)"
+deck: Yellow
+stake: White
+
+must:
+  - legendaryJoker: Perkeo
+    edition: Negative
+    antes: [1]
+  - voucher: Hieroglyph
+    antes: [2]
+  
+should:
+  - jokers: [OopsAll6s]
+    sources:
+      shopItems: [
+        0,1,2,3,4,5,6,7,8
+      ]
+  - smallBlindTag: NegativeTag
+    score: 10
+
+seeds:
+  - V6LZ72N1
+  - M7SCIIOF

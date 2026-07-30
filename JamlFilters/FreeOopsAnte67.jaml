@@ -1,0 +1,26 @@
+name: FreeOopsAnte6
+deck: Anaglyph
+stake: White
+must:
+  - bigBlindTag: NegativeTag
+    antes: [5]
+  - smallBlindTag: NegativeTag
+    antes: [6]
+  - joker: Showman
+    antes: [6]
+    sources: 
+      shopItems: [0,1]
+should:
+  - legendaryJoker: Perkeo
+    antes: [0, 1, 2, 3]
+  - joker: OopsAll6s
+    antes: [6]
+    sources:
+      shopItems: [2, 3, 4, 5, 6, 7, 8, 9, 10]
+  - joker: OopsAll6s
+    antes: [7]
+    sources:
+      shopItems: [0,1]
+    score: 1
+
+seeds:

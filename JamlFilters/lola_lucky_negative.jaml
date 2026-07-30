@@ -1,0 +1,33 @@
+name: Lola's Lucky Negative Engine
+description: Perkeo ante 1, Showman from early packs, a Negative Tag for free negative jokers — and Lola's lucky cat scored highest.
+deck: Red
+stake: White
+must:
+  - joker: Perkeo
+    antes: [1]
+  - joker: Showman
+    antes: [1, 2, 3, 4]
+    sources:
+      boosterPacks: [0, 1]
+  - smallBlindTag: NegativeTag
+    antes: [4]
+  - uncommonJoker: Showman
+    antes: [1]
+    max: 1
+    sources:
+      boosterPacks: [0]
+  - legendaryJoker: Perkeo
+    antes: [1]
+    sources:
+      boosterPacks: [1]
+  - smallBlindTag: NegativeTag
+    antes: [2, 3, 4, 5, 6, 7, 8]
+should:
+  - joker: OopsAll6s
+    antes: [1, 2, 3, 4, 5, 6, 7, 8]
+    score: 100
+    sources:
+      shopItems: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
+  - joker: LuckyCat
+    antes: [1, 2, 3, 4, 5, 6, 7, 8]
+    score: 125

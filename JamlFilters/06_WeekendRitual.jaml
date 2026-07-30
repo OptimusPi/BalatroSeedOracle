@@ -1,0 +1,49 @@
+name: 06_WeekendRitual
+deck: Erratic
+stake: White
+must:
+  - erraticRank: Two
+    min: 10
+  - joker: WeeJoker
+    antes: [1, 2]
+  - jokers:
+      - Hack
+      - HangingChad
+    antes: [1, 2]
+should:
+  - erraticRank: Two
+    score: 1
+  - joker: Showman
+    antes: [1, 2]
+    score: 50
+  - joker: Blueprint
+    antes: [1, 2]
+    score: 100
+  - joker: Brainstorm
+    antes: [1, 2]
+    score: 100
+  - joker: Hack
+    antes: [1, 2]
+    score: 30
+  - joker: HangingChad
+    antes: [1, 2]
+    score: 30
+  - joker: EvenSteven
+    antes: [1, 2]
+    score: 20
+  - joker: WeeJoker
+    edition: Negative
+    antes: [1, 2]
+    score: 250
+  - joker: WeeJoker
+    edition: Polychrome
+    antes: [1, 2]
+    score: 180
+  - joker: WeeJoker
+    edition: Holographic
+    antes: [1, 2]
+    score: 100
+  - joker: WeeJoker
+    edition: Foil
+    antes: [1, 2]
+    score: 80

@@ -1,0 +1,39 @@
+name: The Loaded Die
+author: claude — own it
+description: >
+  Oops! All 6s doubles every green-text probability in the game. Pull it from the
+  shop early, stack a second copy (Ankh / Showman / Invisible Joker — it can't be
+  Blueprinted) for luck:4 = quadrupled odds, and the dice are loaded: Lucky cards,
+  Bloodstone flushes, every roll tilts your way. Run it on a negative-Perkeo pool
+  and the whole thing is unkillable. A name I understand and stand behind.
+deck: Red
+stake: White
+must:
+  - uncommonJoker: OopsAll6s
+    antes: [1, 2, 3, 4, 5, 6, 7, 8]
+    sources:
+      shopItems: [2, 3, 4, 5, 6, 7, 8, 9]
+should:
+  - uncommonJoker: OopsAll6s
+    antes: [1, 2, 3, 4, 5, 6, 7, 8]
+    min: 2
+    score: 70
+  - spectralCard: Ankh
+    antes: [1, 2, 3, 4, 5, 6]
+    score: 55
+  - uncommonJoker: LuckyCat
+    antes: [1, 2, 3, 4, 5, 6]
+    score: 45
+  - rareJoker: InvisibleJoker
+    score: 40
+  - uncommonJoker: Showman
+    antes: [1, 2, 3]
+    score: 35
+    max: 1
+  - uncommonJoker: Bloodstone
+    score: 30
+  - joker: Any
+    edition: Negative
+    score: 30
+  - tag: NegativeTag
+    score: 20

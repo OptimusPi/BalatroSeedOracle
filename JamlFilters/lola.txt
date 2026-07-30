@@ -1,0 +1,48 @@
+name: "Lucky Cat from first Judgement, ante 1 (OopsAll6s + LuckyMoney scoring)"
+deck: Red
+stake: White
+
+must:
+  - uncommonJoker: LuckyCat
+    antes: [1]
+    sources:
+      judgement: [0]
+
+  - tarotCard: TheMagician
+    antes: [1]
+    boosterPacks: [1]
+
+  - tarotCard: Judgement
+    antes: [1]
+    boosterPacks: [1]
+
+should:
+  - uncommonJoker: OopsAll6s
+    antes: [1, 2, 3, 4, 5, 6, 7, 8]
+    score: 25
+
+  - event: LuckyMoney
+    rolls: [0]
+    score: 10
+  - event: LuckyMoney
+    rolls: [1]
+    score: 8
+  - event: LuckyMoney
+    rolls: [2]
+    score: 6
+  - event: LuckyMoney
+    rolls: [3]
+    score: 5
+  - event: LuckyMoney
+    rolls: [4]
+    score: 4
+  - event: LuckyMoney
+    rolls: [5]
+    score: 3
+  - event: LuckyMoney
+    rolls: [6]
+    score: 2
+  - event: LuckyMoney
+    rolls: [7]
+    score: 2
+</parameter>

@@ -1,0 +1,19 @@
+name: Money Every Card
+author: pifreak
+description: BusinessCard in early shop + Oops All 6s to double every lucky hit. Every card pays.
+deck: Red
+stake: White
+
+must:
+  - joker: BusinessCard
+    antes: [1, 2, 3]
+
+should:
+  - uncommonJoker: OopsAll6s
+    antes: [1, 2, 3, 4]
+    score: 20
+  - joker: ToDoList
+    antes: [1, 2, 3]
+    score: 10
+  - luckyMoney: [0, 1, 2]
+    score: 15

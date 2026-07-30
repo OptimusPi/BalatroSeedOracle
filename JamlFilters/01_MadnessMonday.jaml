@@ -1,0 +1,42 @@
+name: 01_MadnessMonday
+deck: Erratic
+stake: Black
+must:
+  - erraticRank: Two
+    min: 10
+  - joker: WeeJoker
+    stickers:
+      - Eternal
+    antes: [1, 2]
+  - joker: Madness
+    stickers:
+      - Eternal
+    antes: [1, 2]
+  - jokers:
+      - Hack
+      - HangingChad
+    stickers:
+      - Eternal
+    antes: [1, 2]
+should:
+  - erraticRank: Two
+    score: 1
+  - joker: Showman
+    antes: [1, 2]
+    score: 50
+  - joker: Blueprint
+    antes: [1, 2]
+    score: 100
+  - joker: Brainstorm
+    antes: [1, 2]
+    score: 100
+  - joker: Hack
+    stickers:
+      - Eternal
+    antes: [1, 2]
+    score: 80
+  - joker: HangingChad
+    stickers:
+      - Eternal
+    antes: [1, 2]
+    score: 80

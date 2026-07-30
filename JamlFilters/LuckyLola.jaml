@@ -1,0 +1,125 @@
+name: LuckyLola
+author: "for Lola and pi — the luckiest seeds the stream will confess 🍀"
+description: >
+  Plump fortune hunting, full Whimsy body. Must: Lucky Cat early (the profit
+  engine), Showman holding the door (so the cats and the Oops can stack), and
+  a real Oops! All 6s by ante 4 (luck is the identity, so it rides in the
+  SIMD chain). Should: every extra Oops anywhere in antes 2-8 pays 50 and a
+  triple pays the 300 jackpot on top; the copy/retrigger core reads the exact
+  shop slots the Dicetricks proved; spare cats through the run keep scaling;
+  Hieroglyph sweetens ante 1; and the first-8 luckyMoney and luckyMult rolls
+  ladder 8 to 1 — a perfect 16/16 streak sings 72. Anaglyph, as the house
+  plays it: every skip tag doubled.
+deck: Anaglyph
+stake: White
+
+must:
+  - joker: LuckyCat
+    antes: [1,2,3]
+  - joker: Showman
+    antes: [1,2,3]
+  - joker: OopsAll6s
+    antes: [1,2,3,4]
+
+should:
+  - or:
+      - joker: OopsAll6s
+        antes: [2]
+      - joker: OopsAll6s
+        antes: [3]
+      - joker: OopsAll6s
+        antes: [4]
+      - joker: OopsAll6s
+        antes: [5]
+      - joker: OopsAll6s
+        antes: [6]
+      - joker: OopsAll6s
+        antes: [7]
+      - joker: OopsAll6s
+        antes: [8]
+    min: 1
+    score: 50
+  - or:
+      - joker: OopsAll6s
+        antes: [3]
+      - joker: OopsAll6s
+        antes: [4]
+        sources:
+          shopItems: [2,3,4,5,6,7]
+      - joker: OopsAll6s
+        antes: [5]
+        sources:
+          shopItems: [0,1]
+      - joker: OopsAll6s
+        antes: [6]
+        sources:
+          shopItems: [0,1]
+    min: 3
+    score: 300
+  - jokers: [LuckyCat, Blueprint, Brainstorm, InvisibleJoker, SockAndBuskin, HangingChad]
+    antes: [1,2,3,4]
+    sources:
+      shopItems: [0,1]
+      boosterPacks: [0,1]
+    score: 29
+    max: 1
+  - jokers: [LuckyCat, Blueprint, Brainstorm, InvisibleJoker, SockAndBuskin, HangingChad]
+    antes: [4]
+    sources:
+      shopItems: [2,3,4,5]
+    score: 33
+  - jokers: [LuckyCat, Blueprint, Brainstorm, InvisibleJoker, SockAndBuskin, HangingChad]
+    antes: [5]
+    sources:
+      shopItems: [0,1]
+    score: 33
+  - voucher: Hieroglyph
+    antes: [1]
+    score: 25
+  - joker: LuckyCat
+    antes: [2]
+    score: 5
+  - joker: LuckyCat
+    antes: [3]
+    score: 5
+  - joker: LuckyCat
+    antes: [4]
+    score: 5
+  - joker: LuckyCat
+    antes: [5]
+    score: 5
+  - joker: LuckyCat
+    antes: [6]
+    score: 5
+  - luckyMoney: [0]
+    score: 8
+  - luckyMoney: [1]
+    score: 7
+  - luckyMoney: [2]
+    score: 6
+  - luckyMoney: [3]
+    score: 5
+  - luckyMoney: [4]
+    score: 4
+  - luckyMoney: [5]
+    score: 3
+  - luckyMoney: [6]
+    score: 2
+  - luckyMoney: [7]
+    score: 1
+  - luckyMult: [0]
+    score: 8
+  - luckyMult: [1]
+    score: 7
+  - luckyMult: [2]
+    score: 6
+  - luckyMult: [3]
+    score: 5
+  - luckyMult: [4]
+    score: 4
+  - luckyMult: [5]
+    score: 3
+  - luckyMult: [6]
+    score: 2
+  - luckyMult: [7]
+    score: 1

@@ -1,0 +1,96 @@
+name: Ghost Ankh Perkeo — endless
+description: >
+  Ante 1 builds the press: Coupon Tag makes the shop free, Ankh is in the front slots,
+  Perkeo is in the second booster pack. Ankh copies Perkeo, Perkeo makes a Negative Ankh,
+  and the Ankhs pile up through the midgame.
+  Ante 8 cashes out: the Negative Tag turns the shop free and Negative, Perkeo gets sold,
+  and it is Ankh, sell, Ankh, sell until the board is full.
+author: pifreak
+deck: Ghost
+stake: White
+
+# Ordered by cost per seed eliminated: the cheap vectorized tag checks gate the space
+# down to ~0.17% before anything expensive runs. Perkeo needs pack contents and soul
+# rolls simulated, so it only ever sees 1 seed in 576 instead of all of them.
+must:
+  # Bouncer 1. Free shop — and one tag in 24, checked 8-wide for almost nothing.
+  - smallBlindTag: CouponTag
+    antes: [1]
+
+  # Bouncer 2. The cash-out tag. Same cheap vectorized check, another ~96% gone.
+  - smallBlindTag: NegativeTag
+    antes: [8]
+
+  # The target, and the expensive one. Pack 0 is the fixed 2-joker Buffoon; a Soul
+  # lives in pack 1. Only runs on seeds that already cleared both tags.
+  - legendaryJoker: Perkeo
+    antes: [1]
+    sources:
+      boosterPacks: [1]
+
+  # The copier. Ankh is rare on Ghost/White, so reach a little wider and later.
+  - spectralCard: Ankh
+    antes: [1, 2, 3]
+    sources:
+      shopItems: [0, 1, 2, 3]
+
+  # Banked for the finish. Everything else gets sold; this stays.
+  - joker: DietCola
+    antes: [2, 3, 4, 5, 6, 7]
+
+should:
+  # Ankh in the ante-1 shop is the clean line — the press starts on turn one.
+  - spectralCard: Ankh
+    antes: [1]
+    sources:
+      shopItems: [0, 1]
+    score: 5
+
+  # The payout, measured. Every rare in the ante-8 shop is free and Negative.
+  - rareJoker: Any
+    antes: [8]
+    sources:
+      shopItems: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+                  21, 22, 23, 24, 25, 26, 27, 28, 29, 30]
+    min: 2
+    score: 3
+
+  # A shop that keeps handing them over is worth far more than one that hands over two.
+  - rareJoker: Any
+    antes: [8]
+    sources:
+      shopItems: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+                  21, 22, 23, 24, 25, 26, 27, 28, 29, 30]
+    min: 5
+    score: 8
+
+  # Doubles every listed probability. On a board of twenty Negatives, this is the ceiling.
+  - joker: OopsAll6s
+    antes: [8]
+    sources:
+      shopItems: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+                  21, 22, 23, 24, 25, 26, 27, 28, 29, 30]
+    score: 6
+
+  # The copiers turn "a lot" into twenty.
+  - joker: Blueprint
+    antes: [8]
+    score: 4
+
+  - joker: Brainstorm
+    antes: [8]
+    score: 4
+
+  # A second Perkeo past the line is endless mode.
+  - legendaryJoker: Perkeo
+    antes: [8]
+    score: 8
+
+seeds:
+  - BRUHBKKT
+  - 87JZMULT
+  - WRWXRFGH
+  - BIBLIJNS
+  - MJMBJDIT
+  - 4DROOLHE
+  - L3ICKY5E

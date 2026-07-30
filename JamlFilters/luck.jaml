@@ -1,0 +1,42 @@
+name: luck
+author: pifreak
+description: >
+  Same-ante only: Negative Tag on small blind AND shop Oops! All 6s with Negative edition.
+  One branch per ante (2–8); OR means "hits on at least one of those antes" with tag+joker aligned.
+deck: Anaglyph
+stake: Black
+must:
+  - luckyMoney: [0]
+  - luckyMoney: [1]
+  - luckyMoney: [2]
+
+should:
+  - luckyMoney: [0, 1, 2]
+    score: 3
+  - luckyMoney:
+      [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        16,
+        17,
+        18,
+        19,
+        20,
+      ]
+  - smallBlindTag: NegativeTag
+    score: 3

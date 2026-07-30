@@ -1,0 +1,49 @@
+name: Lola & Crouton Night
+author: pifreak
+description: Ghost deck two player fun night. Familiar early, Perkeo pack 1, Blueprint/Brainstorm copy engine, lucky money ladder.
+deck: Ghost
+stake: White
+
+must:
+  - spectralCard: Familiar
+    antes: [1]
+    sources:
+      shopItems: [0, 1]
+
+  - legendaryJoker: Perkeo
+    antes: [1]
+    sources:
+      boosterPacks: [1]
+
+should:
+  - joker: Blueprint
+    antes: [1, 2, 3, 4, 5, 6, 7, 8]
+    score: 10
+
+  - joker: Blueprint
+    edition: Holographic
+    antes: [1, 2, 3, 4, 5, 6, 7, 8]
+    score: 125
+
+  - joker: Brainstorm
+    antes: [1, 2, 3, 4, 5, 6, 7, 8]
+    score: 9
+
+  - joker: HangingChad
+    antes: [1, 2, 3, 4, 5, 6, 7, 8]
+    score: 5
+
+  - joker: Photograph
+    antes: [1, 2, 3, 4, 5, 6, 7, 8]
+    score: 2
+
+  - joker: MarbleJoker
+    antes: [1, 2, 3, 4, 5, 6, 7, 8]
+    score: 5
+
+  - standardCard: Certificate
+    antes: [1]
+    score: 3
+
+  - luckyMoney: [0, 1, 2, 3, 4]
+    score: 25

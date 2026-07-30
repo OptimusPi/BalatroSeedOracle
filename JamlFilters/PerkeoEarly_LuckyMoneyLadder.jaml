@@ -1,0 +1,76 @@
+name: Perkeo early + lucky money ladder
+author: pifreak
+description: >
+  Soul Perkeo in ante 1 or 2. Should-scores weight Lucky Money rolls 0..20
+  with 100, 95, 90, ... 0 (step -5 per roll). Tally column 0 is roll 0.
+deck: Red
+stake: White
+
+must:
+  - legendaryJoker: Perkeo
+    antes: [1, 2]
+
+should:
+  - luckyMoney: [0]
+    label: "lm_r0"
+    score: 100
+  - luckyMoney: [1]
+    label: "lm_r1"
+    score: 95
+  - luckyMoney: [2]
+    label: "lm_r2"
+    score: 90
+  - luckyMoney: [3]
+    label: "lm_r3"
+    score: 85
+  - luckyMoney: [4]
+    label: "lm_r4"
+    score: 80
+  - luckyMoney: [5]
+    label: "lm_r5"
+    score: 75
+  - luckyMoney: [6]
+    label: "lm_r6"
+    score: 70
+  - luckyMoney: [7]
+    label: "lm_r7"
+    score: 65
+  - luckyMoney: [8]
+    label: "lm_r8"
+    score: 60
+  - luckyMoney: [9]
+    label: "lm_r9"
+    score: 55
+  - luckyMoney: [10]
+    label: "lm_r10"
+    score: 50
+  - luckyMoney: [11]
+    label: "lm_r11"
+    score: 45
+  - luckyMoney: [12]
+    label: "lm_r12"
+    score: 40
+  - luckyMoney: [13]
+    label: "lm_r13"
+    score: 35
+  - luckyMoney: [14]
+    label: "lm_r14"
+    score: 30
+  - luckyMoney: [15]
+    label: "lm_r15"
+    score: 25
+  - luckyMoney: [16]
+    label: "lm_r16"
+    score: 20
+  - luckyMoney: [17]
+    label: "lm_r17"
+    score: 15
+  - luckyMoney: [18]
+    label: "lm_r18"
+    score: 10
+  - luckyMoney: [19]
+    label: "lm_r19"
+    score: 5
+  - luckyMoney: [20]
+    label: "lm_r20"
+    score: 0

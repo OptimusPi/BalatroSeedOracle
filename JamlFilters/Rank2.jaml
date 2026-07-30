@@ -1,0 +1,27 @@
+name: Erratic Deck
+author: pifreak
+description: Rank 2 (25% of the deck!)
+deck: Erratic
+stake: White
+
+must:
+  - erraticRank: Two
+should:
+  - erraticRank: Two
+  - erraticRank: Three
+  - erraticRank: Four
+  - erraticRank: Five
+  - erraticRank: Six
+  - erraticRank: Seven
+  - erraticRank: Eight
+  - erraticRank: Nine
+  - erraticRank: Ten
+  - erraticRank: Jack
+  - erraticRank: Queen
+  - erraticRank: King
+  - erraticRank: Ace
+
+  - erraticSuit: Hearts
+  - erraticSuit: Diamonds
+  - erraticSuit: Clubs
+  - erraticSuit: Spades

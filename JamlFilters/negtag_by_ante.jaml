@@ -1,0 +1,26 @@
+name: NegTag By Ante
+description: Negative small-blind tag scored per ante, antes 2-8 (one clause each).
+deck: Anaglyph
+stake: White
+should:
+  - smallBlindTag: NegativeTag
+    antes: [2]
+    score: 1
+  - smallBlindTag: NegativeTag
+    antes: [3]
+    score: 1
+  - smallBlindTag: NegativeTag
+    antes: [4]
+    score: 1
+  - smallBlindTag: NegativeTag
+    antes: [5]
+    score: 1
+  - smallBlindTag: NegativeTag
+    antes: [6]
+    score: 1
+  - smallBlindTag: NegativeTag
+    antes: [7]
+    score: 1
+  - smallBlindTag: NegativeTag
+    antes: [8]
+    score: 1

@@ -1,0 +1,63 @@
+name: Fashy
+deck: Ghost
+stake: White
+must:
+  - smallBlindTag: InvestmentTag
+    antes: [1]
+  - bigBlindTag: InvestmentTag
+    antes: [1]
+  - uncommonJoker: Showman
+    antes: [2]
+    sources:
+      shopItems: [0,1]
+should:
+  - uncommonJoker: OopsAll6s
+    edition: Negative
+    antes: [2]
+    sources:
+      boosterPacks: [0]
+      shopItems: [0,1]
+    score: 4
+  - uncommonJoker: OopsAll6s
+    antes: [2]
+    sources:
+      boosterPacks: [0,1]
+      shopItems: [0,1]
+    score: 5
+  - uncommonJoker: Showman
+    edition: Negative
+    antes: [2]
+    sources:
+      boosterPacks: [0]
+      shopItems: [0,1]
+    score: 2
+
+  - joker: Any
+    edition: Negative
+    antes: [2]
+    sources:
+      boosterPacks: [0]
+    score: 10
+    max: 1
+  - joker: Any
+    edition: Negative
+    antes: [2]
+    sources:
+      boosterPacks: [1]
+    max: 1
+    score: 10
+  - legendaryJoker: Any
+    edition: Negative
+    antes: [2,3,4,5,6,7]
+    sources:
+      boosterPacks: [0,1]
+    score: 10
+  - legendaryJoker: Perkeo
+    antes: [2,3]
+    sources:
+      boosterPacks: [0,1]
+    score: 10
+
+
+
+

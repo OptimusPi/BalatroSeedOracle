@@ -1,0 +1,56 @@
+name: 05_FoilFriday
+deck: Erratic
+stake: White
+must:
+  - erraticRank: Two
+    min: 10
+  - joker: WeeJoker
+    antes: [1, 2]
+  - jokers:
+      - Hack
+      - HangingChad
+    antes: [1, 2]
+should:
+  - erraticRank: Two
+    score: 1
+  - joker: WeeJoker
+    edition: Foil
+    antes: [1, 2]
+    score: 300
+  - joker: Hack
+    edition: Foil
+    antes: [1, 2]
+    score: 200
+  - joker: HangingChad
+    edition: Foil
+    antes: [1, 2]
+    score: 200
+  - joker: Blueprint
+    edition: Foil
+    antes: [1, 2]
+    score: 250
+  - joker: Brainstorm
+    edition: Foil
+    antes: [1, 2]
+    score: 250
+  - joker: WeeJoker
+    edition: Negative
+    antes: [1, 2]
+    score: 500
+  - joker: WeeJoker
+    edition: Polychrome
+    antes: [1, 2]
+    score: 400
+  - joker: WeeJoker
+    edition: Holographic
+    antes: [1, 2]
+    score: 200
+  - joker: Showman
+    antes: [1, 2]
+    score: 80
+  - joker: Blueprint
+    antes: [1, 2]
+    score: 100
+  - joker: Brainstorm
+    antes: [1, 2]
+    score: 100

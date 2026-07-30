@@ -1,0 +1,53 @@
+name: BinkBonk
+author: Waterbear #0027
+must:
+  - smallBlindTag: CouponTag
+    antes: [1]
+  - joker: Blueprint
+    antes: [1]
+    sources:
+      boosterPacks: [0] # first pack, and it's free
+  - joker: Blueprint
+    antes: [1]
+    sources:
+      boosterPacks: [1] # second pack, and it's free
+      shopItems: [0,1] # OR if it's found here that works too.
+should:
+  - joker: Showman
+    antes: [2,3]
+    score: 100
+    max: 1
+  - jokers: [Blueprint, Brainstorm]
+    antes: [4,5,6,7,8]
+    score: 80
+  - legendaryJoker: Perkeo
+    antes: [1,2,3,4,5,6]
+    score: 70
+  - joker: HangingChad
+    score: 3
+  - joker: Photograph
+    score: 2
+
+seeds:
+  - GASS8411
+  - QEHY6111
+  - DPY22111
+  - YHD9B111
+  - 1H124111
+  - 9OOPSE53
+  - TBURNLQK
+  - Z4D7FAIL
+  - XUNFAILM
+  - 8U51FAIL
+  - C7T2FAIL
+  - MA4IFAIL
+  - FAIL8RSL
+  - AFAILC3F
+  - XGLASSQ6
+  - WGSUITMP
+  - WILD5D1V
+  - 59KIDECK
+  - CARDAX6I
+  - A1BCARDY
+  - B3MULTNV
+  - OJOKERDO

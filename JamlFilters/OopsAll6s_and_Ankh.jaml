@@ -1,0 +1,25 @@
+dateCreated: 2025-12-25
+name: OopsAll6s ante 1 and Ankh to duplicate it in ante 1 or 2
+author: pifreak
+deck: Red
+stake: White
+must:
+  - luckyMoney: [0,1,2]
+    with:
+      luck: 4 # 1x luck normal  Oops! All 6's uis DO&BLE -> 2 luck another OopsAll6s -> double luck -> 4
+
+should:
+  - joker: Showman
+    antes: [1,2,3]
+    max: 1
+    score: 100
+  - legendaryJoker: Perkeo
+    antes: [1,2,3]
+    max: 1
+    score: 100
+  - jokers: [Blueprint, Brainstorm, InvisibleJoker]
+    label: "Copy Jokers"
+    antes: [1,2,3]
+    max: 1
+    score: 100
+

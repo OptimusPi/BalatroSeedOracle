@@ -1,0 +1,91 @@
+name: Perkeo-Cola
+author: nat
+description: >
+  Ghost White Perkeo–Cola press. Must (cheap→expensive): A8 Negative cashout tag,
+  Ankh in ante-1 shop slots 0–1 only (no packs), Perkeo ante-1 Soul pack, Diet Cola
+  somewhere in 2–7. Should: BP/BS pummel, slot-0 Ankh, early cola, A8 rare shop depth.
+  Engine may reorder must by cost; authored order matches that intent.
+deck: Ghost
+stake: White
+
+# Must cost law: tags first (vector bouncers), then tight shop Ankh, then Soul Perkeo,
+# then Cola. Full-space / nsfw hunts pay this every seed — keep musts sparse.
+must:
+  # ~1/24 · free-neg cashout gate
+  - tag: NegativeTag
+    antes: [8]
+
+  # First shop face only — two slots, no pack Ankh
+  - spectralCard: Ankh
+    antes: [1]
+    sources:
+      shopItems: [0, 1]
+
+  # Soul lives in pack 1 (pack 0 is fixed buffoon)
+  - legendaryJoker: Perkeo
+    antes: [1]
+    sources:
+      boosterPacks: [1]
+
+  # Banked for Ankh-copy / sell → Double Tag (any one ante 2–7)
+  - joker: DietCola
+    antes: [2, 3, 4, 5, 6, 7]
+
+# Should only runs after must — rank toys, not search bouncers.
+should:
+  - joker: Blueprint
+    antes: [1, 2, 3, 4, 5, 6, 7, 8]
+    score: 100
+    label: bp
+  - joker: Brainstorm
+    antes: [1, 2, 3, 4, 5, 6, 7, 8]
+    score: 100
+    label: bs
+  - spectralCard: Ankh
+    antes: [1]
+    sources:
+      shopItems: [0]
+    score: 50
+    label: ankh_slot0
+  - joker: DietCola
+    antes: [2, 3, 4]
+    score: 25
+    label: cola_early
+  # Cashout shop after Neg — front-mid slots only (not 0–30 full walk)
+  - rareJoker: Any
+    antes: [8]
+    sources:
+      shopItems: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+    score: 5
+    label: a8rare
+
+seeds:
+  - MZASSZ79
+  - BDNRRCUM
+  - 14QASSDW
+  - CIPAWASS
+  - 47RXIASS
+  - CECDEW3L
+  - BNBENZ1E
+  - ALACL1EN
+  - 3IB32G97
+  - N34NHMD7
+  - AFPE3997
+  - ZVIY8B97
+  - 9O1ITI87
+  - KCQKJ187
+  - MT4QT977
+  - ES39AY77
+  - TZ5XD877
+  - EIBLQ977
+  - 75QZS777
+  - 9TJE1TSD
+  - GP2VTSFD
+  - 9SVI1PED
+  - 5UXETTDD
+  - 1W4FQFED
+  - MHOT8EDD
+  - JSK2DRDD
+  - SJU5RDDD
+  - T7K9FDDD
+  - K9ADGDDD

@@ -1,0 +1,199 @@
+name: TheDailyWee_Master
+description: Master filter for The Daily Wee - captures all viable seeds for bucketing
+author: TheDailyWee
+deck: Erratic
+stake: White
+must:
+  - erraticRank: Two
+    min: 12
+  - joker: WeeJoker
+    antes: [1, 2]
+  - jokers:
+      - Hack
+      - HangingChad
+    antes: [1, 2]
+should:
+  - erraticRank: Two
+    score: 1
+  
+  # Core jokers Ante 1
+  - joker: WeeJoker
+    antes: [1]
+    score: 100
+  - joker: HangingChad
+    antes: [1]
+    score: 90
+  - joker: Hack
+    antes: [1]
+    score: 90
+  - joker: Showman
+    antes: [1]
+    score: 80
+  - joker: Blueprint
+    antes: [1]
+    score: 70
+  - joker: Brainstorm
+    antes: [1]
+    score: 70
+  - joker: EvenSteven
+    antes: [1]
+    score: 20
+  
+  # Core jokers Ante 2
+  - joker: WeeJoker
+    antes: [2]
+    score: 100
+  - joker: HangingChad
+    antes: [2]
+    score: 90
+  - joker: Hack
+    antes: [2]
+    score: 90
+  - joker: Showman
+    antes: [2]
+    score: 80
+  - joker: Blueprint
+    antes: [2]
+    score: 70
+  - joker: Brainstorm
+    antes: [2]
+    score: 70
+  - joker: EvenSteven
+    antes: [2]
+    score: 20
+  
+  # Editions - Negative (highest value)
+  - joker: WeeJoker
+    edition: Negative
+    antes: [1, 2]
+    score: 200
+  - joker: HangingChad
+    edition: Negative
+    antes: [1, 2]
+    score: 150
+  - joker: Hack
+    edition: Negative
+    antes: [1, 2]
+    score: 150
+  - joker: Showman
+    edition: Negative
+    antes: [1, 2]
+    score: 100
+  - joker: Blueprint
+    edition: Negative
+    antes: [1, 2]
+    score: 100
+  - joker: Brainstorm
+    edition: Negative
+    antes: [1, 2]
+    score: 100
+  - joker: EvenSteven
+    edition: Negative
+    antes: [1, 2]
+    score: 50
+  
+  # Editions - Polychrome
+  - joker: WeeJoker
+    edition: Polychrome
+    antes: [1, 2]
+    score: 150
+  - joker: HangingChad
+    edition: Polychrome
+    antes: [1, 2]
+    score: 100
+  - joker: Hack
+    edition: Polychrome
+    antes: [1, 2]
+    score: 100
+  - joker: Showman
+    edition: Polychrome
+    antes: [1, 2]
+    score: 80
+  - joker: Blueprint
+    edition: Polychrome
+    antes: [1, 2]
+    score: 80
+  - joker: Brainstorm
+    edition: Polychrome
+    antes: [1, 2]
+    score: 80
+  - joker: EvenSteven
+    edition: Polychrome
+    antes: [1, 2]
+    score: 40
+  
+  # Editions - Holographic
+  - joker: WeeJoker
+    edition: Holographic
+    antes: [1, 2]
+    score: 100
+  - joker: HangingChad
+    edition: Holographic
+    antes: [1, 2]
+    score: 60
+  - joker: Hack
+    edition: Holographic
+    antes: [1, 2]
+    score: 60
+  - joker: Showman
+    edition: Holographic
+    antes: [1, 2]
+    score: 50
+  - joker: Blueprint
+    edition: Holographic
+    antes: [1, 2]
+    score: 50
+  - joker: Brainstorm
+    edition: Holographic
+    antes: [1, 2]
+    score: 50
+  - joker: EvenSteven
+    edition: Holographic
+    antes: [1, 2]
+    score: 30
+  
+  # Editions - Foil
+  - joker: WeeJoker
+    edition: Foil
+    antes: [1, 2]
+    score: 80
+  - joker: HangingChad
+    edition: Foil
+    antes: [1, 2]
+    score: 50
+  - joker: Hack
+    edition: Foil
+    antes: [1, 2]
+    score: 50
+  - joker: Showman
+    edition: Foil
+    antes: [1, 2]
+    score: 40
+  - joker: Blueprint
+    edition: Foil
+    antes: [1, 2]
+    score: 40
+  - joker: Brainstorm
+    edition: Foil
+    antes: [1, 2]
+    score: 40
+  - joker: EvenSteven
+    edition: Foil
+    antes: [1, 2]
+    score: 20
+  
+  # Perkeo - the ultimate crown jewel
+  - legendaryJoker: Perkeo
+    antes: [1, 2, 3, 4]
+    score: 1000
+
+  # Ultimate Combo Candidates
+  - joker: Showman
+    antes: [1, 2]
+    score: 500
+  - joker: Hack
+    antes: [1, 2]
+    score: 200
+  - joker: Hack
+    antes: [1, 2]
+    score: 200

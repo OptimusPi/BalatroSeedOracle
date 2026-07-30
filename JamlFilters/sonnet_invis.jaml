@@ -1,0 +1,52 @@
+name: Sonnet InvisibleJokers
+author: for sonnet ur name is on it ;D
+description: >
+  Sonnet is a bruh moment king
+deck: Anaglyph
+stake: White
+
+must:
+- smallBlindTag: CouponTag
+  antes: [1]
+- joker: InvisibleJoker
+  sources:
+    shopItems: [0, 1]
+  antes: [1]
+- joker: Showman
+  sources:
+    shopItems: [0, 1]
+  antes: [1]
+- legendaryJoker: Perkeo
+  antes: [1,2,3,4]
+  sources:
+    boosterPacks: [0,1,2,3]
+should:
+- joker: InvisibleJoker
+  sources:
+    boosterPacks: [0]
+  score: 100
+  antes: [1]
+- joker: InvisibleJoker
+  sources:
+    boosterPacks: [1]
+  score: 100
+  antes: [1]
+- joker: InvisibleJoker
+  sources:
+    boosterPacks: [0,1,2,3,4,5]
+    shopItems: [0,1,2,3,4,5]
+  score: 10
+- legendaryJoker: Perkeo
+  sources:
+    boosterPacks: [0,1,2,3,4,5]
+  score: 10
+  antes: [2,3,4,5,6,7,8]
+- rareJokers: [Blueprint, Brainstorm]
+  sources:
+    boosterPacks: [0,1,2,3,4,5]
+    shopItems: [0,1,2,3,4,5]
+  score: 5
+  antes: [2,3,4,5,6,7,8]
+
+seeds:
+  - UWGTO511

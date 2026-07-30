@@ -1,0 +1,101 @@
+name: Sleepy Lola
+deck: Red
+stake: White
+must:
+  - luckyMoney: [0]
+  - legendaryJoker: Perkeo
+    antes: [1, 2, 3, 4]
+should:
+  - luckyMoney: [0, 1, 2]
+    score: 1
+  - spectralCard: TheSoul
+    score: 1
+  - spectralCard: BlackHole
+    score: 1
+  - joker: Blueprint
+    antes: [1, 2]
+    score: 1
+
+seeds:
+  - KMOON9DQ
+  - CJMOONW6
+  - NIGHT86H
+  - 51ONMOON
+  - 6MOON6FN
+  - 6PLMOONX
+  - MOON7EU1
+  - MOON8T45
+  - 6TSLEEPE
+  - 8MSLEEPS
+  - 9SLEEPCK
+  - SLEEP9J5
+  - SLEEP9MI
+  - AWXSLEEP
+  - C9USLEEP
+  - MTGSLEEP
+  - NINITE2J
+  - 1NIGHT1T
+  - 3OANIGHT
+  - 3QNIGHTB
+  - 1SLEEPIK
+  - 1IDSLEEP
+  - 1JVSLEEP
+  - 1XSLEEPF
+  - 1SLEEPYS
+  - 2BQSLEEP
+  - 33OSLEEP
+  - 3VWSLEEP
+  - SLEEP44D
+  - 45SLEEPZ
+  - SLEEP4BN
+  - 5ZSLEEPC
+  - 15SSLEEP
+  - 19ISLEEP
+  - 12SLEEP6
+  - 1SLEEP5W
+  - SLEEP19U
+  - SLEEP156
+  - 1SLEEPDB
+  - 1EZSLEEP
+  - 1DSLEEPY
+  - 18SLEEPZ
+  - 1SLEEP59
+  - SLEEP18V
+  - JYMOONP5
+  - R9APROSE
+  - 5EICLODX
+  - 8K6GCLOD
+  - EZP1CLOD
+  - YAAS44NM
+  - 7ODYAASX
+  - BYAASTDB
+  - F2U7YAAS
+  - LLYAASUE
+  - 6MGLOLAI
+  - 8GLOLAI1
+  - XLOLAJP5
+  - ERXOPUS4
+  - TSPOPUSC
+  - NIGHTFE4
+  - TNIGHT2L
+  - 1VMOONGC
+  - MOON3XNQ
+  - 4978MOON
+  - 4MOONVPX
+  - 6NMOONG7
+  - 7O5MOON1
+  - 8TMOONI3
+  - MOONEJ6V
+  - IO5RMOON
+  - 1SLEEPZL
+  - 3SLEEPED
+  - 27SLEEP4
+  - 4YWSLEEP
+  - SLEEP5PO
+  - 6SLEEPMJ
+  - 7SLEEPA9
+  - 7RSLEEPR
+  - 92SLEEP5
+  - 2CSLEEPQ
+  - 1C4SLEEP
+  - 1P1SLEEP

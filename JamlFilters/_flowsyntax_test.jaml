@@ -1,0 +1,7 @@
+name: flow syntax test
+deck: Red
+stake: White
+must:
+  - joker: OopsAll6s
+    antes: [1]
+    sources: { shopItems: [0,1,2,3,4,5,6] }

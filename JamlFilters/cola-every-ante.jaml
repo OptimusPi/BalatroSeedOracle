@@ -1,0 +1,40 @@
+name: Diet Cola every ante, Negative at 8
+description: >
+  Six separate must clauses, so Diet Cola has to show up in every single ante 1 through 6 —
+  not "somewhere in 1..6", but all of them. Then a Negative Tag on the ante-8 small blind,
+  and the ante-8 shop scored by how many rare jokers are sitting in it, since the tag makes
+  the base ones free and Negative.
+author: pifreak
+deck: Ghost
+stake: White
+
+must:
+  - joker: DietCola
+    antes: [1]
+
+  - joker: DietCola
+    antes: [2]
+
+  - joker: DietCola
+    antes: [3]
+
+  - joker: DietCola
+    antes: [4]
+
+  - joker: DietCola
+    antes: [5]
+
+  - joker: DietCola
+    antes: [6]
+
+  - smallBlindTag: NegativeTag
+    antes: [8]
+
+should:
+  # Every rare in the ante-8 shop is a free Negative joker. Reach the whole shop.
+  - rareJoker: Any
+    antes: [8]
+    sources:
+      shopItems: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
+                  16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30]
+    score: 1

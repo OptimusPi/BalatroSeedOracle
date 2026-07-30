@@ -1,0 +1,67 @@
+dateCreated: 2026-06-19
+name: Triple Oops -> 8x Luck, $20 Lucky Money engine
+id: lucky-money-triple-oops-8x
+author: pifreak
+description: >
+  Three Oops! All 6s effects = 2^3 = 8x luck. A Lucky card pays +$20 at a base
+  1-in-15 chance; at 8x luck that is ~8/15 per lucky card. This finds seeds where
+  the first three Lucky-card money rolls all pay $20 (luckyMoney [0,1,2] min 3 at
+  luck 8), then ranks how far the $20 streak keeps running.
+  Realistic path to three Oops! effects: the base Oops! All 6s joker, plus Ankh
+  cloning it. Blueprint/Brainstorm are scored below for other reasons — copy
+  jokers don't copy Oops!'s luck modifier, so they aren't a third doubler.
+  (Correction, pifreak.)
+deck: Red
+stake: White
+must:
+  # Oops #1 - the doubler, in ante 1's first shop or first pack
+  - joker: OopsAll6s
+    antes: [1]
+    sources:
+      shopItems: [0, 1, 2]
+      boosterPacks: [0]
+  # Oops #2 - Ankh clones a joker; aim it at Oops! -> 4x luck
+  - spectralCard: Ankh
+    antes: [1]
+    sources:
+      boosterPacks: [0, 1]
+  # Oops #3 - a copy joker (Blueprint) pointed at Oops! -> 8x luck
+  - joker: Blueprint
+    antes: [1, 2]
+    sources:
+      shopItems: [0, 1, 2, 3]
+      boosterPacks: [0, 1, 2]
+  # A Lucky-card source, or the whole $20 ladder is theoretical
+  - tarotCard: TheMagician
+    antes: [1]
+    sources:
+      shopItems: [0, 1, 2, 3]
+      boosterPacks: [0, 1, 2, 3]
+should:
+  # The payoff: first three Lucky cards each pay $20 at 8x luck
+  - luckyMoney: [0, 1, 2]
+    min: 3
+    score: 20
+    with:
+      luck: 8
+  # Reward seeds whose $20 streak keeps running at 8x luck
+  - luckyMoney: [3]
+    score: 8
+    with:
+      luck: 8
+  - luckyMoney: [4]
+    score: 7
+    with:
+      luck: 8
+  - luckyMoney: [5, 6, 7]
+    score: 5
+    with:
+      luck: 8
+  - luckyMoney: [8, 9, 10]
+    score: 3
+    with:
+      luck: 8
+  # Extra copier = even more Oops potential
+  - joker: Brainstorm
+    antes: [1, 2, 3]
+    score: 10

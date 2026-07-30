@@ -1,0 +1,16 @@
+name: Lucky Money roll 0 luck 5
+id: lucky-money-roll0-luck5
+author: pifreak
+description: >
+  Seed-list fixture for Lucky Money roll 0 at luck multiplier 5.
+  Seed 21111111 matches here but not at default luck.
+deck: Red
+stake: White
+seeds: [21111111]
+
+should:
+  - luckyMoney: [0]
+    label: lucky_money_r0_luck5
+    score: 100
+    with:
+      luck: 5

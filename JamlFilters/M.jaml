@@ -1,0 +1,105 @@
+name: blue-white-perkeo-blueprint-brainstorm-invisible-showman
+deck: Magic
+stake: White
+seeds:
+  - WKTQYC21
+  - MQLL6P41
+  - BKCCYQ71
+  - 15S53D81
+  - UYBTHSB1
+  - VTX5CEC1
+  - 8LP78AE1
+  - RMK4CTE1
+  - FIP1GCG1
+  - 88GZNWG1
+  - OCIBT1H1
+  - 4NCT56L1
+  - BBXUMJO1
+  - LH4VW8S1
+  - RMUJIL12
+  - 4RIS1M92
+  - K6MKKSA2
+  - Y21QS9E2
+  - 5Q4X61J2
+  - AHBPOQM2
+  - SERR1OV2
+  - UA2DC2W2
+  - 43RMN1Z2
+  - GIXBUR43
+  - 71DCT7B3
+  - 6D1V7QL3
+  - 53UVQ7Q3
+  - TUE1KFU3
+  - R77YWD64
+  - XH45ZNT4
+  - O97PKV45
+  - NBBZ48B5
+  - UTDW9FG5
+  - 6A8FB1Z5
+  - 1P9ZKAF6
+  - XBC41PK6
+  - A3PXV7M6
+  - ZAXVZE68
+  - KUA35O98
+  - Z4R2X9V8
+  - 4D5TGAE9
+  - NIVPHQH9
+  - 9GY4K6I9
+  - 15YGC3K9
+  - 1NPCVI1A
+  - XHP356GA
+  - CPIG42EB
+  - FM7AMJMC
+  - OLOIGNQC
+  - TQWVAU5D
+  - BQU2JFBD
+  - 3HVMYIFD
+  - GPSSB5SD
+  - KFDVAAHG
+  - J2WXKSXG
+  - 2XES1B5H
+  - 7QT54WQH
+  - FW2AY7AI
+  - YTD66ULL
+  - DL5DSUTM
+  - 12ZDR8ZM
+  - XYTYB7SO
+  - 6YO7XY7R
+  - DVDXHOIR
+  - DDYTCKUY
+must:
+  - luckyMoney: [0]
+    score: 6
+  - luckyMoney: [1]
+    score: 6
+  - luckyMoney: [2]
+    score: 7
+  
+  - joker: OopsAll6s
+    antes: [1]
+    sources:
+      boosterPacks: [0]
+      shopItems: [0,1]
+  - legendaryJoker: Perkeo
+    antes: [1,2,3]
+  - uncommonJoker: Showman
+    antes: [1, 2]
+should:
+  - rareJoker: Blueprint
+    antes: [1]
+    score: 10
+  - rareJoker: Brainstorm
+    antes: [1]
+    score: 10
+  - rareJoker: InvisibleJoker
+    antes: [1]
+    score: 10
+
+  - rareJoker: Blueprint
+  - rareJoker: Brainstorm
+  - rareJoker: InvisibleJoker
+  - joker: Matador
+  - luckyMoney: [4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]
+    score: 1
+  - luckyMoney: [21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40]
+    score: 1

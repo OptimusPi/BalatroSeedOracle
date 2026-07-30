@@ -1,0 +1,35 @@
+name: Oops Pile
+author: nat break
+description: >
+  A shitload of Oops! All 6s. Must hit at least 2 separate Oops appearances
+  in antes 1-4 (shop + packs). Should ranks how many more show up through ante 6.
+  Luck stacks as 2^n — two Oops = 4x, three = 8x. Red White, no gimmick decks.
+deck: Red
+stake: White
+must:
+  - joker: OopsAll6s
+    antes: [1, 2, 3, 4]
+    min: 2
+should:
+  - joker: OopsAll6s
+    antes: [1, 2, 3, 4, 5, 6]
+    score: 10
+    label: oops
+
+seeds:
+  - 2LOL2
+  - B8B
+  - AXA
+  - FVF
+  - 9WW9
+  - UFU
+  - V88V
+  - 14D41
+  - 1OYO1
+  - 1UIU1
+  - 1ZFZ1
+  - 1R5R1
+  - 2AMA2
+  - 2C4C2
+  - 2DYD2
+  - 2KZK2

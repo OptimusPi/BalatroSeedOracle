@@ -1,0 +1,32 @@
+id: PerkeoObservatory
+name: Perkeo Observatory
+author: pifreak
+description: JAML translation of PerkeoObservatoryFilterDesc.cs. Telescope ante 1, Observatory ante 2, with Perkeo resolved from a Soul card in ante 1's first booster pack or ante 2's first three booster packs.
+stake: White
+
+must:
+  - voucher: Telescope
+    antes: [1]
+
+  - voucher: Observatory
+    antes: [2]
+
+  - or:
+      - legendaryJoker: Perkeo
+        antes: [1]
+        sources:
+          boosterPacks: [0]
+      - legendaryJoker: Perkeo
+        antes: [2]
+        sources:
+          boosterPacks: [0, 1, 2]
+
+should:
+  - legendaryJoker: Perkeo
+    antes: [1]
+    score: 10
+
+  - legendaryJoker: Perkeo
+    edition: Negative
+    antes: [1, 2]
+    score: 20

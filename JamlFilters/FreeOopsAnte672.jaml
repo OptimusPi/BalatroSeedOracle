@@ -1,0 +1,134 @@
+name: FreeOopsAnte6
+deck: Anaglyph
+stake: White
+must:
+  - smallBlindTag: NegativeTag
+    antes: [6]
+  - joker: Showman
+    antes: [1,2,3,4,5]
+  - legendaryJoker: Perkeo
+    antes: [1, 2, 3]
+should:
+  - joker: OopsAll6s
+    antes: [6]
+    sources:
+      shopItems: [2, 3, 4, 5, 6, 7, 8, 9, 10]
+  - joker: OopsAll6s
+    antes: [7]
+    sources:
+      shopItems: [0,1]
+    score: 1
+
+seeds:
+  - A5TILCMS
+  - YEWKL3SR
+  - AFZPCQSR
+  - IEB456TR
+  - QEJODHWR
+  - SXZUQFXR
+  - Q5G8KPXR
+  - 2YIG56YR
+  - 1F5WEAYR
+  - YS1CBRYR
+  - H2R67UZR
+  - JHPLSU1S
+  - DIHBUO2S
+  - B9O43Q2S
+  - YANVED4S
+  - 41ZDZ35S
+  - CIYT395S
+  - JWZL216S
+  - RMEBA57S
+  - KAHMX57S
+  - YU1DG67S
+  - 15GHFG7S
+  - K7YRCH7S
+  - LWCFIR7S
+  - ZIOS2M8S
+  - 7YDP919S
+  - 4SJRDBAS
+  - 7PPD5HAS
+  - 5E3Z2IAS
+  - 5UIBYLBS
+  - E4ITWZBS
+  - G9ROIPCS
+  - 8QAZQLES
+  - 78OCKNFS
+  - U6IRKXGS
+  - VWW1FQHS
+  - CF9N2JIS
+  - JFBEDUIS
+  - BWMY58JS
+  - Y7CK42LS
+  - 1Z9XUAMS
+  - NUAEISRR
+  - YG2R7TRR
+  - OYBHHTRR
+  - MWBKZTRR
+  - N2ABOURR
+  - WAEISURR
+  - J5ETUVRR
+  - S4Z73WRR
+  - DCPH9XRR
+  - IWEBIXRR
+  - G7YB1YRR
+  - L3B8AYRR
+  - Z5WUGYRR
+  - S93XMYRR
+  - IV2YNYRR
+  - CTW1FZRR
+  - WT6GGZRR
+  - O759PZRR
+  - WW7IVZRR
+  - VYAQB1SR
+  - A49S71SR
+  - GN13I1SR
+  - QBS5I1SR
+  - KZ8DN1SR
+  - WU1J23SR
+  - T931TRRR
+  - B8715SRR
+  - 5NM1WRRR
+  - XCW33SRR
+  - GZ74WRRR
+  - OAA5URRR
+  - ASL7SRRR
+  - LDHCYRRR
+  - JBVD4SRR
+  - QLHFURRR
+  - WZ3G6SRR
+  - VGBGTRRR
+  - VQXGXRRR
+  - TTIG5SRR
+  - NBOJ3SRR
+  - 1HDKXRRR
+  - 64KK5SRR
+  - GMTM3SRR
+  - 7I8MRRRR
+  - 73FM5SRR
+  - 99FN5SRR
+  - LIZO5SRR
+  - AXHPRRRR
+  - SM1QYRRR
+  - V5QQ6SRR
+  - SE9S1SRR
+  - 16LSXRRR
+  - A11UWRRR
+  - S8XUXRRR
+  - 2MXVRRRR
+  - IKBWYRRR
+  - JD3X3SRR
+  - KMEYYRRR
+  - RZIZSRRR
+  - STCZZRRR
+  - IDKZVRRR
+  - WOR3HSRR
+  - E9L68SRR
+  - MUJ6ISRR
+  - RT68ESRR
+  - 3PO8BSRR
+  - 63B9CSRR
+  - 8LNBCSRR
+  - 1KPBKSRR
+  - 5MCDBSRR
+  - G3YDCSRR

@@ -1,0 +1,31 @@
+name: GPT55 Walkie Talkie — Erratic 10/4 spike
+author: challenge
+description: >
+  Find a seed containing the keyword GPT55 where the Erratic Deck has both Ten and Four
+  density and Walkie Talkie appears in the first shop. Walkie Talkie gives +10 Chips and +4 Mult
+  when 10s or 4s score, so this is a fun, runnable combo build.
+deck: Erratic
+stake: White
+must:
+  - erraticRank: Ten
+    min: 8
+  - erraticRank: Four
+    min: 8
+  - joker: WalkieTalkie
+    antes: [1]
+    sources:
+      shopItems: [0, 1, 2, 3]
+      boosterPacks: [0, 1]
+should:
+  - joker: Hack
+    antes: [1, 2, 3]
+    score: 45
+  - joker: EvenSteven
+    antes: [1, 2, 3]
+    score: 40
+  - joker: TheTrio
+    antes: [1, 2, 3]
+    score: 30
+  - joker: TheFamily
+    antes: [1, 2, 3]
+    score: 30

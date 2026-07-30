@@ -1,0 +1,74 @@
+name: Whimsy Dicetricks 3
+author: for pi and Lola — the ante-3 version. Perkeo by ante 3, Showman 1-3 so Oops can stack, Negative skip-tag ladder, stacked Oops/copy core, lucky ladders.
+description: >
+  Ante-3 cut of Whimsy Dicetricks. Perkeo from early packs by ante 3; Showman
+  antes 1-3 so the Oops can stack; Negative small-blind Tag from ante 3 on;
+  Oops! All 6s in the shop as a must from ante 3. Should: stacked Oops at antes
+  4 and 5, and the lucky hit-stream ladders (money + mult, 8 to 1).
+deck: Anaglyph
+stake: White
+
+must:
+  - legendaryJoker: Perkeo
+    antes: [3]
+  - smallBlindTag: NegativeTag
+    antes: [3,4,5,6,7,8]
+    min: 2
+  - joker: OopsAll6s
+    antes: [3,4,5,6,7,8]
+    sources:
+      shopItems: [2,3,4,5,6,7,8]
+  - joker: Showman
+    antes: [1,2,3]
+should:
+  - joker: OopsAll6s
+    antes: [4]
+    sources:
+      shopItems: [2, 3, 4, 5, 6, 7, 8]
+    score: 100
+  - joker: OopsAll6s
+    antes: [5]
+    sources:
+      shopItems: [0]
+    score: 100
+  - joker: OopsAll6s
+    antes: [6]
+    sources:
+      shopItems: [0,1,2]
+    score: 100
+  - luckyMoney: [0]
+    score: 28
+  - luckyMoney: [1]
+    score: 27
+  - luckyMoney: [2]
+    score: 26
+  - luckyMoney: [3]
+    score: 25
+  - luckyMoney: [4]
+    score: 24
+  - luckyMoney: [5]
+    score: 23
+  - luckyMoney: [6]
+    score: 22
+  - luckyMoney: [7]
+    score: 21
+  - luckyMult: [0]
+    score: 8
+  - luckyMult: [1]
+    score: 7
+  - luckyMult: [2]
+    score: 6
+  - luckyMult: [3]
+    score: 5
+  - luckyMult: [4]
+    score: 4
+  - luckyMult: [5]
+    score: 3
+  - luckyMult: [6]
+    score: 2
+  - luckyMult: [7]
+    score: 1
+
+seeds:
+  - D3A1OPUS
+  - 2D4WOPUS

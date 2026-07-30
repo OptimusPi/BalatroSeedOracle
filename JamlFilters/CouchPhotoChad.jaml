@@ -1,0 +1,23 @@
+name: Couch Photo Chad
+author: nat break run
+description: >
+  Face card + Hanging Chad retriggers Photograph's X2. Red deck, White stake.
+  Photo ante 1-3, Chad ante 1-4. Soft should-score for early Uncommon/Rare tags.
+deck: Red
+stake: White
+must:
+  - commonJoker: Photograph
+    antes: [1, 2, 3]
+  - commonJoker: HangingChad
+    antes: [1, 2, 3, 4]
+should:
+  - tag: UncommonTag
+    antes: [1, 2, 3]
+    score: 20
+  - tag: RareTag
+    antes: [1, 2, 3]
+    score: 30
+
+seeds:
+  - 6Y6
+  - Q

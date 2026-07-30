@@ -1,0 +1,21 @@
+name: blue-white-perkeo-blueprint-brainstorm-invisible-showman
+deck: Blue
+stake: White
+
+must:
+  - legendaryJoker: Perkeo
+    antes: [1]
+
+should:
+  - rareJoker: Blueprint
+    antes: [1]
+    score: 100
+  - rareJoker: Brainstorm
+    antes: [1]
+    score: 100
+  - rareJoker: InvisibleJoker
+    antes: [1]
+    score: 100
+  - commonJoker: Showman
+    antes: [1, 2]
+    score: 80

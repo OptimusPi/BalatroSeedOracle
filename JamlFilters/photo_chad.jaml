@@ -1,0 +1,28 @@
+name: Photo Chad (Anaglyph skipper)
+author: for pi — Photograph + Hanging Chad, farmed off Anaglyph double-tags
+description: >
+  The "Photo Chad": Hanging Chad retriggers the first scored card; Photograph gives
+  X2 Mult on the first scored FACE card. Lead with a face card and Chad retriggers
+  Photograph's X2 — double the photo. On the Anaglyph deck every boss drops a DOUBLE
+  Tag, so the skip-tag mechanic feeds joker-granting tags (Uncommon/Rare/Charm/Negative)
+  twice as fast across antes 1-6.
+deck: Anaglyph
+stake: White
+must:
+  - commonJoker: Photograph
+    antes: [1, 2, 3]
+  - commonJoker: HangingChad
+    antes: [1, 2, 3, 4]
+should:
+  - tag: RareTag
+    antes: [1, 2, 3, 4, 5, 6]
+    score: 50
+  - tag: UncommonTag
+    antes: [1, 2, 3, 4, 5, 6]
+    score: 40
+  - tag: NegativeTag
+    antes: [1, 2, 3, 4, 5, 6]
+    score: 30
+  - tag: CharmTag
+    antes: [1, 2, 3, 4, 5, 6]
+    score: 20

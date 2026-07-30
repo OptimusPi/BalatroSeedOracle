@@ -1,0 +1,87 @@
+name: Whimsy Dicetricks
+author: for pi — Perkeo + Hieroglyph + Showman + Negative skip-tag + stacked Oops/copy core + lucky ladder
+description: >
+  Perkeo from early packs; Hieroglyph voucher ante 1; Showman early (antes 1-3)
+  so the Oops can stack; Negative small-blind Tag ante 4; Oops! All 6s in the
+  ante-4 shop (slots 2-4) as a must. Should: stacked Oops at antes 4 and 5, the
+  copy/retrigger core, and the lucky hit-stream ladders (money + mult, 8 to 1).
+  Anaglyph so every skip tag doubles.
+deck: Anaglyph
+stake: White
+must:
+  - smallBlindTag: NegativeTag
+    antes: [4]
+  - joker: Perkeo
+    antes: [1,2,3]
+  - joker: Showman
+    antes: [1,2,3]
+should:
+  - jokers: [OopsAll6s, Blueprint, Brainstorm, InvisibleJoker, SockAndBuskin, HangingChad]
+    antes: [1,2,3,4]
+    sources:
+      shopItems: [0,1]
+      boosterPacks: [0,1]
+    score: 29
+    max: 1
+  - joker: OopsAll6s
+    antes: [4]
+    sources:
+      shopItems: [2, 3, 4, 5, 6, 7]
+    score: 100
+  - joker: OopsAll6s
+    antes: [5]
+    sources:
+      shopItems: [0]
+    score: 100
+  - jokers: [LuckyCat, Blueprint, Brainstorm, InvisibleJoker, SockAndBuskin, HangingChad]
+    antes: [4]
+    sources:
+      shopItems: [2, 3, 4, 5, 6, 7]
+    score: 33
+  - jokers: [LuckyCat, Blueprint, Brainstorm, InvisibleJoker, SockAndBuskin, HangingChad]
+    antes: [5]
+    sources:
+      shopItems: [0,1]
+    score: 33
+  - luckyMoney: [0]
+    score: 8
+  - luckyMoney: [1]
+    score: 7
+  - luckyMoney: [2]
+    score: 6
+  - luckyMoney: [3]
+    score: 5
+  - luckyMoney: [4]
+    score: 4
+  - luckyMoney: [5]
+    score: 3
+  - luckyMoney: [6]
+    score: 2
+  - luckyMoney: [7]
+    score: 1
+  - luckyMult: [0]
+    score: 8
+  - luckyMult: [1]
+    score: 7
+  - luckyMult: [2]
+    score: 6
+  - luckyMult: [3]
+    score: 5
+  - luckyMult: [4]
+    score: 4
+  - luckyMult: [5]
+    score: 3
+  - luckyMult: [6]
+    score: 2
+  - luckyMult: [7]
+    score: 1
+  - joker: LuckyCat
+    antes: [6]
+  - joker: LuckyCat
+    antes: [5]
+  - joker: LuckyCat
+    antes: [4]
+  - joker: LuckyCat
+    antes: [3]
+  - joker: LuckyCat
+    antes: [2]

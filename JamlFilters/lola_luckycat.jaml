@@ -1,0 +1,38 @@
+name: Lola's Lucky Cat
+author: for Lola — the black cat that eats luck
+description: >
+  Lucky Cat is the heart: +0.25 xMult every time a Lucky card hits, forever. Oops!
+  All 6s doubles every lucky roll so the Cat feeds twice as fast. Blueprint and
+  Brainstorm copy the Cat (it's copyable — not on the incompatible list), Hanging
+  Chad retriggers the first scored card (lead with a Lucky card), and Ankh + Showman
+  let you stack a second Cat. Lola's luck engine, with her name on the seed.
+deck: Red
+stake: White
+must:
+  - uncommonJoker: LuckyCat
+    antes: [1, 2, 3]
+should:
+  - uncommonJoker: OopsAll6s
+    antes: [1, 2, 3, 4, 5, 6]
+    score: 70
+  - rareJoker: Blueprint
+    antes: [1, 2, 3, 4]
+    score: 50
+  - rareJoker: Brainstorm
+    antes: [1, 2, 3, 4]
+    score: 45
+  - commonJoker: HangingChad
+    antes: [1, 2, 3, 4]
+    score: 40
+  - spectralCard: Ankh
+    antes: [1, 2, 3, 4, 5, 6]
+    score: 30
+  - joker: Any
+    edition: Negative
+    score: 25
+  - uncommonJoker: Showman
+    antes: [1, 2]
+    score: 20
+    max: 1
+  - tag: NegativeTag
+    score: 20

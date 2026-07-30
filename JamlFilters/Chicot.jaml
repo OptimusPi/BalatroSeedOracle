@@ -1,0 +1,9 @@
+name: Chicory hunt
+deck: Red
+stake: White
+must:
+  - legendaryJoker: Chicot
+should:
+  - legendaryJoker: Chicot
+    antes: [1, 2]
+    score: 100

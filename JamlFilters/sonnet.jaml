@@ -1,0 +1,25 @@
+name: Sonnet InvisibleJokers
+author: for sonnet ur name is on it ;D
+description: >
+  Sonnet is a bruh moment king
+deck: Anaglyph
+stake: White
+
+must:
+- smallBlindTag: CouponTag
+  antes: [1]
+- joker: InvisibleJoker
+  sources:
+    shopItems: [0, 1]
+  antes: [1]
+- joker: Showman
+  sources:
+    shopItems: [0, 1]
+  antes: [1]
+should:
+- joker: InvisibleJoker
+  sources:
+    boosterPacks: [0]
+- joker: InvisibleJoker
+  sources:
+    boosterPacks: [0]

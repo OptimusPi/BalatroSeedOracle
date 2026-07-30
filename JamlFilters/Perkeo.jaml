@@ -1,0 +1,83 @@
+name: Perkeo hunt
+deck: Red
+stake: White
+must:
+  - legendaryJoker: Perkeo
+should:
+  - legendaryJoker: Perkeo
+    antes: [1, 2]
+    score: 100
+
+seeds:
+  - GOBICITT
+  - 7DPNPB8P
+  - K9TTVTMA
+  - OKKTHQIW
+  - 2GNI1RT3
+  - GNX2V8VI
+  - 1P5NPBOP
+  - OTPLZA2C
+  - 4RWRNCTC
+  - XDXIK8DW
+  - RI8J45O5
+  - A6RB9VD8
+  - 6AOPJ36P
+  - WY6JTGAF
+  - 274RXYH1
+  - YOCILV7R
+  - JD3N8QVC
+  - E2O8ZMI9
+  - FIIA2X35
+  - 12H13UNL
+  - ZPMBUAKB
+  - 625SO113
+  - 932BV7CG
+  - CLEV16ES
+  - 2FL4CIS5
+  - TST47BVJ
+  - 7GCE8FHQ
+  - 14KHBGV8
+  - 9XGU31YZ
+  - 3NP7KT1J
+  - PY6MI3P9
+  - D28KLOKX
+  - D2MCRCYL
+  - U8XLZP48
+  - ZGAQWIFP
+  - F15MHNHX
+  - TYOUO5YQ
+  - LV8NLQ73
+  - DDNNER6A
+  - 9KV9Z1PK
+  - WWSS632S
+  - 4G1Y5AXV
+  - SY5P532N
+  - BRKQKGEY
+  - UDQ4JGVD
+  - 4DMEKJ7O
+  - KD39M58N
+  - BW6S72WM
+  - IONAUCQH
+  - XUF1GQB8
+  - QI1G5FLV
+  - N6T9YRY8
+  - X7MEL6KF
+  - 3WNI7UTC
+  - QZXNJBK7
+  - 8H7VWDYR
+  - 7LZHZYJF
+  - OY38A3V2
+  - M9GTZH8P
+  - OB8A3DSH
+  - 5EG5DEW9
+  - 1EAWKP64
+  - PVOMY5AV
+  - O2ZVT24C
+  - MXBE131P
+  - 3DDJWNKS
+  - Z1JHBYY5
+  - JTQQYG3E
+  - X5Z8GWMP
+  - G3E1IXCM
+  - FPPK7MHT
+  - XMT39XZR

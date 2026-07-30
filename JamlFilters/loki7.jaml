@@ -1,0 +1,52 @@
+id: sixtid
+name: Perkeo Sixth Sense Coupon King Steel Red
+author: pifreak
+deck: Plasma
+stake: White
+description: FIND A NEGATIVE BARON 15 ROLLS IN ANTE 2 IG
+must:
+  - luckyMoney: [1,2,3]
+  - legendaryJoker: Perkeo
+    antes: [1]
+    sources:
+      boosterPacks: [0,1]
+  - voucher: Hieroglyph
+    antes: [1,2,3,4]
+  - voucher: Petroglyph
+    antes: [1,2,3,4]  
+  - joker: Showman
+    antes: [1,2]
+    sources:
+      boosterPacks: [0,1,2,3]
+  - joker: Seance
+    antes: [1]
+    sources:
+      boosterPacks: [0,1,2,3]
+  - spectralCard: Cryptid
+    antes: [1]
+    sources:
+      seance: [0]
+should:
+  - jokers: [Baron, Mime, InvisibleJoker, Brainstorm, Blueprint]
+    antes: [1,2,3,4]
+    sources:
+      judgement: [0,1]
+  - jokers: [Baron, Mime, InvisibleJoker, Brainstorm, Blueprint]
+    antes: [1,2,3,4]
+
+  - legendaryJoker: any
+    antes: [1,2]
+    sources:
+      boosterPacks: [0,1,2,3]
+      
+  - rareJokers: [Blueprint, Brainstorm, InvisibleJoker]  
+    edition: Negative
+    antes: [1,2,3,4]
+    sources: 
+      boosterPacks: [0,1,2,3]
+      
+  - rareJokers: [Blueprint, Brainstorm, InvisibleJoker]  
+    edition: Negative
+    antes: [1,2,3,4]
+    sources: 
+      boosterPacks: [0,1,2,3,4,5]

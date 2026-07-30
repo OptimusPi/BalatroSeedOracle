@@ -1,0 +1,42 @@
+name: Chill Break
+author: pifreak
+description: Neg tag every blind + Oops All 6s and Invisible Joker in the shop — every ante, all day.
+deck: Magic
+stake: Black
+
+must:
+  - joker: Showman
+    sources:
+      boosterPacks: [0]
+    antes: [1]
+
+should:
+  - smallBlindTag: NegativeTag
+    antes: [1, 2, 3, 4, 5, 6, 7, 8]
+    score: 10
+  - joker: OopsAll6s
+    sources:
+      shopItems: [2, 3, 4, 5, 6, 7]
+    antes: [1, 2, 3, 4, 5, 6, 7, 8]
+    score: 100
+  - joker: InvisibleJoker
+    sources:
+      shopItems: [2, 3, 4, 5, 6, 7]
+    antes: [1, 2, 3, 4, 5, 6, 7, 8]
+    score: 8
+  - joker: Perkeo
+    antes: [1, 2]
+    score: 200
+  - joker: Showman
+    sources:
+      boosterPacks: [0]
+    antes: [1]
+    score: 50
+  - tarotCard: TheMagician
+    antes: [1, 2, 3, 4, 5, 6, 7, 8]
+    score: 1
+  - standardCard:
+      enhancement: Lucky
+    antes: [2, 3, 4, 5, 6]
+    max: 1
+    score: 20

@@ -1,0 +1,46 @@
+name: Waterbear cares a tun
+author: Waterbear #0027
+must:
+  - GrosMichel in ante 1
+  - GrosMichelExtinct: [0] # break banana on first shot
+should:
+  - jokers: [Cavendish, Blueprint, Brainstorm]
+    score: 100
+    antes: [1,2,3,4]
+  - jokers: [Cavendish, Blueprint, Brainstorm]
+    score: 67
+    antes: [5,6,7]
+  - jokers: [Cavendish, Blueprint, Brainstorm]
+    score: 1
+    antes: [8]
+mustNot:
+  - cavendishExtinct: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]
+    with:
+      luck: X32 # Just in case you accidentally collect 5xOops! All 6s :P  
+
+seeds:
+  - LOVEWLLU
+  - BEARJGXB
+  - BEAR7FA6
+  - DNBEAR87
+  - GBEARN7Z
+  - IEBEARQG
+  - WATERJSX
+  - 73WATERW
+  - 4DWATERL
+  - WATER1TO
+  - 1WATERY3
+  - 1E4WATER
+  - 1JWATER8
+  - 12IWATER
+  - 11WATERK
+  - 1LWATER9
+  - 26WATER5
+  - 25WATERG
+  - 1JFWATER
+  - 2WATERWN
+  - WATER3H3
+  - 2KWATER3
+  - 1EBWATER
+  - WATER1PZ
+  - 1WATERDP

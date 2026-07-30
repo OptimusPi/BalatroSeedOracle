@@ -1,0 +1,32 @@
+name: 01WeeMonday
+deck: Erratic
+stake: Black
+must:
+  - erraticRank: Two
+    min: 10
+  - joker: WeeJoker
+    stickers:
+      - Eternal
+    antes: [1]
+  - jokers:
+      - Hack
+      - HangingChad
+    antes: [1, 2, 3]
+should:
+  - erraticRank: Two
+    score: 1
+  - joker: Madness
+    stickers:
+      - Eternal
+    antes: [1]
+    score: 10
+  - joker: Madness
+    antes: [2]
+    score: 1
+  - joker: Showman
+    antes: [1, 2]
+    score: 1
+
+seeds:
+  - IZC16111
+  - XJR22111

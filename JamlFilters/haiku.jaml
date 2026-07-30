@@ -1,0 +1,13 @@
+name: Haiku Fits In Three Lines
+author: for haiku ur name is on it too ;D
+description: >
+  Small model, small filter. One clause, one joke, one shot at Ante 1.
+deck: Ghost
+stake: White
+
+must:
+- legendaryJoker: Perkeo
+  antes: [1]
+  sources:
+    arcanaPacks: [0]
+    spectralPacks: [0]

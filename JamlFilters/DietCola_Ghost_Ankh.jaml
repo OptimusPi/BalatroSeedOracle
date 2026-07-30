@@ -1,0 +1,89 @@
+name: Diet Cola Ghost Ankh
+author: for pi and Lola — Ghost deck so spectrals ride the shop, Ankh to copy-and-nuke, Diet Cola for the tag engine.
+description: >
+  Ghost deck (spectrals in the shop, Hex to start). Must: Ankh available early
+  from shop or spectral packs, Diet Cola by ante 3, and a couple Negative Tags to
+  seed the loop. Should: more Ankh, Diet Cola, and every Negative Tag scored so
+  the top seed has the richest copy-and-farm setup.
+deck: Ghost
+stake: White
+
+must:
+  - spectralCard: Ankh
+    antes: [1,2,3,4]
+    sources:
+      shopItems: [0,1,2,3,4,5,6,7,8]
+      boosterPacks: [0,1,2,3]
+  - joker: DietCola
+    antes: [1,2,3]
+  - smallBlindTag: NegativeTag
+    antes: [1,2,3,4,5,6,7,8]
+    min: 1
+
+should:
+  - spectralCard: Ankh
+    antes: [1,2,3,4]
+    sources:
+      shopItems: [0,1,2,3,4,5,6,7,8]
+      boosterPacks: [0,1,2,3]
+    score: 100
+  - joker: DietCola
+    antes: [1,2,3]
+    score: 50
+  - smallBlindTag: NegativeTag
+    antes: [1]
+    score: 40
+  - smallBlindTag: NegativeTag
+    antes: [2]
+    score: 40
+  - smallBlindTag: NegativeTag
+    antes: [3]
+    score: 40
+  - smallBlindTag: NegativeTag
+    antes: [4]
+    score: 40
+  - smallBlindTag: NegativeTag
+    antes: [5]
+    score: 40
+  - smallBlindTag: NegativeTag
+    antes: [6]
+    score: 40
+  - smallBlindTag: NegativeTag
+    antes: [7]
+    score: 40
+  - smallBlindTag: NegativeTag
+    antes: [8]
+    score: 40
+  - bigBlindTag: NegativeTag
+    antes: [1]
+    score: 40
+  - bigBlindTag: NegativeTag
+    antes: [2]
+    score: 40
+  - bigBlindTag: NegativeTag
+    antes: [3]
+    score: 40
+  - bigBlindTag: NegativeTag
+    antes: [4]
+    score: 40
+  - bigBlindTag: NegativeTag
+    antes: [5]
+    score: 40
+  - bigBlindTag: NegativeTag
+    antes: [6]
+    score: 40
+  - bigBlindTag: NegativeTag
+    antes: [7]
+    score: 40
+  - bigBlindTag: NegativeTag
+    antes: [8]
+    score: 40
+
+seeds:
+  - BOPUS8CB
+  - 63OPUSY1
+  - 2OPUSHSY
+  - 2WOPUSDA
+  - 1OPUSAF6
+  - 1OPUS15E
+  - 1OPUS1EU

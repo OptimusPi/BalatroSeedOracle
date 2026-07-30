@@ -1,0 +1,24 @@
+name: TheDailyWee
+description: Curated seeds for The Daily Wee, a Daily Balatro Ritual Game!
+author: pifreak
+deck: Erratic
+stake: White
+
+Must:
+  - erraticRank: Two
+    min: 10
+  - joker: WeeJoker
+    antes: [1]
+  - joker: HangingChad
+    antes: [1, 2]
+  - joker: Hack
+    antes: [1, 2]
+Should:
+  - legendaryJoker: Perkeo
+    antes: [1,2,3,4]
+  - joker: Showman
+    antes: [1,2]
+  - joker: HangingChad
+    antes: [1, 2]
+  - joker: Hack
+    antes: [1, 2]

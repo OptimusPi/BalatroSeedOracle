@@ -1,0 +1,355 @@
+id: impossible_v4
+name: "Actually Impossible"
+author: pifreak
+deck: Red
+stake: Gold
+
+mustNot:
+  - legendaryJoker: Perkeo
+  - legendaryJoker: Triboulet
+  - legendaryJoker: Canio
+  - legendaryJoker: Yorick
+  - legendaryJoker: Chicot
+
+must:
+  - boss: TheNeedle
+    antes: [ 1, 2, 3 ]
+
+should:
+  # ── HARD BOSSES ──
+  - boss: TheNeedle
+    score: 20
+  - boss: TheFlint
+    score: 15
+  - boss: TheWall
+    score: 15
+  - boss: TheSerpent
+    score: 10
+  - boss: TheArm
+    score: 10
+  - boss: ThePlant
+    score: 10
+  - boss: VerdantLeaf
+    score: 10
+  - boss: CrimsonHeart
+    score: 10
+  - boss: TheOx
+    score: 5
+  - boss: TheMark
+    score: 5
+  - boss: ThePsychic
+    score: 5
+  - boss: TheGoad
+    score: 5
+  - boss: TheHead
+    score: 5
+  - boss: TheManacle
+    score: 5
+  - boss: TheWater
+    score: 5
+  - boss: TheEye
+    score: 5
+  - boss: TheMouth
+    score: 5
+  - boss: TheHouse
+    score: 5
+  - boss: TheHook
+    score: 5
+  - boss: TheFish
+    score: 5
+  - boss: TheWheel
+    score: 5
+  - boss: TheClub
+    score: 5
+  - boss: TheWindow
+    score: 5
+  - boss: ThePillar
+    score: 5
+  - boss: AmberAcorn
+    score: 5
+  - boss: CeruleanBell
+    score: 5
+  - boss: VioletVessel
+    score: 5
+
+  # ── CARRY JOKERS ──
+  - joker: Blueprint
+    score: -20
+  - joker: Brainstorm
+    score: -20
+  - joker: Baron
+    score: -20
+  - joker: Mime
+    score: -20
+  - joker: OopsAll6s
+    score: -15
+  - joker: Vampire
+    score: -15
+  - joker: InvisibleJoker
+    score: -15
+  - joker: HangingChad
+    score: -15
+  - joker: Photograph
+    score: -15
+  - joker: LuckyCat
+    score: -15
+  - joker: WeeJoker
+    score: -15
+  - joker: Hologram
+    score: -15
+  - joker: Cavendish
+    score: -15
+  - joker: DNA
+    score: -15
+  - joker: SockAndBuskin
+    score: -10
+  - joker: SteelJoker
+    score: -10
+  - joker: Ramen
+    score: -10
+  - joker: BurntJoker
+    score: -10
+  - joker: Constellation
+    score: -10
+  - joker: Acrobat
+    score: -10
+  - joker: CardSharp
+    score: -10
+  - joker: Blackboard
+    score: -10
+  - joker: Seltzer
+    score: -10
+  - joker: Dusk
+    score: -10
+  - joker: Campfire
+    score: -10
+  - joker: Throwback
+    score: -10
+  - joker: GreenJoker
+    score: -10
+  - joker: RideTheBus
+    score: -10
+  - joker: Supernova
+    score: -10
+  - joker: Scholar
+    score: -10
+  - joker: WalkieTalkie
+    score: -10
+  - joker: FlashCard
+    score: -8
+  - joker: Runner
+    score: -8
+  - joker: Castle
+    score: -8
+  - joker: Hiker
+    score: -8
+  - joker: SpareTrousers
+    score: -8
+  - joker: HalfJoker
+    score: -8
+  - joker: Cartomancer
+    score: -8
+  - joker: Bloodstone
+    score: -8
+  - joker: Shortcut
+    score: -8
+  - joker: Vagabond
+    score: -8
+  - joker: GiftCard
+    score: -8
+  - joker: Erosion
+    score: -8
+  - joker: Arrowhead
+    score: -8
+  - joker: OnyxAgate
+    score: -8
+  - joker: GlassJoker
+    score: -8
+  - joker: FlowerPot
+    score: -8
+  - joker: SeeingDouble
+    score: -8
+  - joker: HitTheRoad
+    score: -8
+  - joker: TheDuo
+    score: -8
+  - joker: TheTrio
+    score: -8
+  - joker: TheFamily
+    score: -8
+  - joker: TheOrder
+    score: -8
+  - joker: TheTribe
+    score: -8
+  - joker: DriversLicense
+    score: -8
+  - joker: BaseballCard
+    score: -8
+  - joker: Obelisk
+    score: -8
+  - joker: LoyaltyCard
+    score: -8
+  - joker: Stuntman
+    score: -8
+  - joker: SpaceJoker
+    score: -8
+  - joker: Seance
+    score: -8
+  - joker: Madness
+    score: -8
+  - joker: Burglar
+    score: -8
+  - joker: SixthSense
+    score: -8
+  - joker: Hack
+    score: -8
+  - joker: Pareidolia
+    score: -8
+  - joker: Fibonacci
+    score: -8
+  - joker: DietCola
+    score: -8
+  - joker: MrBones
+    score: -8
+  - joker: Troubadour
+    score: -8
+  - joker: Certificate
+    score: -8
+  - joker: TradingCard
+    score: -8
+  - joker: RoughGem
+    score: -8
+  - joker: Showman
+    score: -8
+  - joker: SmearedJoker
+    score: -8
+  - joker: RiffRaff
+    score: -8
+  - joker: MerryAndy
+    score: -8
+
+  # ── ECONOMY JOKERS ──
+  - joker: GoldenJoker
+    score: -5
+  - joker: Rocket
+    score: -5
+  - joker: Satellite
+    score: -5
+  - joker: ToTheMoon
+    score: -5
+  - joker: BusinessCard
+    score: -5
+  - joker: FacelessJoker
+    score: -5
+  - joker: Matador
+    score: -5
+  - joker: Cloud9
+    score: -5
+  - joker: ReservedParking
+    score: -5
+  - joker: MailInRebate
+    score: -5
+  - joker: ChaostheClown
+    score: -5
+  - joker: DelayedGratification
+    score: -5
+  - joker: GoldenTicket
+    score: -5
+  - joker: Bootstraps
+    score: -5
+  - joker: Bull
+    score: -5
+
+  # ── TRASH JOKERS ──
+  - joker: Joker
+    score: 3
+  - joker: GreedyJoker
+    score: 3
+  - joker: LustyJoker
+    score: 3
+  - joker: WrathfulJoker
+    score: 3
+  - joker: GluttonousJoker
+    score: 3
+  - joker: JollyJoker
+    score: 3
+  - joker: ZanyJoker
+    score: 3
+  - joker: MadJoker
+    score: 3
+  - joker: CrazyJoker
+    score: 3
+  - joker: DrollJoker
+    score: 3
+  - joker: SlyJoker
+    score: 3
+  - joker: WilyJoker
+    score: 3
+  - joker: CleverJoker
+    score: 3
+  - joker: DeviousJoker
+    score: 3
+  - joker: CraftyJoker
+    score: 3
+  - joker: Banner
+    score: 3
+  - joker: EightBall
+    score: 3
+  - joker: Misprint
+    score: 3
+  - joker: ScaryFace
+    score: 3
+  - joker: AbstractJoker
+    score: 3
+  - joker: GrosMichel
+    score: 3
+  - joker: EvenSteven
+    score: 3
+  - joker: OddTodd
+    score: 3
+  - joker: Runner
+    score: 3
+  - joker: IceCream
+    score: 3
+  - joker: Splash
+    score: 3
+  - joker: BlueJoker
+    score: 3
+  - joker: Superposition
+    score: 3
+  - joker: ToDoList
+    score: 3
+  - joker: RedCard
+    score: 3
+  - joker: SquareJoker
+    score: 3
+  - joker: Hallucination
+    score: 3
+  - joker: FortuneTeller
+    score: 3
+  - joker: Juggler
+    score: 3
+  - joker: Drunkard
+    score: 3
+  - joker: Popcorn
+    score: 3
+  - joker: SmileyFace
+    score: 3
+  - joker: Swashbuckler
+    score: 3
+  - joker: ShootTheMoon
+    score: 3
+  - joker: Egg
+    score: 2
+  - joker: TurtleBean
+    score: 2
+  - joker: MarbleJoker
+    score: 2
+  - joker: StoneJoker
+    score: 2
+  - joker: FourFingers
+    score: 2
+  - joker: TheIdol
+    score: 2
+  - joker: CreditCard
+    score: 2

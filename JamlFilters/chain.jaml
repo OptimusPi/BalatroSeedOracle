@@ -1,0 +1,46 @@
+name: "Fool Emperor Showman Chain"
+deck: Magic
+stake: White
+
+must:
+  - tag: CharmTag
+    antes: [1]
+  - uncommonJoker: Showman
+    antes: [1]
+    sources:
+      judgement: [0]
+  
+  - tarotCard: TheEmperor
+    antes: [1]
+    sources:
+      boosterPacks: [1]
+  - tarotCard: Judgement
+    antes: [1]
+    sources:
+      emperor: [0]
+should:
+  - tarotCard: TheEmperor
+    antes: [1]
+    sources:
+      emperor: [0,1,2]
+    score: 8
+
+  - tarotCard: TheFool
+    antes: [1]
+    sources:
+      emperor: [0,1,2]
+    score: 5
+  - tarotCard: Judgement
+    antes: [1]
+    sources:
+      emperor: [0,1,2]
+    score: 3
+  - rareJoker: Blueprint
+    antes: [1]
+    score: 1
+  - rareJoker: Brainstorm
+    antes: [1]
+    score: 1
+  - legendaryJoker: Perkeo
+    antes: [1,2]
+    score: 1

@@ -1,0 +1,32 @@
+name: Lucky Cat Deep Hunt
+description: Find any seed with Lucky Cat somewhere in normal play (antes 1-8).
+deck: Red
+stake: White
+must:
+  - joker: LuckyCat
+    antes: [1, 2, 3, 4, 5, 6, 7, 8]
+should:
+  - joker: LuckyCat
+    antes: [1]
+    score: 1
+  - joker: LuckyCat
+    antes: [2]
+    score: 1
+  - joker: LuckyCat
+    antes: [3]
+    score: 1
+  - joker: LuckyCat
+    antes: [4]
+    score: 1
+  - joker: LuckyCat
+    antes: [5]
+    score: 1
+  - joker: LuckyCat
+    antes: [6]
+    score: 1
+  - joker: LuckyCat
+    antes: [7]
+    score: 1
+  - joker: LuckyCat
+    antes: [8]
+    score: 1

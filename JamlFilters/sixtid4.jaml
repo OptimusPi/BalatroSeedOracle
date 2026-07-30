@@ -1,0 +1,64 @@
+id: sixtid4
+name:  sixtid4
+author: pifreak
+deck: Plasma
+stake: White
+description: Perkeo ante 1 + Sixth Sense ante 1 (the 6→Soul pipeline) + Coupon as small blind tag ante 1, plus a King with Steel enhancement and Red Seal somewhere in antes 1-3. Scored on Blueprint and Brainstorm in antes 1-4.
+must:
+  - smallBlindTag: UncommonTag
+    antes: [1]
+  - spectralCard: Cryptid
+    antes: [1]
+    sources:
+      sixthSense: [0]
+  - uncommonJoker: SixthSense
+    antes: [1]
+    sources:
+      uncommonTag: [0]
+  - legendaryJoker: Perkeo
+    antes: [1]
+    sources:
+      boosterPacks: [0,1,2,3]
+  - joker: Baron
+    antes: [1,2,3,4]
+  - joker: Mime
+    antes: [1,2,3,4]
+should:
+  - jokers: [Baron, Mime, Blueprint, Brainstorm, InvisibleJoker]
+    antes: [1,2,3,4]
+    sources:
+      boosterPacks: [0,1,2,3]
+    min: 2
+  - jokers: [Baron, Mime, Blueprint, Brainstorm, InvisibleJoker]
+    antes: [1,2,3,4]
+    sources:
+      boosterPacks: [0,1,2,3]
+  - voucher: Hieroglyph
+    antes: [1,2,3,4]
+  - rareJoker: Baron
+    antes: [2,3,4]
+    sources:
+      shopItems: [0,1,2,3,4,5,6,7,8]
+      boosterPacks: [0,1,2,3,4,5]
+    score: 3
+  - uncommonJoker: Mime
+    antes: [2,3,4]
+    sources:
+      shopItems: [0,1,2,3,4,5,6,7,8]
+      boosterPacks: [0,1,2,3,4,5]
+    score: 2
+
+  - rareJoker: Blueprint
+    antes: [1, 2, 3, 4]
+    score: 4
+  - rareJoker: Brainstorm
+    antes: [1, 2, 3, 4]
+    score: 4
+  - rareJoker: Blueprint
+    antes: [1, 2, 3, 4]
+    edition: Negative
+    score: 3
+  - rareJoker: Brainstorm
+    antes: [1, 2, 3, 4]
+    edition: Negative
+    score: 3

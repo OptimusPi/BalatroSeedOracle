@@ -1,0 +1,16 @@
+name: Legendary probe
+deck: Red
+stake: White
+must:
+  - legendaryJoker: Any
+should:
+  - legendaryJoker: Canio
+    score: 1
+  - legendaryJoker: Triboulet
+    score: 1
+  - legendaryJoker: Yorick
+    score: 1
+  - legendaryJoker: Chicot
+    score: 1
+  - legendaryJoker: Perkeo
+    score: 1

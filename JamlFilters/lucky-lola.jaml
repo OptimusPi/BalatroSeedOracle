@@ -1,0 +1,45 @@
+name: Lucky Lola
+author: waterbear — for Lola (Lucky Cat is her favorite)
+description: >
+  Lola's seed. Lucky Cat gains X0.25 Mult — permanently — every time a Lucky card
+  triggers. Pair it with Oops! All 6s, which DOUBLES every probability so the Lucky
+  cards hit twice as often (and it stacks — 3 or 4 Oops = 8-16x the luck, the cat
+  snowballs forever). Showman lets the Oops dupes exist; Seltzer retriggers every
+  card for even more lucky hits. pi loves you — and so does Lola.
+deck: Red
+stake: White
+must:
+  - uncommonJoker: LuckyCat
+    antes:
+      - 1
+      - 2
+      - 3
+  - uncommonJoker: OopsAll6s
+    antes:
+      - 1
+      - 2
+      - 3
+should:
+  - uncommonJoker: OopsAll6s
+    antes:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+    score: 60
+  - uncommonJoker: Showman
+    score: 30
+    max: 1
+  - uncommonJoker: Seltzer
+    score: 25
+  - commonJoker: Splash
+    score: 15
+  - luckyMult: [0, 1, 2, 3]
+    with:
+      luck: 4
+    score: 50
+  - luckyMoney: [0, 1]
+    with:
+      luck: 4
+    score: 20

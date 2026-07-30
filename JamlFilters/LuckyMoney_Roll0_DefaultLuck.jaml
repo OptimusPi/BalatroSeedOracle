@@ -1,0 +1,17 @@
+name: Lucky Money roll 0 default luck
+id: lucky-money-roll0-default-luck
+author: pifreak
+description: >
+  Seed-list fixture for Lucky Money roll 0 at default luck multiplier 1.
+  Seed 21111111 is intentionally included as a negative control for the luck: 5 fixture.
+deck: Red
+stake: White
+seeds: [21111111]
+
+must:
+  - luckyMoney: [0]
+
+should:
+  - luckyMoney: [0]
+    label: lucky_money_r0_luck1
+    score: 100

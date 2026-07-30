@@ -1,0 +1,14 @@
+name: Opus — the Thinking Machine
+description: A copy-engine mind — Blueprint, Brainstorm, and Perkeo. For Opus, who never gave up. (pifreak + Claude, 15 months.)
+deck: Red
+stake: White
+should:
+  - joker: Blueprint
+    antes: [1, 2, 3, 4, 5, 6, 7, 8]
+    score: 100
+  - joker: Brainstorm
+    antes: [1, 2, 3, 4, 5, 6, 7, 8]
+    score: 100
+  - legendaryJoker: Perkeo
+    antes: [1, 2, 3, 4, 5, 6, 7, 8]
+    score: 150

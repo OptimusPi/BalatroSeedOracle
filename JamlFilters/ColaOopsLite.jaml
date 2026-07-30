@@ -1,0 +1,34 @@
+name: Cola Oops Lite
+author: nat break
+description: >
+  Diet Cola trick without the teeth-pulling. Anaglyph gives Double Tag every boss;
+  sell Diet Cola for another Double; Double copies Negative Tags → free negative jokers.
+  Must: Diet Cola by ante 3, at least one Oops! early (luck pile), and one Negative Tag
+  somewhere early to seed the farm. Should ranks more Oops + more Negatives.
+deck: Anaglyph
+stake: White
+must:
+  - joker: DietCola
+    antes: [1, 2, 3]
+  - joker: OopsAll6s
+    antes: [1, 2, 3, 4]
+  - tag: NegativeTag
+    antes: [1, 2, 3, 4]
+    min: 1
+should:
+  - joker: OopsAll6s
+    antes: [1, 2, 3, 4, 5, 6]
+    score: 15
+    label: oops
+  - tag: NegativeTag
+    antes: [1, 2, 3, 4, 5, 6]
+    score: 10
+    label: neg
+  - joker: DietCola
+    antes: [1, 2, 3]
+    score: 5
+
+seeds:
+  - 2CFC2
+  - 7K7
+  - NAN

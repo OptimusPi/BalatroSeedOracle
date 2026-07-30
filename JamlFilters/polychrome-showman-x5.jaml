@@ -1,0 +1,35 @@
+name: Five Polychrome Showman
+deck: Red
+stake: White
+must:
+  - uncommonJoker: Showman
+    min: 1
+    antes: [1, 2, 3, 4, 5, 6, 7, 8]
+    sources:
+      shopItems: [0, 1, 2, 3]
+      boosterPacks: [0, 1, 2, 3, 4, 5]
+      judgement: [0]
+      wraith: [0]
+      riffRaff: [0, 1]
+      rareTag: [0]
+      uncommonTag: [0]
+      commonShopJokers: [0, 1, 2, 3, 4]
+      uncommonShopJokers: [0, 1, 2, 3, 4]
+      rareShopJokers: [0, 1, 2, 3, 4]
+      allShopJokers: [0, 1, 2, 3, 4]
+  - uncommonJoker: Showman
+    edition: Polychrome
+    min: 5
+    antes: [1, 2, 3, 4, 5, 6, 7, 8]
+    sources:
+      shopItems: [0, 1, 2, 3]
+      boosterPacks: [0, 1, 2, 3, 4, 5]
+      judgement: [0]
+      wraith: [0]
+      riffRaff: [0, 1]
+      rareTag: [0]
+      uncommonTag: [0]
+      commonShopJokers: [0, 1, 2, 3, 4]
+      uncommonShopJokers: [0, 1, 2, 3, 4]
+      rareShopJokers: [0, 1, 2, 3, 4]
+      allShopJokers: [0, 1, 2, 3, 4]

@@ -1,0 +1,39 @@
+id: sixtid
+name: Perkeo Sixth Sense Coupon King Steel Red
+author: pifreak
+deck: Plasma
+stake: White
+description: Perkeo ante 1 + Sixth Sense ante 1 (the 6→Soul pipeline) + Coupon as small blind tag ante 1, plus a King with Steel enhancement and Red Seal somewhere in antes 1-3. Scored on Blueprint and Brainstorm in antes 1-4.
+must:
+  - spectralCard: Cryptid
+    antes: [1]
+    sources:
+      sixthSense: [0]
+  - legendaryJoker: Perkeo
+    antes: [1]
+    sources:
+      boosterPacks: [0,1]
+  - uncommonJoker: SixthSense
+    antes: [1]
+    sources:
+      shopItems: [0]
+      boosterPacks: [0]
+  - rareJoker: Baron
+    antes: [1,2,3,4]
+  - uncommonJoker: Mime
+    antes: [1,2,3,4]
+should:
+  - voucher: Hieroglyph
+    antes: [1,2,3,4]
+  - rareJoker: Blueprint
+    antes: [1,2,3,4]
+  - rareJoker: Brainstorm
+    antes: [1,2,3,4]
+  - rareJoker: Blueprint
+    antes: [1, 2, 3, 4]
+    edition: Negative
+    score: 2
+  - rareJoker: Brainstorm
+    antes: [1, 2, 3, 4]
+    edition: Negative
+    score: 2

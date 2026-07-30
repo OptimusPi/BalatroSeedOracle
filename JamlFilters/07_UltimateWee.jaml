@@ -1,0 +1,50 @@
+name: 07_UltimateWee
+deck: Erratic
+stake: White
+must:
+  - erraticRank: Two
+    min: 10
+  - joker: WeeJoker
+    antes: [1, 2]
+  - jokers:
+      - Hack
+      - HangingChad
+    antes: [1, 2]
+should:
+  - erraticRank: Two
+    score: 1
+  - legendaryJoker: Perkeo
+    antes: [1]
+    score: 1000
+  - legendaryJoker: Perkeo
+    antes: [2]
+    score: 500
+  - joker: WeeJoker
+    edition: Negative
+    antes: [1]
+    score: 800
+  - joker: WeeJoker
+    edition: Negative
+    antes: [2]
+    score: 400
+  - joker: Blueprint
+    antes: [1]
+    score: 300
+  - joker: Brainstorm
+    antes: [1]
+    score: 300
+  - joker: Showman
+    antes: [1]
+    score: 200
+  - joker: WeeJoker
+    edition: Polychrome
+    antes: [1, 2]
+    score: 350
+  - joker: Hack
+    edition: Negative
+    antes: [1, 2]
+    score: 400
+  - joker: HangingChad
+    edition: Negative
+    antes: [1, 2]
+    score: 400

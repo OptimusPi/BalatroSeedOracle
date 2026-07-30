@@ -1,0 +1,26 @@
+name: Two Black Hole (Immolate throwback)
+deck: Red
+stake: White
+
+# Port of 2blackhole.cl onto JAML.
+#   Ante 1, pack 1 (the guaranteed Buffoon pack) contains Showman, and a
+#   Celestial pack at ante 1 yields at least two Black Hole cards.
+must:
+  - joker: Showman
+    antes: [1]
+    sources:
+      boosterPacks: [0]
+  - spectralCard: BlackHole
+    antes: [1]
+    min: 2
+    sources:
+      boosterPacks: [1, 2, 3]
+
+# Rank the dupe-stacked seeds higher — three Black Holes beats two.
+should:
+  - spectralCard: BlackHole
+    antes: [1]
+    min: 3
+    score: 100
+    sources:
+      boosterPacks: [1, 2, 3]

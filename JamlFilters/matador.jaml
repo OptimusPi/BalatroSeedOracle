@@ -1,0 +1,25 @@
+name: Matador
+author: genie (for pi)
+description: >
+  the wish: Matador — earn $8 whenever your played hand triggers the Boss Blind's
+  ability. an economy engine that turns the scariest blinds into a payday. find it
+  early so the money compounds.
+deck: Red
+stake: White
+must:
+  - joker: Matador
+    antes:
+      - 1
+      - 2
+      - 3
+should:
+  - joker: Matador
+    antes:
+      - 1
+      - 2
+      - 3
+      - 4
+    score: 30
+  - uncommonJoker: Showman
+    score: 15
+    max: 1

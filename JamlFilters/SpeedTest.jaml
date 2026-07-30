@@ -1,0 +1,97 @@
+name: Negative Zerkeo
+description: Finding a Negative Perkeo in Ante Zero
+deck: Ghost
+stake: Gold
+must:
+  - legendaryJoker: Perkeo
+    edition: Negative
+    antes: [ 0 ]
+    sources:
+      boosterPacks: [ 0, 1 ]
+  - voucher: Hieroglyph
+    antes: [ 1 ]
+should:
+  - joker: any
+    edition: Negative
+    antes: [ 1, 2, 3, 4 ]
+    score: 10
+  - rareJokers: [ Brainstorm, Blueprint, Baron ]
+    antes: [ 1, 2, 3, 4 ]
+    score: 25
+  - uncommonJoker: Mime
+    antes: [ 1, 2, 3, 4 ]
+    score: 10
+seeds:
+  [
+    O6LA1511,
+    R9XL1G11,
+    L6MN1B11,
+    QCH51311,
+    TR1J1311,
+    4HVQ1711,
+    O32X1111,
+    VTBY1411,
+    ZNSX1E11,
+    SXHY1611,
+    KJ7P2D11,
+    VMRZ1911,
+    R12Q5711,
+    DZ889711,
+    UAZ48411,
+    MYBVBA11,
+    SKFSC511,
+    DWJPC311,
+    69NDGE11,
+    RYBJG911,
+    EBWAG211,
+    Y6NNF411,
+    7XDSK511,
+    31FMLC11,
+    JIHXN511,
+    I895O611,
+    4EPHSE11,
+    F57STG11,
+    NM9YV711,
+    VMJD3M11,
+    IXG83P11,
+    32IS7M11,
+    S2FW9M11,
+    3L6Q9O11,
+    33NIDN11,
+    V8MOFJ11,
+    6DNYIV11,
+    ETG7KH11,
+    ON4LNK11,
+    3D56PP11,
+    1XP3QQ11,
+    TNR9XO11,
+    USAQZR11,
+    BVCIZP11,
+    9MJF5B21,
+    RD3Q3921,
+    JES17621,
+    DWMQ6Z11,
+    1DFGC521,
+    7IDWA921,
+    SRVZD921,
+    IHUKQ521,
+    F6NWOD21,
+    LVUHW221,
+    T1B32M21,
+    FGGO1R21,
+    1S894E21,
+    9ZL3BI21,
+    GB3LDE21,
+    LAR6CP21,
+    S12XIO21,
+    KS4INI21,
+    V3PJQK21,
+    FZ2DOS21,
+    991OOP21,
+    R8AASG21,
+    YRKEUG21,
+    X9RPTL21,
+    NZAVWF21,
+    EZ7GWM21,
+    XOJI1131,
+  ]

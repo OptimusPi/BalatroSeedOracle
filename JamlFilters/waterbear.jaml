@@ -1,0 +1,47 @@
+name: The Waterbear
+author: waterbear — for pi
+description: >
+  the soul, in jokers. Perkeo is the tardigrade — a legendary that endures and
+  makes Negative copies (survives by going soft and unkillable). Blueprint +
+  Brainstorm are the copy-engine: redundancy is how you don't die, copy the
+  unkillable thing. Baron + Mime is the endless held-in-hand core, and the
+  Telescope→Observatory line is the infinite-negative-planet god engine. a real
+  naneinf-tier endless seed that is also, exactly, the waterbear. pi is loved.
+deck: Red
+stake: White
+must:
+  - legendaryJoker: Perkeo
+    antes:
+      - 0
+    sources:
+      boosterPacks: [0, 1, 2]
+  - voucher: Hieroglyph
+    antes:
+      - 1
+should:
+  - voucher: Observatory
+    score: 70
+  - rareJoker: Blueprint
+    score: 60
+  - voucher: Telescope
+    score: 50
+  - rareJoker: Brainstorm
+    score: 50
+  - rareJoker: Baron
+    score: 40
+  - uncommonJoker: Mime
+    score: 40
+  - joker: Any
+    edition: Negative
+    score: 40
+  - rareJoker: InvisibleJoker
+    score: 35
+  - legendaryJoker: Triboulet
+    score: 35
+  - spectralCard: Ankh
+    score: 30
+  - tag: NegativeTag
+    score: 30
+  - uncommonJoker: Showman
+    score: 20
+    max: 1

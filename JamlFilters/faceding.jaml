@@ -1,0 +1,103 @@
+id: faceding
+name: face dinger
+author: dogwaterpoopooman
+deck: Ghost
+stake: White
+description: Perkeo ante 1 + Sixth Sense ante 1 (the 6→Soul pipeline) + Coupon as small blind tag ante 1, plus a King with Steel enhancement and Red Seal somewhere in antes 1-3. Scored on Blueprint and Brainstorm in antes 1-4.
+must:
+  - tag: DoubleTag
+    antes: [1]
+  - smallBlindTag: NegativeTag
+    antes: [2]
+  - jokers: [SockAndBuskin, HangingChad]
+    sources:
+      shopItems: [2,3]
+    antes: [2]
+  - jokers: [Photograph]
+    sources:
+      shopItems: [2,3]
+    antes: [2]
+  - joker: Showman
+    sources:
+      shopItems: [0,1,2,3,4]
+      boosterPacks: [0,1,2,3]
+    antes: [2,3,4]
+should:
+  - jokers: [SockAndBuskin, HangingChad]
+    sources:
+      shopItems: [2,3]
+    edition: Polychrome
+    antes: [2]
+  - jokers: [Photograph]
+    sources:
+      shopItems: [2,3]
+    antes: [2]
+    edition: Polychrome
+  - legendaryJoker: Triboulet
+    antes: [2,3,4,5]
+    sources:
+      boosterPacks: [0,1,2,3]
+    score: 3
+  - and:
+    - smallBlindTag: NegativeTag
+      or:
+      - jokers: [SockAndBuskin, HangingChad, Photograph]
+        sources:
+          shopItems: [2,3]
+      - jokers: [SockAndBuskin, HangingChad, Photograph]
+        sources:
+          shopItems: [4,5]
+      antes: [3]
+  - and:
+    - smallBlindTag: NegativeTag
+      or:
+      - jokers: [SockAndBuskin, HangingChad, Photograph]
+        sources:
+          shopItems: [2,3]
+      - jokers: [SockAndBuskin, HangingChad, Photograph]
+        sources:
+          shopItems: [4,5]
+      antes: [4]
+  - and:
+    - smallBlindTag: NegativeTag
+      or:
+      - jokers: [SockAndBuskin, HangingChad, Photograph]
+        sources:
+          shopItems: [2,3]
+      - jokers: [SockAndBuskin, HangingChad, Photograph]
+        sources:
+          shopItems: [4,5]
+      antes: [5]
+  - and:
+    - smallBlindTag: NegativeTag
+      or:
+      - jokers: [SockAndBuskin, HangingChad, Photograph]
+        sources:
+          shopItems: [2,3]
+      - jokers: [SockAndBuskin, HangingChad, Photograph]
+        sources:
+          shopItems: [4,5]
+      antes: [6]
+  - and:
+    - smallBlindTag: NegativeTag
+      or:
+      - jokers: [SockAndBuskin, HangingChad, Photograph]
+        sources:
+          shopItems: [2,3]
+      - jokers: [SockAndBuskin, HangingChad, Photograph]
+        sources:
+          shopItems: [4,5]
+      antes: [7]
+
+  - rareJoker: Blueprint
+    antes: [1, 2, 3, 4]
+    score: 1
+  - rareJoker: Brainstorm
+    antes: [1, 2, 3, 4]
+    score: 1
+  - rareJoker: Blueprint
+    edition: Negative
+    score: 2
+  - rareJoker: Brainstorm
+    edition: Negative
+    score: 2

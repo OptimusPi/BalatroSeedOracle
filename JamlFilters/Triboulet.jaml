@@ -1,0 +1,9 @@
+name: Triboulet hunt
+deck: Red
+stake: White
+must:
+  - legendaryJoker: Triboulet
+should:
+  - legendaryJoker: Triboulet
+    antes: [1, 2]
+    score: 100

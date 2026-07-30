@@ -1,0 +1,20 @@
+name: NegativePerkeo_Early
+author: pifreak
+description: Perkeo from The Soul in ante 1-2 booster packs, Negative edition.
+stake: White
+must:
+  - or:
+      - legendaryJoker: Perkeo
+        edition: Negative
+        antes: [1]
+        sources:
+          boosterPacks: [0, 1]
+      - legendaryJoker: Perkeo
+        edition: Negative
+        antes: [2]
+        sources:
+          boosterPacks: [0, 1, 2]
+should:
+  - voucher: Telescope
+    antes: [1]
+    score: 5

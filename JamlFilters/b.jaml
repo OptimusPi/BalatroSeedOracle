@@ -1,0 +1,16 @@
+name: Judgement Test - Specific Joker
+deck: Ghost
+stake: White
+must:
+  - tarotCard: Judgement
+    antes: [1]
+  - joker: Blueprint
+    antes: [1]
+    sources:
+      judgement: [0]
+should:
+  - joker: Blueprint
+    sources:
+      judgement: [0]
+    antes: [1]
+    score: 100

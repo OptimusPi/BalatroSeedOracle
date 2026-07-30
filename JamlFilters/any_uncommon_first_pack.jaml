@@ -1,0 +1,8 @@
+name: Any Uncommon First Pack
+deck: Red
+stake: White
+must:
+  - uncommonJoker: Any
+    antes: [1]
+    sources:
+      boosterPacks: [0]
