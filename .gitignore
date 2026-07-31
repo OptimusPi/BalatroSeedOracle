@@ -81,3 +81,4 @@ build_output.txt
 temp_*.txt
 .vault_token
 /.grok/workflows
+.mcp.json
