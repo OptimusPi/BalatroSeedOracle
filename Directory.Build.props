@@ -6,25 +6,33 @@
     <Product>Balatro Seed Oracle</Product>
     <Company>OptimusPi</Company>
     <Copyright>Copyright 2025</Copyright>
-    <Version>2.0.0</Version>
-    <FileVersion>2.0.0</FileVersion>
-    <AssemblyVersion>2.0.0</AssemblyVersion>
+    <Version>2.1.0</Version>
+    <FileVersion>2.1.0</FileVersion>
+    <AssemblyVersion>2.1.0</AssemblyVersion>
     <!-- Don't generate assembly info - let projects handle it -->
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
 
-  <!-- Avalonia Accelerate license (TreeDataGrid / Markdown / Media).
-       Key sources (first wins): PARCEL_LICENSE env, avalonia.license.local, avalonia.license.
-       Both license files are gitignored.
-       Online keys (avln_on_key:*) require a portal subscription that issues tickets; otherwise
-       AVLIC0001 fails Desktop (WinExe) builds. Debug defaults to skipping the build-time
-       licensing task so local work is unblocked; Release still validates when a key is present.
+  <!-- Avalonia Accelerate license (TreeDataGrid / Markdown / Charts / Media).
+       Key sources (first wins): ACCELERATE_LICENSE_KEY env, PARCEL_LICENSE env,
+       avalonia.license.local, avalonia.license. Both license files are gitignored.
+
+       Offline keys (avln_off_key:*) validate locally and are what this subscription issues.
+       Online keys (avln_on_key:*) need a portal subscription that mints tickets — ours does
+       not ("This subscription doesn't provide online license keys"), so an online key fails
+       AVLIC0001 on Release. That is why ACCELERATE_LICENSE_KEY is checked FIRST: PARCEL_LICENSE
+       holds the short online key used by the parcel/avdt tooling, and letting it win here
+       broke every Release build. Do not reorder these two.
+
+       Debug defaults to skipping the build-time licensing task so local work is unblocked;
+       Release still validates when a key is present.
        Force either way: -p:AvaloniaUILicenseDisableTask=true|false -->
   <PropertyGroup>
     <_AvaloniaLicensePath Condition="Exists('$(MSBuildThisFileDirectory)avalonia.license.local')">$(MSBuildThisFileDirectory)avalonia.license.local</_AvaloniaLicensePath>
     <_AvaloniaLicensePath Condition="'$(_AvaloniaLicensePath)' == '' AND Exists('$(MSBuildThisFileDirectory)avalonia.license')">$(MSBuildThisFileDirectory)avalonia.license</_AvaloniaLicensePath>
     <_AvaloniaLicenseFile Condition="'$(_AvaloniaLicensePath)' != ''">$([System.IO.File]::ReadAllText('$(_AvaloniaLicensePath)').Trim())</_AvaloniaLicenseFile>
-    <_AvaloniaLicenseKey Condition="'$(PARCEL_LICENSE)' != ''">$(PARCEL_LICENSE)</_AvaloniaLicenseKey>
+    <_AvaloniaLicenseKey Condition="'$(ACCELERATE_LICENSE_KEY)' != ''">$(ACCELERATE_LICENSE_KEY)</_AvaloniaLicenseKey>
+    <_AvaloniaLicenseKey Condition="'$(_AvaloniaLicenseKey)' == '' AND '$(PARCEL_LICENSE)' != ''">$(PARCEL_LICENSE)</_AvaloniaLicenseKey>
     <_AvaloniaLicenseKey Condition="'$(_AvaloniaLicenseKey)' == '' AND '$(_AvaloniaLicenseFile)' != ''">$(_AvaloniaLicenseFile)</_AvaloniaLicenseKey>
     <AvaloniaUILicenseDisableTask Condition="'$(AvaloniaUILicenseDisableTask)' == '' AND '$(Configuration)' != 'Release'">true</AvaloniaUILicenseDisableTask>
   </PropertyGroup>

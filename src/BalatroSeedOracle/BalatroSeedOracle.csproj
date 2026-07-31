@@ -52,6 +52,8 @@
   <!-- Common packages for all platforms -->
   <ItemGroup>
     <PackageReference Include="Avalonia" />
+    <PackageReference Include="Avalonia.Controls.Charts" />
+    <PackageReference Include="Avalonia.Controls.RichTextEditor" />
     <PackageReference Include="Svg.Controls.Skia.Avalonia" />
     <PackageReference Include="Avalonia.Themes.Fluent" />
     <PackageReference Include="Avalonia.Controls.DataGrid" />

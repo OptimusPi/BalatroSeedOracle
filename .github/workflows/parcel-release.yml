@@ -9,6 +9,19 @@ jobs:
   build-and-package:
     runs-on: windows-latest
 
+    # One secret, two consumers — both must see the SAME offline key (avln_off_key:*):
+    #   ACCELERATE_LICENSE_KEY     -> Directory.Build.props -> <AvaloniaUILicenseKey/>, required
+    #                                 by the Release licensing task for the commercial
+    #                                 Accelerate controls (TreeDataGrid, Markdown, Charts,
+    #                                 Media). Missing/invalid => AVLIC0001 before packaging.
+    #   AVALONIA_TOOLS_LICENSE_KEY -> what the Parcel CLI authenticates with.
+    # The PARCEL_LICENSE_KEY secret currently holds the SHORT ONLINE key, which this
+    # subscription cannot redeem ("This subscription doesn't provide online license keys").
+    # Update the secret's VALUE to the long offline key before tagging.
+    env:
+      ACCELERATE_LICENSE_KEY: ${{ secrets.PARCEL_LICENSE_KEY }}
+      AVALONIA_TOOLS_LICENSE_KEY: ${{ secrets.PARCEL_LICENSE_KEY }}
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -18,12 +31,12 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: '9.0.x'
+        dotnet-version: '10.0.x'
 
+    # .NET 10+ uses the unified AvaloniaUI.Parcel package; the platform-specific
+    # AvaloniaUI.Parcel.Windows package is only needed on older SDKs.
     - name: Install Parcel
-      env:
-        PARCEL_LICENSE_KEY: ${{ secrets.PARCEL_LICENSE_KEY }}
-      run: dotnet tool install --global AvaloniaUI.Parcel.Windows
+      run: dotnet tool install --global AvaloniaUI.Parcel
 
     - name: Add dotnet tools to PATH
       run: echo "$env:USERPROFILE\.dotnet\tools" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
@@ -34,32 +47,36 @@ jobs:
     - name: Build
       run: dotnet build src/BalatroSeedOracle/BalatroSeedOracle.csproj --configuration Release --no-restore
 
+    # Parcel 1.0.6 requires the `pack` subcommand — the old flat
+    # `parcel <project> --runtimes ... --packages ...` form was removed.
+    # Verified locally from a Windows host: win-x64/nsis and linux-x64/deb build clean;
+    # osx-x64/dmg produces an artifact but reports a signing error (app assets sit in
+    # Contents/MacOS instead of Contents/Resources) and is only ad-hoc signed.
     - name: Package with Parcel
-      env:
-        PARCEL_LICENSE_KEY: ${{ secrets.PARCEL_LICENSE_KEY }}
       run: |
         cd src/BalatroSeedOracle
-        dotnet parcel BalatroSeedOracle.parcel --runtimes win-x64 linux-x64 osx-x64 --packages nsis deb dmg
+        parcel pack BalatroSeedOracle.parcel -r win-x64 linux-x64 osx-x64 -p nsis deb dmg
 
     - name: Upload Windows Installer
       uses: actions/upload-artifact@v4
       with:
+        # Parcel nests output by platform, e.g. bin/packages/Windows/*.exe
         name: windows-installer
-        path: src/BalatroSeedOracle/bin/packages/*.exe
+        path: src/BalatroSeedOracle/bin/packages/**/*.exe
         if-no-files-found: error
 
     - name: Upload macOS Bundle
       uses: actions/upload-artifact@v4
       with:
         name: macos-bundle
-        path: src/BalatroSeedOracle/bin/packages/*.dmg
+        path: src/BalatroSeedOracle/bin/packages/**/*.dmg
         if-no-files-found: warn
 
     - name: Upload Linux Package
       uses: actions/upload-artifact@v4
       with:
         name: linux-package
-        path: src/BalatroSeedOracle/bin/packages/*.deb
+        path: src/BalatroSeedOracle/bin/packages/**/*.deb
         if-no-files-found: warn
 
     - name: Create GitHub Release
@@ -67,9 +84,9 @@ jobs:
       uses: softprops/action-gh-release@v1
       with:
         files: |
-          src/BalatroSeedOracle/bin/packages/*.exe
-          src/BalatroSeedOracle/bin/packages/*.dmg
-          src/BalatroSeedOracle/bin/packages/*.deb
+          src/BalatroSeedOracle/bin/packages/**/*.exe
+          src/BalatroSeedOracle/bin/packages/**/*.dmg
+          src/BalatroSeedOracle/bin/packages/**/*.deb
         draft: false
         # Mark as pre-release if tag contains -rc, -beta, -alpha, or -preview
         prerelease: ${{ contains(github.ref, '-rc') || contains(github.ref, '-beta') || contains(github.ref, '-alpha') || contains(github.ref, '-preview') }}
