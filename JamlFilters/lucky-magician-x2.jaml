@@ -1,0 +1,26 @@
+name: Lucky X2 Magician
+author: pifreak
+description: >
+  OopsAll6s ante 1 doubles lucky odds. Magician ante 1-2 makes Lucky cards.
+  Both lucky-money triggers 0 and 1 must hit. Scored by lucky money depth.
+deck: Red
+stake: White
+
+must:
+  - luckMoney: [0, 1]
+    min: 2
+
+  - joker: OopsAll6s
+    antes: [1]
+
+  - tarotCard: TheMagician
+    antes: [1, 2]
+
+should:
+  - luckMoney: [0, 1]
+    min: 2
+    score: 100
+    label: both_lucky
+  - luckMoney: [2]
+    score: 25
+    label: lucky_hit_3

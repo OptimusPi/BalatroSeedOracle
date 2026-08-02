@@ -1,0 +1,33 @@
+name: 60 Neg Cola Loop
+author: pifreak
+description: >
+  Perkeo A1 Soul + Ankh A1 visible shop + Diet Cola anywhere →
+  Ankh×Cola loop → 60 Diet Colas at A8 Negative Tag cashout →
+  60 free Negative jokers off the screen.
+deck: Ghost
+stake: White
+
+must:
+  - tag: NegativeTag
+    antes: [8]
+
+  - spectralCard: Ankh
+    antes: [1]
+    sources:
+      shopItems: [0, 1]
+
+  - legendaryJoker: Perkeo
+    antes: [1]
+    sources:
+      boosterPacks: [1]
+
+  - joker: DietCola
+
+should:
+  - rareJoker: []
+    antes: [8]
+    sources:
+      shopItems: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
+                  16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29]
+    score: 1
+    label: a8_rare_depth
