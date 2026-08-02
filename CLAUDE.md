@@ -1,10 +1,33 @@
 # CLAUDE.md
 
-Law for anyone working in this repo. Read before touching `Motely.Wasm`.
+Law for anyone working in this repo (Claude, Grok, human — same rules).
+
+## Motely lives in ONE place
+
+**The engine is the git submodule at `src/MotelyJAML` only.**
+
+| Do | Do not |
+|----|--------|
+| Edit files under `src/MotelyJAML/...` | Create or commit `Motely/`, `Motely.Wasm/`, or `Motely.Tests/` at the **repo root** |
+| Commit Motely changes **inside the submodule**, then bump the gitlink in BSO | Copy Motely sources into BSO and commit them as normal files |
+| Build WASM from the submodule path below | `dotnet build Motely.Wasm/...` from BSO root (that path is dead) |
+
+Root-level Motely stubs were deleted in `5ac7633`. Do not resurrect them.
+
+```sh
+# Motely commits happen here:
+cd src/MotelyJAML
+# ... edit, commit, push on MotelyJAML ...
+
+# Then in BSO parent, record the new submodule tip:
+cd ../..
+git add src/MotelyJAML
+git commit -m "Bump MotelyJAML submodule"
+```
 
 ## Read the docs first
 
-Before the first edit to `Motely.Wasm`, read all of these, start to finish:
+Before the first edit to `src/MotelyJAML/Motely.Wasm`, read all of these, start to finish:
 
 ```
 D:\bootsharp\docs\index.md
@@ -120,12 +143,19 @@ That is why `WithSeedGenerator`, `AdditionalFilters` and `BaseFilterDescBase` si
 
 ### Build
 
+Paths are relative to the **MotelyJAML submodule**, not the BSO repo root:
+
 ```sh
+# from BalatroSeedOracle repo root:
+dotnet build src/MotelyJAML/Motely.Wasm/Motely.Wasm.csproj -c Release
+
+# or:
+cd src/MotelyJAML
 dotnet build Motely.Wasm/Motely.Wasm.csproj -c Release
 ```
 
 Release enables NativeAOT-LLVM, trimming, and Binaryen. `Motely.Wasm` is published separately
-and is deliberately absent from `Motely.slnx`.
+and is deliberately absent from `Motely.slnx` / `BalatroSeedOracle.slnx`.
 
 The whole Bootsharp guide is about 8k of text. Read it once, up front, and the interop surface
 is known before the first build. Guessing and then inspecting generated output costs orders of
