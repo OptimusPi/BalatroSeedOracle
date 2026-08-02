@@ -77,10 +77,22 @@ public static class Naming
         typeof(IMotelySeedRouter),
     ];
 
-    /// <summary>Erase <see cref="NativeOnlyTypes"/>; drop the <c>I</c> from every other interface.</summary>
+    /// <summary>
+    /// Erase by-ref types, then <see cref="NativeOnlyTypes"/>; drop the <c>I</c> from every other
+    /// interface.
+    /// </summary>
+    /// <remarks>
+    /// A by-ref type reflects as <c>Name&amp;</c> and <c>&amp;</c> is not legal in a JavaScript
+    /// identifier, so emitting one produces <c>export const Name&amp; = {}</c> — a module that cannot
+    /// parse, taking the whole package with it. The <see cref="NativeOnlyTypes"/> list cannot catch
+    /// these: <c>typeof(T)</c> and <c>T&amp;</c> are distinct <see cref="Type"/> instances, so the
+    /// by-ref form never matches an entry. Match on the shape instead, and any future <c>ref</c>
+    /// parameter is covered without touching the list. The nodes are emitted empty in any case.
+    /// </remarks>
     [RenameNode]
     public static string Node(Type type, string @default) =>
-        Array.IndexOf(NativeOnlyTypes, type) >= 0 ? null!
+        type.IsByRef || @default.Contains('&') ? null!
+        : Array.IndexOf(NativeOnlyTypes, type) >= 0 ? null!
         : type.IsInterface && @default.StartsWith('I') ? @default[1..]
         : @default;
 

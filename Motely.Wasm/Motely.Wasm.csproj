@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
+    <IsPackable>false</IsPackable>
+    <Version>$(MotelyVersion)</Version>
+    <BootsharpName>motely</BootsharpName>
+    <!-- Package manifest belongs next to the project, not in obj: obj is scratch
+         (gitignored, wiped by clean) and "motely-wasm": "file:../../Motely.Wasm"
+         resolves against the project dir, so a manifest in obj is invisible to npm. -->
+    <BootsharpPackageDirectory>$(MSBuildProjectDirectory)</BootsharpPackageDirectory>
+    <BootsharpPublishDirectory>$(MSBuildProjectDirectory)/dist</BootsharpPublishDirectory>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Bootsharp" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Motely\Motely.csproj" />
+  </ItemGroup>
+
+</Project>
