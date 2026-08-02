@@ -2,6 +2,13 @@
 
 Law for anyone working in this repo (Claude, Grok, human — same rules).
 
+## No persistent memory in this project
+
+Do not write, update, or read entries in the auto memory system (the
+`memory/` directory under the Claude Code project data folder, or any
+`MEMORY.md` index) for this project. Do not propose saving memories. Work
+from this file, git history, and the current conversation only.
+
 ## Motely lives in ONE place
 
 **The engine is the git submodule at `src/MotelyJAML` only.**
