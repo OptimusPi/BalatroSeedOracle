@@ -9,8 +9,7 @@ namespace BalatroSeedOracle.Helpers
 {
     public static class ShaderPresetHelper
     {
-        // Use the proper VisualizerPresets folder (not UserDir/ShaderPresets)
-        private static readonly string Dir = AppPaths.VisualizerPresetsDir;
+        private const string Dir = "VisualizerPresets";
 
         public static ShaderParameters Load(string name)
         {

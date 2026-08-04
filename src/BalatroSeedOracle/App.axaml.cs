@@ -56,9 +56,6 @@ public partial class App : Application
                 // Initialize DebugLogger with platform services (removes need for #if directives)
                 DebugLogger.Initialize(platformServices);
 
-                // Initialize AppPaths with platform services (removes need for #if directives)
-                AppPaths.Initialize(platformServices);
-
                 // Ensure required directories exist (platform-specific)
                 if (platformServices.SupportsFileSystem)
                 {
@@ -605,13 +602,13 @@ public partial class App : Application
     {
         try
         {
-            // Directories are now managed by AppPaths - they are auto-created on access
-            // Use platform services to ensure directories exist
-            DebugLogger.Log("App", "Using AppPaths for directory management");
-
-            // Touch directories to ensure they exist
-            platformServices.EnsureDirectoryExists(AppPaths.FiltersDir);
-            platformServices.EnsureDirectoryExists(AppPaths.SearchResultsDir);
+            // All data lives under the run directory, same convention as Motely.CLI.
+            platformServices.EnsureDirectoryExists("JamlFilters");
+            platformServices.EnsureDirectoryExists("SearchResults");
+            platformServices.EnsureDirectoryExists("WordLists");
+            platformServices.EnsureDirectoryExists("VisualizerPresets");
+            platformServices.EnsureDirectoryExists("MixerPresets");
+            platformServices.EnsureDirectoryExists("EventFX");
         }
         catch (Exception ex)
         {

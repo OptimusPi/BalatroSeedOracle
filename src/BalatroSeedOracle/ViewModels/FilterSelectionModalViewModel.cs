@@ -347,8 +347,7 @@ namespace BalatroSeedOracle.ViewModels
                     $"Starting delete for filter: {filterNameToDelete} ({filterIdToDelete})"
                 );
 
-                var filtersDir = AppPaths.FiltersDir;
-                var filterPath = System.IO.Path.Combine(filtersDir, $"{filterIdToDelete}.json");
+                var filterPath = System.IO.Path.Combine("JamlFilters", $"{filterIdToDelete}.jaml");
 
                 // Perform deletion (this also removes from cache)
                 var deleted = await _filterService.DeleteFilterAsync(filterPath);

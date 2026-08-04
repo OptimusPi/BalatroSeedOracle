@@ -576,7 +576,7 @@ namespace BalatroSeedOracle.Views
                 };
 
                 // Load the filter data
-                var filtersDir = AppPaths.FiltersDir;
+                var filtersDir = "JamlFilters";
                 // Try .jaml first, then .json as fallback
                 var filterPath = System.IO.Path.Combine(filtersDir, filterId + ".jaml");
 
@@ -686,7 +686,7 @@ namespace BalatroSeedOracle.Views
         {
             try
             {
-                var filtersDir = AppPaths.FiltersDir;
+                var filtersDir = "JamlFilters";
 
                 System.IO.Directory.CreateDirectory(filtersDir);
 

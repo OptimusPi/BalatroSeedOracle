@@ -115,9 +115,7 @@ namespace BalatroSeedOracle.ViewModels
 
         private async System.Threading.Tasks.Task<string> CreateTempFilter()
         {
-            var filtersDir = AppPaths.FiltersDir;
-
-            var tempPath = Path.Combine(filtersDir, "_UNSAVED_CREATION.json");
+            var tempPath = Path.Combine("JamlFilters", "_UNSAVED_CREATION.jaml");
 
             // Create basic empty filter structure
             var emptyFilter = new Motely.Filters.Jaml.JamlConfig
@@ -133,8 +131,8 @@ namespace BalatroSeedOracle.ViewModels
                 MustNot = new System.Collections.Generic.List<Motely.Filters.Jaml.IJamlClause>(),
             };
 
-            var yaml = Motely.Filters.Jaml.JamlConfigLoader.ToJaml(emptyFilter);
-            await File.WriteAllTextAsync(tempPath, yaml);
+            var jaml = Motely.Filters.Jaml.JamlConfigLoader.ToJaml(emptyFilter);
+            await File.WriteAllTextAsync(tempPath, jaml);
 
             return tempPath;
         }

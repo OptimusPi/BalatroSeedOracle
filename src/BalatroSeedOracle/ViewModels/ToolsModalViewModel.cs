@@ -220,7 +220,7 @@ namespace BalatroSeedOracle.ViewModels
                 int deletedFilters = 0;
                 int deletedResults = 0;
 
-                var filtersDir = AppPaths.FiltersDir;
+                var filtersDir = "JamlFilters";
                 if (Directory.Exists(filtersDir))
                 {
                     var filterFiles = Directory.GetFiles(filtersDir, "*.json");
@@ -238,7 +238,7 @@ namespace BalatroSeedOracle.ViewModels
                     }
                 }
 
-                var resultsDir = AppPaths.SearchResultsDir;
+                var resultsDir = "SearchResults";
                 if (Directory.Exists(resultsDir))
                 {
                     var resultFiles = Directory.GetFiles(resultsDir, "*.*", SearchOption.AllDirectories);

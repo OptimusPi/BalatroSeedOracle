@@ -15,9 +15,7 @@ namespace BalatroSeedOracle.Helpers
     /// </summary>
     public static class PresetHelper
     {
-        private static readonly string PresetsDirectory = AppPaths.VisualizerPresetsDir;
-
-        static PresetHelper() { }
+        private const string PresetsDirectory = "VisualizerPresets";
 
         /// <summary>
         /// Normalizes a preset name for use as a filename

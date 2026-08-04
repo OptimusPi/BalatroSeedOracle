@@ -1368,7 +1368,7 @@ namespace BalatroSeedOracle.ViewModels
             {
                 try
                 {
-                    var directory = Path.GetDirectoryName(originalPath) ?? AppPaths.FiltersDir;
+                    var directory = Path.GetDirectoryName(originalPath) ?? "JamlFilters";
                     var baseName = Path.GetFileNameWithoutExtension(originalPath);
                     var extension = Path.GetExtension(originalPath);
 

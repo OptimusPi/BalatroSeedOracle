@@ -11,9 +11,7 @@ namespace BalatroSeedOracle.Helpers
 {
     public static class MixerHelper
     {
-        private static readonly string MixerDirectory = AppPaths.MixerPresetsDir;
-
-        static MixerHelper() { }
+        private const string MixerDirectory = "MixerPresets";
 
         public static bool SaveMixer(string name, MixerSettings settings)
         {

@@ -442,9 +442,7 @@ namespace BalatroSeedOracle.Helpers
         /// </summary>
         private static async System.Threading.Tasks.Task<string> CreateTempFilter()
         {
-            var filtersDir = AppPaths.FiltersDir;
-
-            var tempPath = System.IO.Path.Combine(filtersDir, "_UNSAVED_CREATION.yaml");
+            var tempPath = System.IO.Path.Combine("JamlFilters", "_UNSAVED_CREATION.jaml");
 
             // Create basic empty filter structure
             var emptyFilter = new JamlConfig
@@ -458,8 +456,8 @@ namespace BalatroSeedOracle.Helpers
                 MustNot = new System.Collections.Generic.List<IJamlClause>(),
             };
 
-            var yaml = JamlConfigLoader.ToJaml(emptyFilter);
-            await System.IO.File.WriteAllTextAsync(tempPath, yaml);
+            var jaml = JamlConfigLoader.ToJaml(emptyFilter);
+            await System.IO.File.WriteAllTextAsync(tempPath, jaml);
 
             return tempPath;
         }
@@ -483,9 +481,9 @@ namespace BalatroSeedOracle.Helpers
                 config.Name = $"{config.Name} (Copy)";
                 config.Author = App.GetService<UserProfileService>()?.GetAuthorName() ?? "Unknown";
 
-                var clonedPath = System.IO.Path.Combine(AppPaths.FiltersDir, $"{config.Id}-copy.yaml");
-                var yaml = JamlConfigLoader.ToJaml(config);
-                await System.IO.File.WriteAllTextAsync(clonedPath, yaml);
+                var clonedPath = System.IO.Path.Combine("JamlFilters", $"{config.Id}-copy.jaml");
+                var jaml = JamlConfigLoader.ToJaml(config);
+                await System.IO.File.WriteAllTextAsync(clonedPath, jaml);
 
                 return clonedPath;
             }

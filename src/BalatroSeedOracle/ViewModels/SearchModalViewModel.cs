@@ -2241,9 +2241,7 @@ namespace BalatroSeedOracle.ViewModels
         {
             try
             {
-                // AppPaths, not bin-relative "..\..\.." — that pointed at the project
-                // folder in Debug and at garbage in an installed Release build.
-                var wordListDir = Helpers.AppPaths.WordListsDir;
+                var wordListDir = "WordLists";
                 var files = Directory
                     .GetFiles(wordListDir, "*.db")
                     .Select(Path.GetFileName)
@@ -2282,8 +2280,7 @@ namespace BalatroSeedOracle.ViewModels
         {
             try
             {
-                // AppPaths, not bin-relative "..\..\.." — same disease as WordLists above.
-                var searchResultsDir = Helpers.AppPaths.SearchResultsDir;
+                var searchResultsDir = "SearchResults";
                 var files = Directory
                     .GetFiles(searchResultsDir, "*.db")
                     .Select(Path.GetFileName)

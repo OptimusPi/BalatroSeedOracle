@@ -156,7 +156,7 @@ namespace BalatroSeedOracle.ViewModels
         {
             try
             {
-                _platformServices?.OpenInFileManager(AppPaths.FiltersDir);
+                _platformServices?.OpenInFileManager(System.IO.Path.GetFullPath("JamlFilters"));
             }
             catch (Exception ex)
             {
@@ -169,7 +169,7 @@ namespace BalatroSeedOracle.ViewModels
         {
             try
             {
-                _platformServices?.OpenInFileManager(AppPaths.DataRootDir);
+                _platformServices?.OpenInFileManager(System.IO.Path.GetFullPath("."));
             }
             catch (Exception ex)
             {

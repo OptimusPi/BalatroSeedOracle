@@ -276,7 +276,7 @@ namespace BalatroSeedOracle.ViewModels
                 return null;
             }
 
-            var filtersDir = AppPaths.FiltersDir;
+            var filtersDir = "JamlFilters";
             var jamlFull = Path.Combine(filtersDir, filterId + ".jaml");
             var jsonFull = Path.Combine(filtersDir, filterId + ".json");
             if (File.Exists(jamlFull))

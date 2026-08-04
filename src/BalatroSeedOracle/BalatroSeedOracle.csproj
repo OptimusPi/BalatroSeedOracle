@@ -1,57 +1,23 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <!-- Shared library - single target (platform-specific code moved to head projects) -->
+    <!-- The app. One project, one process, desktop only. -->
+    <OutputType>WinExe</OutputType>
     <TargetFramework>net10.0</TargetFramework>
     <AssemblyName>BalatroSeedOracle</AssemblyName>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>BalatroSeedOracle.ico</ApplicationIcon>
+    <BuiltInComInteropSupport>false</BuiltInComInteropSupport>
+    <InvariantGlobalization>true</InvariantGlobalization>
     <!-- Enable compiled bindings by default for compile-time XAML validation and runtime performance. -->
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
-    <!-- CS0108: Avalonia name generator emits InitializeComponent(bool) on every .axaml-having
-         partial class. When one derives from another (e.g. AudioVisualizerSettingsModal : StandardModal),
-         the derived emission "hides" the base; this is structural to the generator, not real shadowing. -->
-    <NoWarn>$(NoWarn);CS0108</NoWarn>
+    <!-- Treat all warnings as errors -->
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 
-  <!-- License key comes from root Directory.Build.props (avalonia.license / PARCEL_LICENSE). -->
-
-  <!-- AvaloniaResource: all Assets (including .ogg) for avares:// in browser; Desktop also uses copied .ogg on disk -->
-  <ItemGroup>
-    <AvaloniaResource Include="Assets\**" />
-    <AvaloniaResource Include="m6x11plusplus.otf" />
-  </ItemGroup>
-  <!-- Copy Audio and Sprite files to output directory (Desktop loads from disk; browser uses avares via AssetLoader) -->
-  <ItemGroup>
-    <None Update="Assets\Audio\*.ogg">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Assets\Audio\SFX\*.ogg">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <!-- Copy all sprite assets -->
-    <None Update="Assets\**\*.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Assets\**\*.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-  <!-- Copy syntax highlighting files to output directory -->
-  <ItemGroup>
-    <None Update="Resources\*.xshd">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-  <!-- Copy sample files to output directory -->
-  <ItemGroup>
-    <None Update="Samples\**\*">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Data\**\*">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
   <!-- Common packages for all platforms -->
   <ItemGroup>
     <PackageReference Include="Avalonia" />
+    <PackageReference Include="AvaloniaUI.DiagnosticsSupport" />
     <PackageReference Include="Avalonia.Controls.Charts" />
     <PackageReference Include="Avalonia.Controls.RichTextEditor" />
     <PackageReference Include="Svg.Controls.Skia.Avalonia" />
@@ -66,7 +32,6 @@
     <PackageReference Include="MessageBox.Avalonia" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="CommunityToolkit.Mvvm" />
-    <PackageReference Include="YamlDotNet" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
     <PackageReference Include="SkiaSharp" />
     <PackageReference Include="Avalonia.Skia" />
