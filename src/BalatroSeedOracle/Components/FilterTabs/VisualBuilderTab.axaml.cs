@@ -306,10 +306,6 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
         private void OnCardPointerEntered(object? sender, Avalonia.Input.PointerEventArgs e)
         {
-            // Play subtle card hover sound
-            var sfxService = ServiceHelper.GetService<SoundEffectsService>();
-            sfxService?.PlayCardHover();
-
             // No rotation code needed - the BalatroCardSwayBehavior handles all animation
             // The invisible hitbox (sender) never rotates, preventing seizure-inducing flicker
         }
@@ -804,65 +800,6 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
                 Border? targetZone = null;
                 string? zoneName = null;
-
-                // HIGH-004 FIX: Check if dropped on Favorites (CategoryNav) with null safety
-                if (
-                    _draggedItem is not FilterOperatorItem
-                    && IsPointOverControl(cursorPos, CategoryNav, _topLevel)
-                )
-                {
-                    // Validate item has a name before adding to favorites
-                    if (string.IsNullOrEmpty(_draggedItem?.Name))
-                    {
-                        DebugLogger.LogError(
-                            "VisualBuilderTab",
-                            "Cannot add item with null/empty name to favorites"
-                        );
-                        return;
-                    }
-
-                    DebugLogger.Log(
-                        "VisualBuilderTab",
-                        $"Dropped {_draggedItem.Name} into Favorites"
-                    );
-
-                    var favoritesService = ServiceHelper.GetService<Services.FavoritesService>();
-                    if (favoritesService != null)
-                    {
-                        try
-                        {
-                            favoritesService.AddFavoriteItem(_draggedItem.Name);
-
-                            // Update the item's IsFavorite flag
-                            _draggedItem.IsFavorite = true;
-
-                            // Refresh the view to show it in Favorites category
-                            if (vm?.SelectedMainCategory == "Favorites")
-                            {
-                                // Force refresh of Favorites category
-                                vm.SetCategory("Favorites");
-                            }
-
-                            DebugLogger.Log(
-                                "VisualBuilderTab",
-                                $"✅ {_draggedItem.Name} added to favorites"
-                            );
-                        }
-                        catch (Exception ex)
-                        {
-                            DebugLogger.LogError(
-                                "VisualBuilderTab",
-                                $"Failed to add favorite: {ex.Message}"
-                            );
-                        }
-                    }
-                    else
-                    {
-                        DebugLogger.LogError("VisualBuilderTab", "FavoritesService not available");
-                    }
-
-                    return; // Early exit - handled
-                }
 
                 // Check if dropped on unified operator tray (only for FilterItem, NOT operators)
                 if (

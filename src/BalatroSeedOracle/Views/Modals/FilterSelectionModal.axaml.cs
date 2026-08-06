@@ -24,35 +24,20 @@ namespace BalatroSeedOracle.Views.Modals
 {
     public partial class FilterSelectionModal : UserControl
     {
-        private readonly IConfigurationService? _configurationService;
-        private readonly IFilterService? _filterService;
-
         public FilterSelectionModalViewModel? ViewModel =>
             DataContext as FilterSelectionModalViewModel;
 
         public event EventHandler? CloseRequested;
 
-        /// <summary>Parameterless ctor for XAML DataTemplate only (DataContext set by binding to FilterSelectionModalViewModel). Services resolved lazily in ImportFilterFile.</summary>
+        /// <summary>Parameterless ctor for XAML DataTemplate only (DataContext set by binding to FilterSelectionModalViewModel).</summary>
         public FilterSelectionModal()
         {
-            _configurationService = null;
-            _filterService = null;
             InitializeComponent();
             this.Loaded += OnLoaded;
         }
 
-        /// <summary>Constructor injection: creator passes ViewModel and services (no ServiceHelper in View).</summary>
-        public FilterSelectionModal(
-            FilterSelectionModalViewModel viewModel,
-            IConfigurationService configurationService,
-            IFilterService filterService
-        )
+        public FilterSelectionModal(FilterSelectionModalViewModel viewModel)
         {
-            _configurationService =
-                configurationService
-                ?? throw new ArgumentNullException(nameof(configurationService));
-            _filterService =
-                filterService ?? throw new ArgumentNullException(nameof(filterService));
             DataContext = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
             InitializeComponent();
             this.Loaded += OnLoaded;
@@ -94,7 +79,7 @@ namespace BalatroSeedOracle.Views.Modals
                         continue;
 
                     var ext = Path.GetExtension(storageFile.Name).ToLowerInvariant();
-                    if (ext == ".jaml" || ext == ".json")
+                    if (ext == ".jaml")
                     {
                         await ImportFilterFile(storageFile);
                         imported = true;
@@ -104,7 +89,7 @@ namespace BalatroSeedOracle.Views.Modals
 
                 if (!imported)
                 {
-                    await ShowImportError("No .jaml or .json file in the drop.");
+                    await ShowImportError("No .jaml file in the drop.");
                 }
 
                 e.Handled = true;
@@ -470,9 +455,8 @@ namespace BalatroSeedOracle.Views.Modals
                         {
                             new FilePickerFileType("Filter Files")
                             {
-                                Patterns = new[] { "*.jaml", "*.json" },
+                                Patterns = new[] { "*.jaml" },
                             },
-                            new FilePickerFileType("All Files") { Patterns = new[] { "*.*" } },
                         },
                     }
                 );
@@ -522,11 +506,9 @@ namespace BalatroSeedOracle.Views.Modals
             try
             {
                 var extension = Path.GetExtension(file.Name).ToLowerInvariant();
-                if (extension != ".jaml" && extension != ".json")
+                if (extension != ".jaml")
                 {
-                    await ShowImportError(
-                        $"Invalid file type: {extension}. Expected .jaml or .json"
-                    );
+                    await ShowImportError($"Invalid file type: {extension}. Expected .jaml");
                     return;
                 }
 
@@ -541,58 +523,24 @@ namespace BalatroSeedOracle.Views.Modals
 
                 DebugLogger.Log("FilterSelectionModal", $"Read {text.Length} chars. Parsing...");
 
-                JamlConfig? config;
-                if (extension == ".jaml")
+                if (!JamlConfigLoader.TryLoad(text, out var config, out var parseError) || config == null)
                 {
-                    if (
-                        !Motely.Filters.Jaml.JamlConfigLoader.TryLoad(
-                            text,
-                            out config,
-                            out var parseError
-                        )
-                        || config == null
-                    )
-                    {
-                        await ShowImportError(
-                            $"Failed to parse {file.Name}:\n{parseError ?? "Unknown error"}"
-                        );
-                        return;
-                    }
-                }
-                else
-                {
-                    if (!JamlConfigLoader.TryLoad(text, out config, out var parseError) || config == null)
-                    {
-                        await ShowImportError(
-                            $"Failed to parse {file.Name}:\n{parseError ?? "Unknown error"}"
-                        );
-                        return;
-                    }
+                    await ShowImportError(
+                        $"Failed to parse {file.Name}:\n{parseError ?? "Unknown error"}"
+                    );
+                    return;
                 }
 
                 DebugLogger.Log("FilterSelectionModal", $"Parsed config: {config.Name}. Saving...");
 
-                var configurationService =
-                    _configurationService
-                    ?? App.GetService<IConfigurationService>()
-                    ?? throw new InvalidOperationException("IConfigurationService not registered");
-                var filterService =
-                    _filterService
-                    ?? App.GetService<IFilterService>()
-                    ?? throw new InvalidOperationException("IFilterService not registered");
                 var baseName = !string.IsNullOrWhiteSpace(config.Name)
                     ? config.Name
                     : Path.GetFileNameWithoutExtension(file.Name);
-                var destKey = filterService.GenerateFilterFileName(baseName);
 
-                var saved = await configurationService.SaveFilterAsync(destKey, config);
-                if (!saved)
-                {
-                    await ShowImportError($"Parsed OK, but saving as \"{destKey}\" failed.");
-                    return;
-                }
+                Directory.CreateDirectory(FilterFiles.Dir);
+                FilterFiles.Save(config, FilterFiles.Resolve(baseName));
 
-                DebugLogger.Log("FilterSelectionModal", $"Imported filter as: {destKey}");
+                DebugLogger.Log("FilterSelectionModal", $"Imported filter as: {baseName}");
 
                 // Refresh the filter list
                 if (ViewModel != null)

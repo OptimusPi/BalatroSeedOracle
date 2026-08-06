@@ -11,8 +11,6 @@ namespace BalatroSeedOracle.ViewModels
 {
     public partial class FilterSelectionModalViewModel : ObservableObject, IModalBackNavigable
     {
-        private readonly IFilterService _filterService;
-
         // Per-instance button visibility, set via Configure() after construction.
         public bool EnableSearch { get; private set; }
         public bool EnableEdit { get; private set; }
@@ -121,12 +119,8 @@ namespace BalatroSeedOracle.ViewModels
         public event EventHandler? ModalCloseRequested;
         public event EventHandler<string>? DeleteConfirmationRequested;
 
-        public FilterSelectionModalViewModel(
-            IFilterService filterService,
-            PaginatedFilterBrowserViewModel filterList
-        )
+        public FilterSelectionModalViewModel(PaginatedFilterBrowserViewModel filterList)
         {
-            _filterService = filterService;
             FilterList = filterList;
 
             // Subscribe to filter selection changes
@@ -334,80 +328,34 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         public async Task ConfirmDeleteAsync()
         {
-            try
+            if (SelectedFilter is null || SelectedFilter.IsCreateNew)
+                return;
+
+            var filterIdToDelete = SelectedFilter.FilterId;
+
+            DebugLogger.Log(
+                "FilterSelectionModalVM",
+                $"Deleting filter: {SelectedFilter.Name} ({filterIdToDelete})"
+            );
+
+            Services.FilterFiles.Delete(
+                System.IO.Path.Combine(Services.FilterFiles.Dir, $"{filterIdToDelete}.jaml")
+            );
+
+            // CRITICAL: Clear the selected filter FIRST to avoid showing stale data
+            SelectedFilter = null;
+            FilterList.SelectedFilter = null;
+
+            // Refresh the filter list to reflect the deletion
+            FilterList.RefreshFilters();
+
+            // Auto-select the first filter if any remain, otherwise show placeholder
+            if (FilterList.CurrentPageFilters.Count > 0)
             {
-                if (SelectedFilter is null || SelectedFilter.IsCreateNew)
-                    return;
-
-                var filterIdToDelete = SelectedFilter.FilterId;
-                var filterNameToDelete = SelectedFilter.Name;
-
-                DebugLogger.Log(
-                    "FilterSelectionModalVM",
-                    $"Starting delete for filter: {filterNameToDelete} ({filterIdToDelete})"
-                );
-
-                var filterPath = System.IO.Path.Combine("JamlFilters", $"{filterIdToDelete}.jaml");
-
-                // Perform deletion (this also removes from cache)
-                var deleted = await _filterService.DeleteFilterAsync(filterPath);
-
-                if (!deleted)
-                {
-                    DebugLogger.LogError(
-                        "FilterSelectionModalVM",
-                        $"Failed to delete filter: {filterIdToDelete}"
-                    );
-                    return;
-                }
-
-                DebugLogger.Log(
-                    "FilterSelectionModalVM",
-                    $"Filter deleted successfully: {filterIdToDelete}"
-                );
-
-                // CRITICAL: Clear the selected filter FIRST to avoid showing stale data
-                SelectedFilter = null;
-                FilterList.SelectedFilter = null;
-
-                // Refresh the filter list to reflect the deletion (reloads from cache/disk)
-                FilterList.RefreshFilters();
-
-                DebugLogger.Log(
-                    "FilterSelectionModalVM",
-                    $"Filter list refreshed - {FilterList.CurrentPageFilters.Count} filters on current page"
-                );
-
-                // Auto-select the first filter if any remain, otherwise show placeholder
-                if (FilterList.CurrentPageFilters.Count > 0)
-                {
-                    // Use the SelectFilterCommand to properly trigger selection
-                    var firstFilterViewModel = FilterList.CurrentPageFilters[0];
-                    await FilterList.SelectFilterCommand.ExecuteAsync(firstFilterViewModel);
-
-                    DebugLogger.Log(
-                        "FilterSelectionModalVM",
-                        $"Auto-selected first filter: {firstFilterViewModel.DisplayText}"
-                    );
-                }
-                else
-                {
-                    DebugLogger.Log(
-                        "FilterSelectionModalVM",
-                        "No filters remaining - showing placeholder"
-                    );
-                }
-
-                // Modal stays open so user can continue managing filters
+                await FilterList.SelectFilterCommand.ExecuteAsync(FilterList.CurrentPageFilters[0]);
             }
-            catch (Exception ex)
-            {
-                DebugLogger.LogError(
-                    "FilterSelectionModalViewModel",
-                    $"ConfirmDeleteAsync failed: {ex.Message}"
-                );
-                throw;
-            }
+
+            // Modal stays open so user can continue managing filters
         }
 
         [RelayCommand]

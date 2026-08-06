@@ -5,7 +5,7 @@ using BalatroSeedOracle.ViewModels;
 
 namespace BalatroSeedOracle.Views.Modals
 {
-    public partial class AudioVisualizerSettingsModal : StandardModal
+    public partial class AudioVisualizerSettingsModal : UserControl
     {
         public AudioVisualizerSettingsModal()
         {

@@ -18,7 +18,6 @@ namespace BalatroSeedOracle.ViewModels
     {
         private const int ITEMS_PER_PAGE = 10;
 
-        private readonly IFilterCacheService _filterCacheService;
         private readonly UserProfileService? _userProfileService;
         private readonly List<FilterBrowserItem> _allFilters = [];
 
@@ -63,12 +62,8 @@ namespace BalatroSeedOracle.ViewModels
         // Events
         public event EventHandler<FilterBrowserItem>? FilterSelected;
 
-        public PaginatedFilterBrowserViewModel(
-            IFilterCacheService filterCacheService,
-            UserProfileService? userProfileService = null
-        )
+        public PaginatedFilterBrowserViewModel(UserProfileService? userProfileService = null)
         {
-            _filterCacheService = filterCacheService;
             _userProfileService = userProfileService;
             LoadFilters();
         }
@@ -167,14 +162,9 @@ namespace BalatroSeedOracle.ViewModels
             {
                 _allFilters.Clear();
 
-                DebugLogger.Log(
-                    "PaginatedFilterBrowserViewModel",
-                    $"Loading filters from cache ({_filterCacheService.Count} cached)"
-                );
-
-                foreach (var cached in _filterCacheService.GetAllFilters())
+                foreach (var path in Services.FilterFiles.List())
                 {
-                    var filterItem = ConvertCachedFilterToBrowserItem(cached);
+                    var filterItem = LoadFilterBrowserItem(path);
                     if (filterItem is not null)
                     {
                         _allFilters.Add(filterItem);
@@ -192,106 +182,21 @@ namespace BalatroSeedOracle.ViewModels
             }
         }
 
-        /// <summary>
-        /// Converts a cached filter to a FilterBrowserItem for display.
-        /// This is much faster than parsing from disk since the config is already in memory.
-        /// </summary>
-        private FilterBrowserItem? ConvertCachedFilterToBrowserItem(
-            Services.CachedFilter cachedFilter
-        )
-        {
-            try
-            {
-                var config = cachedFilter.Config;
-                if (config is null || string.IsNullOrEmpty(config.Name))
-                    return null;
-
-                var item = new FilterBrowserItem
-                {
-                    Name = config.Name,
-                    Description = config.Description ?? "",
-                    Author = config.Author ?? "Unknown",
-                    DateCreated = cachedFilter.LastModified,
-                    FilePath = cachedFilter.FilePath,
-                    MustCount = config.Must?.Count ?? 0,
-                    ShouldCount = config.Should?.Count ?? 0,
-                    MustNotCount = config.MustNot?.Count ?? 0,
-                    DeckName = config.Deck.ToString(),
-                    StakeName = config.Stake.ToString(),
-                };
-
-                // Parse Must items
-                if (config.Must is not null)
-                {
-                    item.Must = ParseItemCollections(config.Must);
-                }
-
-                // Parse Should items
-                if (config.Should is not null)
-                {
-                    item.Should = ParseItemCollections(config.Should);
-                }
-
-                // Parse MustNot items
-                if (config.MustNot is not null)
-                {
-                    item.MustNot = ParseItemCollections(config.MustNot);
-                }
-
-                return item;
-            }
-            catch (Exception ex)
-            {
-                DebugLogger.LogError(
-                    "PaginatedFilterBrowserViewModel",
-                    $"Error converting cached filter {cachedFilter.FilterId}: {ex.Message}"
-                );
-                return null;
-            }
-        }
-
         private FilterBrowserItem? LoadFilterBrowserItem(string filePath)
         {
             try
             {
-                var content = File.ReadAllText(filePath);
-                if (string.IsNullOrWhiteSpace(content))
+                var config = Services.FilterFiles.Load(filePath, out var loadError);
+                if (config is null)
+                {
+                    DebugLogger.LogError(
+                        "PaginatedFilterBrowserViewModel",
+                        $"Failed to parse JAML {filePath}: {loadError}"
+                    );
                     return null;
-
-                Motely.Filters.Jaml.JamlConfig? config = null;
-                var extension = Path.GetExtension(filePath).ToLowerInvariant();
-
-                if (extension == ".jaml")
-                {
-                    // Load JAML file
-                    if (
-                        !Motely.Filters.Jaml.JamlConfigLoader.TryLoad(
-                            content,
-                            out config,
-                            out var jamlError
-                        )
-                    )
-                    {
-                        DebugLogger.LogError(
-                            "PaginatedFilterBrowserViewModel",
-                            $"Failed to parse JAML {filePath}: {jamlError}"
-                        );
-                        return null;
-                    }
-                }
-                else
-                {
-                    if (!Motely.Filters.Jaml.JamlConfigLoader.TryLoad(content, out config, out var loadError))
-                    {
-                        DebugLogger.LogError(
-                            "PaginatedFilterBrowserViewModel",
-                            $"Failed to load filter {filePath}: {loadError}"
-                        );
-                        return null;
-                    }
                 }
 
-                if (config is null || string.IsNullOrEmpty(config.Name))
+                if (string.IsNullOrEmpty(config.Name))
                     return null;
 
                 var item = new FilterBrowserItem
@@ -507,9 +412,6 @@ namespace BalatroSeedOracle.ViewModels
 
         public void RefreshFilters()
         {
-            // Rescan filesystem first so deleted filters drop out of the cache,
-            // then reload our list from the refreshed cache.
-            _filterCacheService.RefreshCache();
             LoadFilters();
         }
     }

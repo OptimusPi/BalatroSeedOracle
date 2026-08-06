@@ -1,29 +1,28 @@
 using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Data.Core.Plugins;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
-using BalatroSeedOracle.Controls;
-using BalatroSeedOracle.Extensions;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Services;
-using Microsoft.Extensions.DependencyInjection;
+using BalatroSeedOracle.ViewModels;
 
 namespace BalatroSeedOracle;
 
 public partial class App : Application
 {
-    private ServiceProvider? _serviceProvider;
+    private static readonly Dictionary<Type, object> _services = new();
 
-    public IServiceProvider Services => _serviceProvider!;
+    private static void Register<T>(T instance)
+        where T : class => _services[typeof(T)] = instance;
 
-    /// <summary>
-    /// Platform-specific initialization callback. Set by Desktop/Browser projects for custom setup.
-    /// </summary>
-    public static Func<Task>? PlatformSpecificInitialization { get; set; }
+    /// <summary>Hand-wired registry. The object graph is built once in OnFrameworkInitializationCompleted.</summary>
+    public static T? GetService<T>()
+        where T : class => _services.TryGetValue(typeof(T), out var s) ? (T)s : null;
 
     public override void Initialize()
     {
@@ -32,600 +31,72 @@ public partial class App : Application
 
     public override void OnFrameworkInitializationCompleted()
     {
-        try
+        AppDomain.CurrentDomain.UnhandledException += (_, e) =>
+            DebugLogger.LogError("APP_DOMAIN", $"{e.ExceptionObject}");
+        TaskScheduler.UnobservedTaskException += (_, e) =>
         {
-            DebugLogger.Log("App", "Initializing application services");
+            DebugLogger.LogError("TASK", $"{e.Exception}");
+            e.SetObserved();
+        };
 
-            // Set up global exception handlers
-            AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
-            TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
+        // All data lives in the run directory, same convention as Motely.CLI.
+        Directory.CreateDirectory("JamlFilters");
+        Directory.CreateDirectory("SearchResults");
+        Directory.CreateDirectory("WordLists");
+        Directory.CreateDirectory("VisualizerPresets");
+        Directory.CreateDirectory("MixerPresets");
 
-            // Set up services
-            var services = new ServiceCollection();
-            ConfigureServices(services);
-            _serviceProvider = services.BuildServiceProvider();
+        var profile = new UserProfileService();
+        Register(profile);
+        Register(SpriteService.Instance);
 
-            // Eagerly construct singletons that publish a static .Instance for
-            // XAML-constructed callers (converters/behaviors) that can't use DI.
-            _ = _serviceProvider.GetService<Services.FavoritesService>();
+        Func<AnalyzeModalViewModel> analyzeFactory = () =>
+            new AnalyzeModalViewModel(SpriteService.Instance, profile);
 
-            // Get platform services for platform-specific initialization
-            var platformServices = _serviceProvider.GetService<Services.IPlatformServices>();
-            if (platformServices is not null)
-            {
-                // Initialize DebugLogger with platform services (removes need for #if directives)
-                DebugLogger.Initialize(platformServices);
+        FiltersModalViewModel filtersVM = null!;
+        filtersVM = new FiltersModalViewModel(
+            profile,
+            () => new ViewModels.FilterTabs.ValidateFilterTabViewModel(filtersVM)
+        );
+        var searchVM = new SearchModalViewModel(profile, analyzeFactory);
+        var menuVM = new BalatroMainMenuViewModel(profile, searchVM, filtersVM, analyzeFactory);
+        var mainMenu = new Views.BalatroMainMenu(menuVM);
+        Register(filtersVM);
+        Register(searchVM);
+        Register(menuVM);
+        Register(mainMenu);
 
-                // Ensure required directories exist (platform-specific)
-                if (platformServices.SupportsFileSystem)
-                {
-                    EnsureDirectoriesExist(platformServices);
-                }
-            }
-
-            // Browser-specific initialization
-            if (platformServices != null && !platformServices.SupportsFileSystem)
-            {
-                // Test localStorage interop early - fire-and-forget with proper error handling
-                _ = TestLocalStorageInteropAsync();
-
-                // Seed browser sample filters (fire-and-forget, best-effort)
-                _ = SeedBrowserSampleFiltersAsync();
-            }
-
-            // Initialize filter cache (works on all platforms)
-            InitializeFilterCache();
-
-            // Avalonia 12: BindingPlugins is internal; DataAnnotations validator is no longer registered by default.
-
-            if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
-            {
-                // Set up UI thread exception handler
-                Dispatcher.UIThread.UnhandledException += OnUIThreadException;
-
-                // Show loading window and pre-load sprites before showing main window
-                _ = ShowLoadingWindowAndPreloadSpritesAsync(desktop);
-
-                // Handle app exit
-                desktop.ShutdownRequested += OnShutdownRequested;
-
-                DebugLogger.Log("App", "Application initialization complete");
-            }
-            else if (ApplicationLifetime is ISingleViewApplicationLifetime singleViewPlatform)
-            {
-                // Browser/Mobile platform - use single view instead of window
-                DebugLogger.Log("App", "Initializing for Browser/Mobile platform");
-
-                // Set up UI thread exception handler
-                Dispatcher.UIThread.UnhandledException += OnUIThreadException;
-
-                // For Browser/Mobile, wrap main view in ErrorBoundary (template-driven, per Avalonia best practices)
-                var mainMenu = _serviceProvider!.GetRequiredService<Views.BalatroMainMenu>();
-                var browserBoundary = new ErrorBoundary { Content = mainMenu };
-                singleViewPlatform.MainView = browserBoundary;
-
-                // Pre-load sprites asynchronously (without the complex shader transition)
-                _ = PreloadSpritesWithoutTransition();
-
-                // Browser/mobile audio init is non-blocking (async JS interop, or no-op stubs).
-                _ = _serviceProvider?.GetService<Services.IAudioManager>()?.InitializeAsync();
-
-                DebugLogger.Log("App", "Browser/Mobile initialization complete");
-            }
-
-            base.OnFrameworkInitializationCompleted();
-        }
-        catch (Exception ex)
+        if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            HandleException("INITIALIZATION", ex);
-            // Desktop platforms can use Console.ReadLine, browser cannot
-            var platformServices = _serviceProvider?.GetService<Services.IPlatformServices>();
-            if (platformServices?.SupportsFileSystem == true)
-            {
-                Console.ReadLine(); // Desktop only - browser has no stdin
-            }
-            throw;
-        }
-    }
+            Dispatcher.UIThread.UnhandledException += OnUIThreadException;
 
-    private async Task TestLocalStorageInteropAsync()
-    {
-        try
-        {
-            await Task.Delay(1000); // Wait for JS to initialize
-            // LocalStorage interop test is handled by BrowserPlatformServices initialization
-            DebugLogger.Log("App", "LocalStorage interop test handled by platform services");
-        }
-        catch (Exception ex)
-        {
-            DebugLogger.LogError("App", $"LocalStorage interop test failed: {ex.Message}");
-        }
-    }
-
-    private async Task UniformProgressLoopAsync(
-        Services.TransitionService transitionService,
-        DateTime introStart,
-        TimeSpan minIntro
-    )
-    {
-        while (true)
-        {
-            // Bail if something else already finished the transition (e.g. the main
-            // flow's SetProgress(1.0f) completed and StopTransition'd while we were
-            // still ticking). Without this the loop runs all 3.14s of minIntro past
-            // the actual transition's end.
-            if (!transitionService.IsTransitionActive)
-                return;
-
-            var elapsed = DateTime.UtcNow - introStart;
-            if (elapsed >= minIntro)
-            {
-                // Stop at 95% - caller will complete to 100% when fully ready
-                transitionService.SetProgress(0.95f);
-                break;
-            }
-            float t = (float)(elapsed.TotalMilliseconds / minIntro.TotalMilliseconds);
-            float p = (1f - (1f - t) * (1f - t)) * 0.95f; // Scale to 95% max
-            transitionService.SetProgress(p);
-            await Task.Delay(16).ConfigureAwait(false);
-        }
-    }
-
-    /// <summary>
-    /// Handles unhandled exceptions on the UI thread
-    /// </summary>
-    private void OnUIThreadException(object? sender, DispatcherUnhandledExceptionEventArgs e)
-    {
-        var ex = e.Exception;
-        HandleException("UI_THREAD", ex);
-        ShowErrorOnUI("UI_THREAD", ex);
-        e.Handled = true;
-    }
-
-    /// <summary>
-    /// Handles unhandled exceptions from AppDomain
-    /// </summary>
-    private void OnUnhandledException(object sender, UnhandledExceptionEventArgs e)
-    {
-        if (e.ExceptionObject is Exception ex)
-        {
-            HandleException("APP_DOMAIN", ex);
-            ShowErrorOnUI("APP_DOMAIN", ex);
-        }
-        else
-        {
-            DebugLogger.LogError("APP_DOMAIN", $"❌ Non-exception error: {e.ExceptionObject}");
-        }
-    }
-
-    /// <summary>
-    /// Handles unobserved task exceptions
-    /// </summary>
-    private void OnUnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs e)
-    {
-        var ex = e.Exception;
-        HandleException("TASK_SCHEDULER", ex);
-        ShowErrorOnUI("TASK_SCHEDULER", ex);
-        e.SetObserved();
-    }
-
-    /// <summary>
-    /// Displays the exception on the UI ErrorBoundary if available
-    /// </summary>
-    private void ShowErrorOnUI(string source, Exception ex)
-    {
-        Dispatcher.UIThread.Post(() =>
-        {
-            try
-            {
-                if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop && desktop.MainWindow != null)
-                {
-                    var errorBoundary = desktop.MainWindow.FindControl<Controls.ErrorBoundary>("MainContentHost");
-                    if (errorBoundary != null)
-                    {
-                        errorBoundary.HasError = true;
-                        errorBoundary.ErrorMessage = $"[{source}] {ex.GetType().Name}: {ex.Message}\n\nStack Trace:\n{ex.StackTrace}";
-                        return;
-                    }
-
-                    DebugLogger.LogError("App", $"ErrorBoundary host not found for {source}");
-                }
-
-                if (ApplicationLifetime is ISingleViewApplicationLifetime singleView && singleView.MainView is Controls.ErrorBoundary errorBoundaryView)
-                {
-                    errorBoundaryView.HasError = true;
-                    errorBoundaryView.ErrorMessage = $"[{source}] {ex.GetType().Name}: {ex.Message}\n\nStack Trace:\n{ex.StackTrace}";
-                }
-                else
-                {
-                    DebugLogger.LogError("App", $"No ErrorBoundary available for {source}");
-                }
-            }
-            catch (Exception dex)
-            {
-                DebugLogger.LogError("ERROR_REPORTING", $"Failed to display error in UI: {dex.Message}");
-            }
-        });
-    }
-
-    /// <summary>
-    /// Centralized exception handling logic
-    /// </summary>
-    private void HandleException(string source, Exception ex)
-    {
-        DebugLogger.LogError(source, $"❌ Exception: {ex.Message}");
-        DebugLogger.LogError(source, $"Stack trace: {ex.StackTrace}");
-
-        // Log inner exceptions if they exist
-        if (ex.InnerException != null)
-        {
-            DebugLogger.LogError(source, $"Inner Exception: {ex.InnerException.Message}");
-            DebugLogger.LogError(source, $"Inner Stack trace: {ex.InnerException.StackTrace}");
-        }
-
-        // Write to crash log (platform-specific)
-        var platformServices = _serviceProvider?.GetService<Services.IPlatformServices>();
-        if (platformServices != null)
-        {
-            var errorMsg =
-                $"=== {source} EXCEPTION: {DateTime.Now} ===\n"
-                + $"Exception: {ex.GetType().FullName}\n"
-                + $"Message: {ex.Message}\n"
-                + $"Stack Trace:\n{ex.StackTrace}\n";
-
-            if (ex.InnerException != null)
-            {
-                errorMsg +=
-                    $"Inner Exception: {ex.InnerException.GetType().FullName}\n"
-                    + $"Inner Message: {ex.InnerException.Message}\n"
-                    + $"Inner Stack Trace:\n{ex.InnerException.StackTrace}\n";
-            }
-            errorMsg += "\n";
-
-            _ = platformServices.WriteCrashLogAsync(errorMsg);
-        }
-    }
-
-    private async System.Threading.Tasks.Task ShowLoadingWindowAndPreloadSpritesAsync(
-        IClassicDesktopStyleApplicationLifetime desktop
-    )
-    {
-        try
-        {
-            DebugLogger.LogImportant(
-                "App",
-                "Starting shader-driven intro with sprite pre-loading..."
-            );
-
-            // Create main window FIRST (so we have access to shader background)
-            var mainWindow = _serviceProvider!.GetRequiredService<Views.MainWindow>();
+            var mainWindow = new Views.MainWindow(new MainWindowViewModel(profile), mainMenu);
+            Register(mainWindow);
             desktop.MainWindow = mainWindow;
-
-            // Subscribe to window state changes to close popups when minimized
-            mainWindow.PropertyChanged += (s, e) =>
-            {
-                if (e.Property == Window.WindowStateProperty)
-                {
-                    if (mainWindow.WindowState == WindowState.Minimized)
-                    {
-                        // Close all popups when window is minimized
-                        var vm = mainWindow.MainMenu?.ViewModel;
-                        if (vm is not null)
-                        {
-                            vm.IsVolumePopupOpen = false;
-                        }
-                    }
-                }
-            };
-
             mainWindow.Show();
 
-            // Give UI a moment to render and initialize shader
-            await Task.Delay(100);
+            mainMenu.ApplyShaderParameters(ShaderPresetHelper.Load("normal"));
+            _ = SpriteService.Instance.PreloadAllSpritesAsync(null);
 
-            // Get reference to BalatroMainMenu and its shader background
-            var mainMenu = mainWindow.MainMenu;
-            if (mainMenu is null)
-            {
-                DebugLogger.LogError(
-                    "App",
-                    "Failed to find BalatroMainMenu - falling back to normal startup"
-                );
-                await PreloadSpritesWithoutTransition();
-                return;
-            }
-
-            // SMOOTH INTRO TRANSITION - Dark pixelated → Vibrant Balatro
-            DebugLogger.LogImportant("App", "Starting SMOOTH intro transition (Dark → Normal)");
-
-            var introParams = ShaderPresetHelper.Load("intro");
-            var normalParams = ShaderPresetHelper.Load("normal");
-
-            // Apply intro state immediately
-            ApplyShaderParametersToMainMenu(mainMenu, introParams);
-
-            // Get TransitionService and start the transition
-            var transitionService = _serviceProvider?.GetService<Services.TransitionService>();
-            if (transitionService != null)
-            {
-                // Start transition - we'll drive progress via sprite loading
-                transitionService.StartTransition(
-                    introParams,
-                    normalParams,
-                    parameters => ApplyShaderParametersToMainMenu(mainMenu, parameters)
-                );
-
-                // Preload sprites WITH SMOOTH TRANSITION driven by progress
-                await PreloadSpritesWithTransition(transitionService);
-            }
-            else
-            {
-                DebugLogger.LogError(
-                    "App",
-                    "TransitionService not found - falling back to instant transition"
-                );
-                ApplyShaderParametersToMainMenu(mainMenu, normalParams);
-                await PreloadSpritesWithoutTransition();
-            }
-
-            // Initialize background music (MediaPlayer 8-stem). Awaited here — AFTER the window is
-            // shown — so the blocking native device init never freezes startup. InitializeAsync
-            // offloads the native init to a background thread internally and never throws.
-            try
-            {
-                var audioManager = _serviceProvider?.GetService<Services.IAudioManager>();
-                if (audioManager != null)
-                {
-                    DebugLogger.LogImportant("App", "Initializing 8-stem audio with MediaPlayer");
-                    await audioManager.InitializeAsync();
-                }
-            }
-            catch (Exception ex)
-            {
-                DebugLogger.LogError("App", $"Failed to initialize audio: {ex.Message}");
-            }
-
-            // Complete the intro transition NOW (after everything is ready)
-            if (transitionService != null)
-            {
-                transitionService.SetProgress(1.0f);
-            }
-
-            // Platform-specific initialization (Desktop: search library, etc.) — awaited, not fire-and-forget
-            if (PlatformSpecificInitialization != null)
-            {
-                await PlatformSpecificInitialization();
-            }
-
-            DebugLogger.LogImportant(
-                "App",
-                "Application ready! All sprites pre-loaded with shader intro."
-            );
+            desktop.ShutdownRequested += (_, _) => profile.FlushProfile();
         }
-        catch (Exception ex)
-        {
-            DebugLogger.LogError("App", $"Error during sprite pre-load: {ex.Message}");
-            DebugLogger.LogError("App", $"Stack trace: {ex.StackTrace}");
 
-            // Fall back to showing main window without transition
-            if (desktop.MainWindow == null)
-            {
-                desktop.MainWindow = _serviceProvider!.GetRequiredService<Views.MainWindow>();
-                desktop.MainWindow.Show();
-            }
-            await PreloadSpritesWithoutTransition();
-        }
+        base.OnFrameworkInitializationCompleted();
     }
 
-    private void ApplyShaderParametersToMainMenu(
-        Views.BalatroMainMenu mainMenu,
-        Models.ShaderParameters parameters
-    )
+    /// <summary>Crash loudly and visibly: log it and put it on the ErrorBoundary.</summary>
+    private void OnUIThreadException(object? sender, DispatcherUnhandledExceptionEventArgs e)
     {
-        mainMenu.ApplyShaderParameters(parameters);
-    }
-
-    /// <summary>
-    /// Pre-load sprites WITH smooth shader transition driven by progress
-    /// </summary>
-    private async System.Threading.Tasks.Task PreloadSpritesWithTransition(
-        Services.TransitionService transitionService
-    )
-    {
-        try
+        DebugLogger.LogError("UI_THREAD", $"{e.Exception}");
+        if (
+            ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop
+            && desktop.MainWindow?.FindControl<Controls.ErrorBoundary>("MainContentHost")
+                is { } boundary
+        )
         {
-            var spriteService = SpriteService.Instance;
-            var introStart = DateTime.UtcNow;
-            var minIntro = TimeSpan.FromSeconds(3.14);
-
-            // Track uniform progress task - no fire-and-forget!
-            _ = UniformProgressLoopAsync(transitionService, introStart, minIntro);
-
-            // One line per completed category, not one per sprite — 500+ lines of
-            // per-item spam is how real failures stay invisible in this log.
-            var progress = new Progress<(string category, int current, int total)>(update =>
-            {
-                if (update.current == update.total)
-                    DebugLogger.Log("App", $"Loaded {update.category}: {update.total}");
-            });
-
-            await spriteService.PreloadAllSpritesAsync(progress);
-
-            // Uniform progress loop runs in background - no need to await
-            // It will complete when minIntro time is reached
-
-            DebugLogger.LogImportant("App", "Sprites pre-loaded with smooth transition!");
+            boundary.HasError = true;
+            boundary.ErrorMessage = $"{e.Exception.GetType().Name}: {e.Exception.Message}\n\n{e.Exception.StackTrace}";
+            e.Handled = true;
         }
-        catch (Exception ex)
-        {
-            DebugLogger.LogError(
-                "App",
-                $"Failed to pre-load sprites with transition: {ex.Message}"
-            );
-            // Don't complete transition here - let caller handle it
-            transitionService.SetProgress(0.95f);
-        }
-    }
-
-    /// <summary>
-    /// Fallback: Pre-load sprites without transition effect
-    /// </summary>
-    private async System.Threading.Tasks.Task PreloadSpritesWithoutTransition()
-    {
-        try
-        {
-            var spriteService = SpriteService.Instance;
-            await spriteService.PreloadAllSpritesAsync(null);
-            DebugLogger.Log("App", "Sprites pre-loaded (no transition)");
-        }
-        catch (Exception ex)
-        {
-            DebugLogger.LogError("App", $"Failed to pre-load sprites: {ex.Message}");
-        }
-    }
-
-    private void OnShutdownRequested(object? sender, ShutdownRequestedEventArgs e)
-    {
-        try
-        {
-            DebugLogger.Log("App", "Shutdown requested - stopping all searches...");
-
-            // Flush user profile first to ensure all settings are saved
-            var userProfileService = _serviceProvider?.GetService<Services.UserProfileService>();
-            if (userProfileService != null)
-            {
-                DebugLogger.Log("App", "Flushing user profile...");
-                userProfileService.FlushProfile();
-                DebugLogger.Log("App", "User profile flushed");
-            }
-
-            // Stop audio
-            var audioManager = _serviceProvider?.GetService<Services.IAudioManager>();
-            if (audioManager is IDisposable disposable)
-            {
-                disposable.Dispose();
-            }
-
-            // Dispose filter cache
-            var filterCache = _serviceProvider?.GetService<Services.IFilterCacheService>();
-            filterCache?.Dispose();
-
-            // Get the search manager and stop all active searches
-            var searchManager = _serviceProvider?.GetService<Services.SearchManager>();
-            if (searchManager != null)
-            {
-                DebugLogger.Log("App", "Stopping active searches...");
-                searchManager.StopAllSearches();
-
-                // Give searches a moment to actually stop
-                System.Threading.Thread.Sleep(500);
-
-                // Dispose the search manager which will dispose all searches
-                searchManager.Dispose();
-                DebugLogger.Log("App", "All searches stopped");
-            }
-
-            // Now dispose the service provider
-            _serviceProvider?.Dispose();
-            DebugLogger.Log("App", "Services disposed");
-        }
-        catch (Exception ex)
-        {
-            DebugLogger.LogError("App", $"Error during shutdown: {ex.Message}");
-        }
-    }
-
-    private void ConfigureServices(IServiceCollection services)
-    {
-        // Register all MVVM services and ViewModels
-        services.AddBalatroSeedOracleServices();
-
-        // Register existing singleton services
-        services.AddSingleton<BalatroSeedOracle.Services.SpriteService>(provider =>
-            SpriteService.Instance
-        );
-
-        // Register platform-specific services (set by Desktop/Browser Program.cs)
-        PlatformServices.RegisterServices?.Invoke(services);
-    }
-
-    private async Task SeedBrowserSampleFiltersAsync()
-    {
-        try
-        {
-            var store = _serviceProvider?.GetService<Services.Storage.IAppDataStore>();
-            if (store == null)
-                return;
-
-            const string sampleKey = "Filters/TelescopeObservatory.json";
-            var exists = await store.ExistsAsync(sampleKey).ConfigureAwait(false);
-            if (exists)
-                return;
-
-            var sampleJson =
-                "{\n  \"name\": \"Perkeo Observatory\",\n  \"description\": \"Perkeo with the Telescope and Observatory Vouchers.\",\n  \"author\": \"tacodiva\",\n  \"dateCreated\": \"2025-01-01T05:46:12.6691000Z\",\n  \"must\": [\n    {\n      \"type\": \"Voucher\",\n      \"value\": \"Telescope\",\n      \"antes\": [1]\n    },\n    {\n      \"type\": \"Voucher\",\n      \"value\": \"Observatory\",\n      \"antes\": [2]\n    }\n  ],\n  \"should\": [],\n  \"mustNot\": []\n}";
-
-            await store.WriteTextAsync(sampleKey, sampleJson).ConfigureAwait(false);
-        }
-        catch
-        {
-            // Best-effort seeding; ignore failures.
-        }
-    }
-
-    private void InitializeFilterCache()
-    {
-        try
-        {
-            DebugLogger.Log("App", "Initializing filter cache...");
-            var filterCache = _serviceProvider?.GetService<Services.IFilterCacheService>();
-            if (filterCache != null)
-            {
-                filterCache.Initialize();
-                DebugLogger.Log(
-                    "App",
-                    $"Filter cache initialized with {filterCache.Count} filters"
-                );
-            }
-            else
-            {
-                DebugLogger.LogError("App", "FilterCacheService not found in DI container");
-            }
-        }
-        catch (Exception ex)
-        {
-            DebugLogger.LogError("App", $"Failed to initialize filter cache: {ex.Message}");
-        }
-    }
-
-    private void EnsureDirectoriesExist(Services.IPlatformServices platformServices)
-    {
-        try
-        {
-            // All data lives under the run directory, same convention as Motely.CLI.
-            platformServices.EnsureDirectoryExists("JamlFilters");
-            platformServices.EnsureDirectoryExists("SearchResults");
-            platformServices.EnsureDirectoryExists("WordLists");
-            platformServices.EnsureDirectoryExists("VisualizerPresets");
-            platformServices.EnsureDirectoryExists("MixerPresets");
-            platformServices.EnsureDirectoryExists("EventFX");
-        }
-        catch (Exception ex)
-        {
-            DebugLogger.LogError("App", $"Failed to create directories: {ex.Message}");
-        }
-    }
-
-    /// <summary>
-    /// Get a service from the DI container (temporary until full DI migration)
-    /// </summary>
-    public static T? GetService<T>()
-        where T : class
-    {
-        if (Current is App app)
-        {
-            return app._serviceProvider?.GetService<T>();
-        }
-        return null;
     }
 }

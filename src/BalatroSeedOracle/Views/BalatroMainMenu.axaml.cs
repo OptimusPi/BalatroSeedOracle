@@ -25,7 +25,7 @@ using Motely.Filters.Jaml;
 
 namespace BalatroSeedOracle.Views
 {
-    public partial class BalatroMainMenu : UserControl, IModalHost
+    public partial class BalatroMainMenu : UserControl
     {
         private Grid? _modalContainer;
         private Border? _modalOverlay;
@@ -41,7 +41,6 @@ namespace BalatroSeedOracle.Views
         private Grid? _mainContent;
         private UserControl? _activeModalContent;
         private TextBlock? _mainTitleText;
-        private Action<float, float, float, float>? _audioAnalysisHandler;
         private Popup? _volumePopup;
 
         // Modal navigation stack
@@ -222,12 +221,7 @@ namespace BalatroSeedOracle.Views
             _previousModalContent = null;
             _previousModalTitle = null;
 
-            var configurationService = App.GetService<IConfigurationService>()
-                ?? throw new InvalidOperationException("IConfigurationService not registered");
-            var filterService = App.GetService<IFilterService>()
-                ?? throw new InvalidOperationException("IFilterService not registered");
-            var filterSelectionVM = App.GetService<FilterSelectionModalViewModel>()
-                ?? throw new InvalidOperationException("FilterSelectionModalViewModel not registered");
+            var filterSelectionVM = new FilterSelectionModalViewModel(new PaginatedFilterBrowserViewModel());
             filterSelectionVM.Configure(
                 enableSearch: true,
                 enableEdit: true,
@@ -235,11 +229,7 @@ namespace BalatroSeedOracle.Views
                 enableDelete: false,
                 enableAnalyze: false
             );
-            var filterSelectionModal = new FilterSelectionModal(
-                filterSelectionVM,
-                configurationService,
-                filterService
-            );
+            var filterSelectionModal = new FilterSelectionModal(filterSelectionVM);
 
             filterSelectionVM.ModalCloseRequested += async (s, e) =>
             {
@@ -270,9 +260,7 @@ namespace BalatroSeedOracle.Views
 
                             try
                             {
-                                var configPath = await ViewModel.GetFilterConfigPathAsync(
-                                    result.FilterId
-                                );
+                                var configPath = ViewModel.GetFilterConfigPath(result.FilterId);
                                 if (configPath != null)
                                 {
                                     HideModalContent();
@@ -368,10 +356,7 @@ namespace BalatroSeedOracle.Views
 
                 if (!string.IsNullOrEmpty(configPath))
                 {
-                    var platformServices = ServiceHelper.GetRequiredService<IPlatformServices>();
-                    bool exists = await platformServices.FileExistsAsync(configPath);
-
-                    if (!exists)
+                    if (!System.IO.File.Exists(configPath))
                     {
                         throw new InvalidOperationException($"Filter file not found: {configPath}");
                     }
@@ -450,12 +435,7 @@ namespace BalatroSeedOracle.Views
             _previousModalContent = null;
             _previousModalTitle = null;
 
-            var configurationService = App.GetService<IConfigurationService>()
-                ?? throw new InvalidOperationException("IConfigurationService not registered");
-            var filterService = App.GetService<IFilterService>()
-                ?? throw new InvalidOperationException("IFilterService not registered");
-            var filterSelectionVM = App.GetService<FilterSelectionModalViewModel>()
-                ?? throw new InvalidOperationException("FilterSelectionModalViewModel not registered");
+            var filterSelectionVM = new FilterSelectionModalViewModel(new PaginatedFilterBrowserViewModel());
             filterSelectionVM.Configure(
                 enableSearch: false,
                 enableEdit: true,
@@ -463,11 +443,7 @@ namespace BalatroSeedOracle.Views
                 enableDelete: true,
                 enableAnalyze: false
             );
-            var filterSelectionModal = new FilterSelectionModal(
-                filterSelectionVM,
-                configurationService,
-                filterService
-            );
+            var filterSelectionModal = new FilterSelectionModal(filterSelectionVM);
 
             filterSelectionVM.ModalCloseRequested += async (s, e) =>
             {
@@ -509,27 +485,22 @@ namespace BalatroSeedOracle.Views
                     case Models.FilterAction.Copy:
                         if (result.FilterId != null)
                         {
-                            var filterService = ServiceHelper.GetRequiredService<IFilterService>();
-                            var originalName = await filterService.GetFilterNameAsync(
-                                result.FilterId
-                            );
-                            var defaultCopyName = string.IsNullOrEmpty(originalName)
+                            var sourcePath = FilterFiles.Resolve(result.FilterId);
+                            var config = FilterFiles.Load(sourcePath, out _);
+                            var defaultCopyName = string.IsNullOrEmpty(config?.Name)
                                 ? "Filter Copy"
-                                : $"{originalName} Copy";
+                                : $"{config!.Name} Copy";
 
                             var copyName = await ShowFilterNameInputDialog(defaultCopyName);
-                            if (!string.IsNullOrWhiteSpace(copyName))
+                            if (!string.IsNullOrWhiteSpace(copyName) && config is not null)
                             {
-                                var clonedId = await filterService.CloneFilterAsync(
-                                    result.FilterId,
-                                    copyName
+                                var clonedId =
+                                    $"{copyName.Replace(" ", "").ToLower()}_{Guid.NewGuid():N}";
+                                config.Name = copyName;
+                                FilterFiles.Save(config, FilterFiles.Resolve(clonedId));
+                                await Dispatcher.UIThread.InvokeAsync(() =>
+                                    ShowFiltersModalDirectAsync(clonedId)
                                 );
-                                if (!string.IsNullOrEmpty(clonedId))
-                                {
-                                    await Dispatcher.UIThread.InvokeAsync(() =>
-                                        ShowFiltersModalDirectAsync(clonedId)
-                                    );
-                                }
                             }
                         }
                         break;
@@ -575,16 +546,8 @@ namespace BalatroSeedOracle.Views
                     HideModalContent();
                 };
 
-                // Load the filter data
-                var filtersDir = "JamlFilters";
-                // Try .jaml first, then .json as fallback
-                var filterPath = System.IO.Path.Combine(filtersDir, filterId + ".jaml");
-
-                if (!System.IO.File.Exists(filterPath))
-                {
-                    filterPath = System.IO.Path.Combine(filtersDir, filterId + ".json");
-                }
-
+                // Load the filter data (.jaml only)
+                var filterPath = FilterFiles.Resolve(filterId);
                 filtersModal.ViewModel.CurrentFilterPath = filterPath;
 
                 DebugLogger.Log(
@@ -923,19 +886,10 @@ namespace BalatroSeedOracle.Views
         /// </summary>
         private void OnLoaded(object? sender, RoutedEventArgs e)
         {
-            // Wire the event-FX system to the live shader, then trigger the intro animation.
-            // Connect must come first: TriggerEvent is a no-op until the shader is reachable.
-            var eventFXService = ServiceHelper.GetService<EventFXService>();
-            eventFXService?.Connect(() => CurrentShaderParameters, ApplyShaderParameters);
-            eventFXService?.TriggerEvent(EventFXType.IntroAnimation, 5.0);
-
             // Load visualizer settings
             if (_background is BalatroShaderBackground shader)
             {
                 ViewModel.LoadAndApplyVisualizerSettings(shader);
-                // Connect the FFT stem levels to the shader so the background
-                // reacts to the music (settings choose which stem drives what).
-                ViewModel.WireAudioAnalysisToShader(shader);
             }
 
             // Check for resumable search
@@ -1365,8 +1319,6 @@ namespace BalatroSeedOracle.Views
                 },
                 DispatcherPriority.Background
             );
-
-            // Audio manager cleanup handled via IAudioManager interface
         }
 
         /// <summary>
@@ -1442,70 +1394,9 @@ namespace BalatroSeedOracle.Views
             return _background as BalatroShaderBackground;
         }
 
-        /// <summary>
-        /// Set the volume for a specific track in the audio manager
-        /// VIEW-ONLY: Audio routing logic
-        /// </summary>
-        internal void SetTrackVolume(string trackName, float volume)
-        {
-            DebugLogger.Log("BalatroMainMenu", $"SetTrackVolume called: {trackName} = {volume}");
-        }
-
         #endregion
 
         #region Desktop Icon Management
-
-        /// <summary>
-        /// Shows the search modal for an existing search instance
-        /// VIEW-ONLY: Creates SearchModal UserControl and presents it via ShowModalContent
-        /// </summary>
-        public async Task ShowSearchModalForInstanceAsync(
-            string searchId,
-            string? configPath = null
-        )
-        {
-            try
-            {
-                DebugLogger.Log(
-                    "BalatroMainMenu",
-                    $"ShowSearchModalForInstanceAsync called - SearchId: {searchId}, ConfigPath: {configPath}"
-                );
-
-                var searchContent = new Modals.SearchModal(ViewModel.SearchModalViewModel);
-                // Set the MainMenu reference so CREATE NEW FILTER button works
-                searchContent.ViewModel.MainMenu = this;
-                searchContent.CloseRequested += (s, e) => HideModalContent();
-                await searchContent.ViewModel.ConnectToExistingSearch(searchId);
-
-                if (!string.IsNullOrEmpty(configPath))
-                {
-                    await searchContent.ViewModel.LoadFilterAsync(configPath);
-                }
-
-                searchContent.ViewModel.CreateShortcutRequested += (sender, cfgPath) =>
-                {
-                    DebugLogger.Log(
-                        "BalatroMainMenu",
-                        $"Desktop icon requested for config: {cfgPath}"
-                    );
-                    var modalSearchId = searchContent.ViewModel.CurrentSearchId;
-                    if (!string.IsNullOrEmpty(modalSearchId))
-                    {
-                        ViewModel.ShowSearchDesktopIcon(modalSearchId, cfgPath);
-                    }
-                };
-
-                this.ShowModal("🎰 SEED SEARCH", searchContent);
-            }
-            catch (Exception ex)
-            {
-                DebugLogger.LogError(
-                    "BalatroMainMenu",
-                    $"ShowSearchModalForInstanceAsync failed: {ex.Message}"
-                );
-                throw;
-            }
-        }
 
         /// <summary>
         /// Adds a search "desktop icon" - delegated to ViewModel
@@ -1529,73 +1420,7 @@ namespace BalatroSeedOracle.Views
 
         #region Cleanup
 
-        public void Dispose()
-        {
-            try
-            {
-                CleanupEventHandlers();
-            }
-            catch (Exception ex)
-            {
-                DebugLogger.LogError("BalatroMainMenu", $"⚠️  Error during disposal: {ex.Message}");
-            }
-        }
-
-        protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
-        {
-            CleanupEventHandlers();
-            base.OnDetachedFromVisualTree(e);
-        }
-
-        private void CleanupEventHandlers()
-        {
-            try
-            {
-                var audioManager = ServiceHelper.GetService<IAudioManager>();
-                if (audioManager != null && _audioAnalysisHandler != null)
-                {
-                    audioManager.AudioAnalysisUpdated -= _audioAnalysisHandler;
-                    _audioAnalysisHandler = null;
-                }
-
-                // Detach the music-reactivity bridge owned by the ViewModel.
-                ViewModel.UnwireAudioAnalysisFromShader();
-
-                DebugLogger.Log("BalatroMainMenu", "Event handlers cleaned up successfully");
-            }
-            catch (Exception ex)
-            {
-                DebugLogger.LogError(
-                    "BalatroMainMenu",
-                    $"Error cleaning up event handlers: {ex.Message}"
-                );
-            }
-        }
-
-        public Task StopAllSearchesAsync()
-        {
-            DebugLogger.LogImportant("BalatroMainMenu", "Stopping all searches...");
-
-            if (_modalContentWrapper != null && _modalContentWrapper.Content != null)
-            {
-                var modal = _modalContentWrapper.Content as StandardModal;
-                if (modal != null)
-                {
-                    // Direct field access from x:Name in StandardModal
-                    var filtersModal = modal.ModalContent?.Content as Modals.FiltersModal;
-                    if (filtersModal != null)
-                    {
-                        DebugLogger.LogImportant(
-                            "BalatroMainMenu",
-                            "Checking FiltersModal for active searches..."
-                        );
-                    }
-                }
-            }
-
-            DebugLogger.LogImportant("BalatroMainMenu", "All searches stopped");
-            return Task.CompletedTask;
-        }
+        public void Dispose() { }
 
         #endregion
 

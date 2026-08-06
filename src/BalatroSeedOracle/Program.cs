@@ -11,7 +11,7 @@ internal static class Program
 
     public static AppBuilder BuildAvaloniaApp()
     {
-        var builder = AppBuilder.Configure<App>().UsePlatformDetect().WithInterFont().LogToTrace();
+        var builder = AppBuilder.Configure<App>().UsePlatformDetect().LogToTrace();
 #if DEBUG
         builder = builder.WithDeveloperTools();
 #endif

@@ -1,13 +1,11 @@
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using BalatroSeedOracle.Helpers;
-using BalatroSeedOracle.Services;
 using BalatroSeedOracle.ViewModels;
 
 namespace BalatroSeedOracle.Views;
@@ -26,11 +24,7 @@ public partial class MainWindow : Window
         InitializeComponent();
     }
 
-    public MainWindow(
-        MainWindowViewModel viewModel,
-        BalatroMainMenu mainMenu,
-        NotificationService? notificationService = null
-    )
+    public MainWindow(MainWindowViewModel viewModel, BalatroMainMenu mainMenu)
     {
         InitializeComponent();
 
@@ -61,9 +55,6 @@ public partial class MainWindow : Window
             };
         }
 
-        if (notificationService != null)
-            notificationService.Initialize(this);
-
         Closing += OnWindowClosing;
         SizeChanged += OnWindowSizeChanged;
     }
@@ -75,8 +66,7 @@ public partial class MainWindow : Window
         // Prevent the window from closing immediately
         e.Cancel = true;
 
-        // Do cleanup asynchronously to avoid blocking UI
-        _ = CleanupAndExitAsync();
+        CleanupAndExit();
     }
 
     private void OnBuyBalatroClick(object? sender, PointerPressedEventArgs e)
@@ -98,7 +88,7 @@ public partial class MainWindow : Window
         // Previously repositioned desktop widgets on resize; the widget system was removed.
     }
 
-    private async Task CleanupAndExitAsync()
+    private void CleanupAndExit()
     {
         try
         {
@@ -114,14 +104,6 @@ public partial class MainWindow : Window
                     "Flushing user profile to save search state..."
                 );
                 userProfileService.FlushProfile();
-            }
-
-            // Stop any running Motely searches first
-            if (_mainMenu != null)
-            {
-                DebugLogger.LogImportant("MainWindow", "Stopping all Motely searches...");
-                await _mainMenu.StopAllSearchesAsync();
-                DebugLogger.LogImportant("MainWindow", "All searches stopped");
             }
 
             DebugLogger.Log("MainWindow", "Starting main menu disposal");

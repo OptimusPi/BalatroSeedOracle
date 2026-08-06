@@ -1,24 +1,17 @@
 using System;
 using System.IO;
-using Avalonia.Threading;
-using BalatroSeedOracle.Helpers;
-using BalatroSeedOracle.Models;
-using BalatroSeedOracle.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using BsoLogger = BalatroSeedOracle.Helpers.DebugLogger;
 
 namespace BalatroSeedOracle.ViewModels
 {
     /// <summary>
     /// Lightweight "desktop icon" for a search that keeps running after its modal is
-    /// closed. Lives on the main menu, shows live progress, and reopens the search
-    /// modal (reconnected to the same instance) when clicked.
+    /// closed. Lives on the main menu and reopens the search modal when clicked.
     /// </summary>
-    public partial class SearchWidgetIconViewModel : ObservableObject, IDisposable
+    public partial class SearchWidgetIconViewModel : ObservableObject
     {
         private readonly Action<SearchWidgetIconViewModel> _openCallback;
-        private ActiveSearchContext? _searchContext;
 
         [ObservableProperty]
         private string _filterName = "Search";
@@ -41,81 +34,22 @@ namespace BalatroSeedOracle.ViewModels
         public SearchWidgetIconViewModel(
             string searchId,
             string? configPath,
-            ActiveSearchContext? searchContext,
             Action<SearchWidgetIconViewModel> openCallback
         )
         {
             SearchId = searchId;
             ConfigPath = configPath;
-            _searchContext = searchContext;
             _openCallback = openCallback;
 
-            FilterName =
-                searchContext?.FilterName
-                ?? (configPath is not null ? Path.GetFileNameWithoutExtension(configPath) : "Search");
-
-            if (searchContext is not null)
-            {
-                IsRunning = searchContext.IsRunning;
-                ResultsText = $"{searchContext.ResultCount} found";
-                ProgressText = IsRunning ? "searching..." : "paused";
-                searchContext.ProgressUpdated += OnProgressUpdated;
-                searchContext.SearchCompleted += OnSearchCompleted;
-            }
-        }
-
-        private void OnProgressUpdated(object? sender, SearchProgress progress)
-        {
-            Dispatcher.UIThread.Post(() =>
-            {
-                try
-                {
-                    ProgressPercent = progress.PercentComplete;
-                    ProgressText = $"{progress.PercentComplete:F1}%";
-                    ResultsText = $"{progress.ResultsFound} found";
-                    IsRunning = true;
-                }
-                catch (Exception ex)
-                {
-                    BsoLogger.LogError("SearchWidgetIconViewModel", $"Progress update failed: {ex.Message}");
-                }
-            });
-        }
-
-        private void OnSearchCompleted(object? sender, SearchResultEventArgs e)
-        {
-            Dispatcher.UIThread.Post(() =>
-            {
-                try
-                {
-                    IsRunning = false;
-                    ProgressText = "done";
-                    if (_searchContext is not null)
-                    {
-                        ResultsText = $"{_searchContext.ResultCount} found";
-                    }
-                }
-                catch (Exception ex)
-                {
-                    BsoLogger.LogError("SearchWidgetIconViewModel", $"Completion update failed: {ex.Message}");
-                }
-            });
+            FilterName = configPath is not null
+                ? Path.GetFileNameWithoutExtension(configPath)
+                : "Search";
         }
 
         [RelayCommand]
         private void Open()
         {
             _openCallback(this);
-        }
-
-        public void Dispose()
-        {
-            if (_searchContext is not null)
-            {
-                _searchContext.ProgressUpdated -= OnProgressUpdated;
-                _searchContext.SearchCompleted -= OnSearchCompleted;
-                _searchContext = null;
-            }
         }
     }
 }

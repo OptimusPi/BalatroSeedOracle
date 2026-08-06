@@ -16,8 +16,6 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
     public partial class JsonEditorTabViewModel : ObservableObject
     {
         private readonly FiltersModalViewModel? _parentViewModel;
-        private readonly FilterSerializationService? _serializationService;
-        private readonly ClauseConversionService _clauseConversion = new();
 
         public event EventHandler<string>? CopyToClipboardRequested;
 
@@ -35,16 +33,12 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         /// </summary>
         public string FilterFileName =>
             !string.IsNullOrWhiteSpace(_parentViewModel?.FilterName)
-                ? $"📄 {_parentViewModel.FilterName}.json"
-                : "📄 filter.json";
+                ? $"📄 {_parentViewModel.FilterName}.jaml"
+                : "📄 filter.jaml";
 
-        public JsonEditorTabViewModel(
-            FiltersModalViewModel? parentViewModel = null,
-            FilterSerializationService? serializationService = null
-        )
+        public JsonEditorTabViewModel(FiltersModalViewModel? parentViewModel = null)
         {
             _parentViewModel = parentViewModel;
-            _serializationService = serializationService;
 
             // Set default JSON content
             JsonContent = GetDefaultJsonContent();
@@ -73,140 +67,44 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         #region Command Implementations
 
         /// <summary>
-        /// Auto-generates JSON from Visual Builder without showing status messages (silent mode).
+        /// Auto-generates JAML from Visual Builder without showing status messages (silent mode).
         /// Called automatically when Visual Builder items change.
         /// </summary>
         public void AutoGenerateFromVisual()
         {
-            try
-            {
-                if (_parentViewModel?.VisualBuilderTab is null)
-                    return;
+            if (_parentViewModel?.VisualBuilderTab is not VisualBuilderTabViewModel)
+                return;
 
-                var visualTab = _parentViewModel.VisualBuilderTab as VisualBuilderTabViewModel;
-                if (visualTab is null)
-                    return;
+            var config = _parentViewModel.BuildConfigFromCurrentState();
+            JsonContent = JamlConfigLoader.ToJaml(config);
 
-                var config = new JamlConfig
-                {
-                    Id = Guid.NewGuid().ToString("N"),
-                    Name = "Generated Filter",
-                    Description = "Auto-generated from visual builder",
-                    Author = "pifreak",
-                    Deck = ParseDeckName(GetDeckName(_parentViewModel.SelectedDeckIndex)),
-                    Stake = ParseStakeName(GetStakeName(_parentViewModel.SelectedStakeIndex)),
-                    Must = new System.Collections.Generic.List<IJamlClause>(),
-                    Should = new System.Collections.Generic.List<IJamlClause>(),
-                    MustNot = new System.Collections.Generic.List<IJamlClause>(),
-                };
+            // Silent status update (no user-visible message)
+            var totalItems = config.Must.Count + config.Should.Count;
+            ValidationStatus = totalItems > 0 ? $"Auto-synced ({totalItems} items)" : "Ready";
+            ValidationStatusColor = Brushes.Gray;
 
-                // Generate Must clauses from visual builder
-                foreach (var item in visualTab.SelectedMust)
-                {
-                    var clause = _clauseConversion.ConvertFilterItemToClause(item, new ItemConfig());
-                    if (clause is not null)
-                        config.Must.Add(clause);
-                }
-
-                // Generate Should clauses from visual builder
-                foreach (var item in visualTab.SelectedShould)
-                {
-                    var clause = _clauseConversion.ConvertFilterItemToClause(item, new ItemConfig());
-                    if (clause is not null)
-                        config.Should.Add(clause);
-                }
-
-                // MUST-NOT is now handled via IsInvertedFilter flag on items in MUST array
-                // No separate MustNot collection needed
-
-                // Update JSON content silently using FilterSerializationService for proper formatting
-                JsonContent = _serializationService?.SerializeConfig(config) ?? JamlConfigLoader.ToJaml(config);
-
-                // Silent status update (no user-visible message)
-                var totalItems = config.Must.Count + config.Should.Count;
-                ValidationStatus = totalItems > 0 ? $"Auto-synced ({totalItems} items)" : "Ready";
-                ValidationStatusColor = Brushes.Gray;
-
-                DebugLogger.Log(
-                    "JsonEditorTab",
-                    $"Auto-synced JSON from visual builder: {config.Must.Count} must, {config.Should.Count} should"
-                );
-            }
-            catch (Exception ex)
-            {
-                DebugLogger.LogError("JsonEditorTab", $"Error auto-generating JSON: {ex.Message}");
-            }
+            DebugLogger.Log(
+                "JsonEditorTab",
+                $"Auto-synced JAML from visual builder: {config.Must.Count} must, {config.Should.Count} should"
+            );
         }
 
         [RelayCommand]
         private void GenerateFromVisual()
         {
-            try
+            if (_parentViewModel?.VisualBuilderTab is not VisualBuilderTabViewModel)
             {
-                if (_parentViewModel?.VisualBuilderTab is null)
-                {
-                    ValidationStatus = "Visual builder not available";
-                    ValidationStatusColor = Brushes.Red;
-                    return;
-                }
-
-                var visualTab = _parentViewModel.VisualBuilderTab as VisualBuilderTabViewModel;
-                if (visualTab is null)
-                {
-                    ValidationStatus = "Visual builder not initialized";
-                    ValidationStatusColor = Brushes.Red;
-                    return;
-                }
-
-                var config = new JamlConfig
-                {
-                    Id = Guid.NewGuid().ToString("N"),
-                    Name = "Generated Filter",
-                    Description = "Generated from visual builder",
-                    Author = "pifreak",
-                    Deck = ParseDeckName(GetDeckName(_parentViewModel.SelectedDeckIndex)),
-                    Stake = ParseStakeName(GetStakeName(_parentViewModel.SelectedStakeIndex)),
-                    Must = new System.Collections.Generic.List<IJamlClause>(),
-                    Should = new System.Collections.Generic.List<IJamlClause>(),
-                    MustNot = new System.Collections.Generic.List<IJamlClause>(),
-                };
-
-                // Generate Must clauses from visual builder
-                foreach (var item in visualTab.SelectedMust)
-                {
-                    var clause = _clauseConversion.ConvertFilterItemToClause(item, new ItemConfig());
-                    if (clause is not null)
-                        config.Must.Add(clause);
-                }
-
-                // Generate Should clauses from visual builder
-                foreach (var item in visualTab.SelectedShould)
-                {
-                    var clause = _clauseConversion.ConvertFilterItemToClause(item, new ItemConfig());
-                    if (clause is not null)
-                        config.Should.Add(clause);
-                }
-
-                // MUST-NOT is now handled via IsInvertedFilter flag on items in MUST array
-                // No separate MustNot collection needed
-
-                JsonContent = JamlConfigLoader.ToJaml(config);
-
-                ValidationStatus =
-                    $"✓ Generated from visual ({config.Must.Count + config.Should.Count} items)";
-                ValidationStatusColor = Brushes.Green;
-
-                DebugLogger.Log(
-                    "JsonEditorTab",
-                    $"Generated JSON from visual builder with {config.Must.Count} must, {config.Should.Count} should items"
-                );
-            }
-            catch (Exception ex)
-            {
-                ValidationStatus = $"Error generating JSON: {ex.Message}";
+                ValidationStatus = "Visual builder not available";
                 ValidationStatusColor = Brushes.Red;
-                DebugLogger.LogError("JsonEditorTab", $"Error generating JSON: {ex.Message}");
+                return;
             }
+
+            var config = _parentViewModel.BuildConfigFromCurrentState();
+            JsonContent = JamlConfigLoader.ToJaml(config);
+
+            ValidationStatus =
+                $"✓ Generated from visual ({config.Must.Count + config.Should.Count} items)";
+            ValidationStatusColor = Brushes.Green;
         }
 
         [RelayCommand]
@@ -512,46 +410,6 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             }
 
             return item;
-        }
-
-        // Convert index to deck name via enum
-        private string GetDeckName(int index)
-        {
-            if (index >= 0 && index <= 14)
-                return ((Motely.Enums.MotelyDeck)index).ToString();
-            return "Red";
-        }
-
-        // Convert index to stake name via enum (handles gaps in enum values)
-        private string GetStakeName(int index)
-        {
-            var stake = index switch
-            {
-                0 => MotelyStake.White,
-                1 => MotelyStake.Red,
-                2 => MotelyStake.Green,
-                3 => MotelyStake.Black,
-                4 => MotelyStake.Blue,
-                5 => MotelyStake.Purple,
-                6 => MotelyStake.Orange,
-                7 => MotelyStake.Gold,
-                _ => MotelyStake.White,
-            };
-            return stake.ToString().ToLower();
-        }
-
-        private static MotelyDeck ParseDeckName(string name)
-        {
-            if (Enum.TryParse<MotelyDeck>(name, true, out var deck))
-                return deck;
-            return MotelyDeck.Red;
-        }
-
-        private static MotelyStake ParseStakeName(string name)
-        {
-            if (Enum.TryParse<MotelyStake>(name, true, out var stake))
-                return stake;
-            return MotelyStake.White;
         }
 
         #endregion

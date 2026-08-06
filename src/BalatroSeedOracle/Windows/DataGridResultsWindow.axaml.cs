@@ -23,18 +23,11 @@ using AvaloniaEdit;
 using AvaloniaEdit.Document;
 using AvaloniaEdit.TextMate;
 using BalatroSeedOracle.Helpers;
-using BalatroSeedOracle.Models;
-using BalatroSeedOracle.Services;
-using Microsoft.Extensions.DependencyInjection;
-using TextMateSharp.Grammars;
 
 namespace BalatroSeedOracle.Windows
 {
     public partial class DataGridResultsWindow : Window
     {
-        private readonly ActiveSearchContext? _searchInstance;
-        private readonly Services.Export.ResultsExportService? _exportService;
-        private readonly string? _filterName;
         private DataGrid? _resultsGrid;
         private DataGrid? _queryResultsGrid;
         private TextBox? _quickSearchBox;
@@ -45,34 +38,15 @@ namespace BalatroSeedOracle.Windows
         private TextEditor? _sqlEditor;
         private ComboBox? _exampleQueriesCombo;
 
-        private const int INITIAL_RESULTS_PAGE_SIZE = 1000; // Initial number of results to load
-
         private ObservableCollection<DataGridResultItem> _results = new();
         private ObservableCollection<DataGridResultItem> _filteredResults = new();
-        private int _currentLoadedCount = INITIAL_RESULTS_PAGE_SIZE;
-        private int _totalCount = 0;
 
         public DataGridResultsWindow()
         {
             InitializeComponent();
             WireUpControls();
-        }
-
-        public DataGridResultsWindow(ActiveSearchContext searchInstance, Services.Export.ResultsExportService exportService, string? filterName = null)
-        {
-            _searchInstance = searchInstance;
-            _exportService = exportService;
-            _filterName = filterName;
-            InitializeComponent();
-            WireUpControls();
             SetupControls();
             SetupSqlEditor();
-
-            // Load data asynchronously
-            if (_searchInstance != null)
-            {
-                _ = LoadDataAsync();
-            }
         }
 
         private void WireUpControls()
@@ -120,18 +94,11 @@ namespace BalatroSeedOracle.Windows
                 };
             }
 
-            if (_loadMoreButton != null)
-            {
-                _loadMoreButton.Click += async (s, e) => await LoadMoreResultsAsync();
-            }
-
             // Export menu items - direct field access from x:Name
             if (ExportCsvMenuItem != null)
                 ExportCsvMenuItem.Click += async (s, e) => await ExportToCsvAsync();
             if (ExportJsonMenuItem != null)
                 ExportJsonMenuItem.Click += async (s, e) => await ExportToJsonAsync();
-            if (ExportParquetMenuItem != null)
-                ExportParquetMenuItem.Click += async (s, e) => await ExportToParquetAsync();
             if (ExportWordlistMenuItem != null)
                 ExportWordlistMenuItem.Click += async (s, e) => await ExportToWordlistAsync();
             if (CopyToClipboardMenuItem != null)
@@ -147,7 +114,7 @@ namespace BalatroSeedOracle.Windows
 
             // SQL controls - direct field access from x:Name
             if (RunQueryButton != null)
-                RunQueryButton.Click += async (s, e) => await RunSqlQueryAsync();
+                RunQueryButton.Click += (s, e) => RunSqlQuery();
             if (ClearQueryButton != null)
                 ClearQueryButton.Click += (s, e) => _sqlEditor?.Clear();
 
@@ -221,134 +188,6 @@ LIMIT 100;";
             return menu;
         }
 
-        private async Task LoadDataAsync()
-        {
-            try
-            {
-                if (_searchInstance == null || _resultsGrid == null)
-                    return;
-
-                // Update title
-                _totalCount = await _searchInstance.GetResultCountAsync();
-                var filterDisplay = !string.IsNullOrEmpty(_filterName)
-                    ? _filterName
-                    : "Unknown Filter";
-                Title = $"Results for {filterDisplay} ({_totalCount:N0} seeds)";
-
-                // Get column names from SearchInstance (skip seed and score columns for tally names)
-                var columnNames = _searchInstance.ColumnNames;
-                var tallyNames = columnNames.Skip(2).Select(n => n.Replace("_", " ")).ToList();
-
-                // Create columns
-                await Dispatcher.UIThread.InvokeAsync(() =>
-                {
-                    CreateColumns(tallyNames);
-                });
-
-                // Load top results
-                var topResults = await _searchInstance.GetTopResultsAsync(
-                    "score",
-                    false,
-                    _currentLoadedCount
-                );
-
-                // Convert to DataGrid items
-                var items = topResults
-                    .Select(
-                        (r, index) =>
-                            new DataGridResultItem
-                            {
-                                Seed = r.Seed,
-                                TotalScore = r.TotalScore,
-                                Rank = index + 1,
-                                TallyScores = r.Scores?.ToList() ?? new List<int>(),
-                            }
-                    )
-                    .ToList();
-
-                // Update UI on UI thread
-                await Dispatcher.UIThread.InvokeAsync(() =>
-                {
-                    _results.Clear();
-                    foreach (var item in items)
-                    {
-                        _results.Add(item);
-                        _filteredResults.Add(item);
-                    }
-
-                    UpdateStatus($"Showing {items.Count:N0} of {_totalCount:N0} results");
-
-                    // Enable load more if there are more results
-                    if (_loadMoreButton != null)
-                        _loadMoreButton.IsEnabled = _currentLoadedCount < _totalCount;
-                });
-            }
-            catch (Exception ex)
-            {
-                DebugLogger.LogError("DataGridResultsWindow", $"Failed to load data: {ex}");
-                UpdateStatus($"Error loading data: {ex.Message}");
-            }
-        }
-
-        private async Task LoadMoreResultsAsync()
-        {
-            if (_searchInstance == null)
-                return;
-
-            _currentLoadedCount += 1000;
-            await LoadDataAsync();
-        }
-
-        private void CreateColumns(List<string> tallyNames)
-        {
-            if (_resultsGrid == null)
-                return;
-
-            _resultsGrid.Columns.Clear();
-
-            // Fixed columns
-            _resultsGrid.Columns.Add(
-                new DataGridTextColumn
-                {
-                    Header = "Rank",
-                    Binding = new Binding("Rank"),
-                    Width = new DataGridLength(60),
-                }
-            );
-
-            _resultsGrid.Columns.Add(
-                new DataGridTextColumn
-                {
-                    Header = "Seed",
-                    Binding = new Binding("Seed"),
-                    Width = new DataGridLength(150),
-                }
-            );
-
-            _resultsGrid.Columns.Add(
-                new DataGridTextColumn
-                {
-                    Header = "Total Score",
-                    Binding = new Binding("TotalScore"),
-                    Width = new DataGridLength(100),
-                }
-            );
-
-            // Dynamic tally columns
-            for (int i = 0; i < tallyNames.Count; i++)
-            {
-                var index = i; // Capture for closure
-                _resultsGrid.Columns.Add(
-                    new DataGridTextColumn
-                    {
-                        Header = tallyNames[i],
-                        Binding = new Binding($"TallyScores[{index}]"),
-                        Width = new DataGridLength(80),
-                    }
-                );
-            }
-        }
-
         private void OnQuickSearchTextChanged(object? sender, TextChangedEventArgs e)
         {
             var searchText = _quickSearchBox?.Text?.ToLower() ?? string.Empty;
@@ -388,9 +227,9 @@ LIMIT 100;";
             // Let the DataGrid handle sorting automatically
         }
 
-        private async Task RunSqlQueryAsync()
+        private void RunSqlQuery()
         {
-            if (_searchInstance == null || _sqlEditor == null || _queryResultsGrid == null)
+            if (_sqlEditor == null || _queryResultsGrid == null)
                 return;
 
             var sql = _sqlEditor.Text;
@@ -472,7 +311,6 @@ LIMIT 50;",
 
         private async Task ExportToCsvAsync()
         {
-            if (_exportService == null) return;
             var topLevel = GetTopLevel(this);
             if (topLevel == null)
                 return;
@@ -492,29 +330,23 @@ LIMIT 50;",
             if (file == null)
                 return;
 
-            try
+            var sb = new StringBuilder();
+            sb.AppendLine("rank,seed,score,tallies");
+            foreach (var item in _filteredResults)
             {
-                var searchResults = _filteredResults.Select(item => new SearchResult
-                {
-                    Seed = item.Seed,
-                    TotalScore = item.TotalScore,
-                    Scores = item.TallyScores?.ToArray()
-                });
+                sb.AppendLine(
+                    $"{item.Rank},{item.Seed},{item.TotalScore},{string.Join(",", item.TallyScores)}"
+                );
+            }
 
-                await using var stream = await file.OpenWriteAsync();
-                await _exportService.ExportToCsvAsync(stream, searchResults);
-                UpdateStatus($"Exported {_filteredResults.Count} rows to CSV");
-            }
-            catch (Exception ex)
-            {
-                DebugLogger.LogError("DataGridResultsWindow", $"Export to CSV failed: {ex}");
-                UpdateStatus($"Export failed: {ex.Message}");
-            }
+            await using var stream = await file.OpenWriteAsync();
+            await using var writer = new StreamWriter(stream);
+            await writer.WriteAsync(sb.ToString());
+            UpdateStatus($"Exported {_filteredResults.Count} rows to CSV");
         }
 
         private async Task ExportToJsonAsync()
         {
-            if (_exportService == null) return;
             var topLevel = GetTopLevel(this);
             if (topLevel == null)
                 return;
@@ -534,71 +366,19 @@ LIMIT 50;",
             if (file == null)
                 return;
 
-            try
-            {
-                var searchResults = _filteredResults.Select(item => new SearchResult
-                {
-                    Seed = item.Seed,
-                    TotalScore = item.TotalScore,
-                    Scores = item.TallyScores?.ToArray()
-                });
-
-                await using var stream = await file.OpenWriteAsync();
-                await _exportService.ExportToJsonAsync(stream, searchResults);
-                UpdateStatus($"Exported {_filteredResults.Count} rows to JSON");
-            }
-            catch (Exception ex)
-            {
-                DebugLogger.LogError("DataGridResultsWindow", $"Export to JSON failed: {ex}");
-                UpdateStatus($"Export failed: {ex.Message}");
-            }
-        }
-
-        private async Task ExportToParquetAsync()
-        {
-            if (_exportService == null) return;
-            var topLevel = GetTopLevel(this);
-            if (topLevel == null)
-                return;
-
-            var file = await topLevel.StorageProvider.SaveFilePickerAsync(
-                new FilePickerSaveOptions
-                {
-                    Title = "Export to Parquet",
-                    DefaultExtension = "parquet",
-                    FileTypeChoices = new[]
-                    {
-                        new FilePickerFileType("Parquet Files")
-                        {
-                            Patterns = new[] { "*.parquet" },
-                        },
-                    },
-                }
+            var json = JsonSerializer.Serialize(
+                _filteredResults.ToList(),
+                BsoJsonSerializerContext.Default.ListDataGridResultItem
             );
 
-            if (file == null)
-                return;
-
-            try
-            {
-                if (_searchInstance == null)
-                {
-                    UpdateStatus("No active search to export");
-                    return;
-                }
-                _exportService.ExportToContextFormat(_searchInstance, file.Path.LocalPath);
-                UpdateStatus($"Exported {_filteredResults.Count} rows to Parquet");
-            }
-            catch (Exception ex)
-            {
-                DebugLogger.LogError("DataGridResultsWindow", $"Export to Parquet failed: {ex}");
-                UpdateStatus($"Export failed: {ex.Message}");
-            }
+            await using var stream = await file.OpenWriteAsync();
+            await using var writer = new StreamWriter(stream);
+            await writer.WriteAsync(json);
+            UpdateStatus($"Exported {_filteredResults.Count} rows to JSON");
         }
 
         private async Task ExportToWordlistAsync()
         {
-            if (_exportService == null) return;
             var topLevel = GetTopLevel(this);
             if (topLevel == null)
                 return;
@@ -608,7 +388,7 @@ LIMIT 50;",
                 {
                     Title = "Export to Wordlist",
                     DefaultExtension = "txt",
-                    SuggestedFileName = $"{_filterName ?? "seeds"}_wordlist",
+                    SuggestedFileName = "seeds_wordlist",
                     FileTypeChoices = new[]
                     {
                         new FilePickerFileType("Text Files") { Patterns = new[] { "*.txt" } },
@@ -619,18 +399,13 @@ LIMIT 50;",
             if (file == null)
                 return;
 
-            try
+            await using var stream = await file.OpenWriteAsync();
+            await using var writer = new StreamWriter(stream);
+            foreach (var item in _filteredResults)
             {
-                var seeds = _filteredResults.Select(r => r.Seed);
-                await using var stream = await file.OpenWriteAsync();
-                await _exportService.ExportToWordlistAsync(stream, seeds);
-                UpdateStatus($"Exported {_filteredResults.Count} seeds to wordlist");
+                await writer.WriteLineAsync(item.Seed);
             }
-            catch (Exception ex)
-            {
-                DebugLogger.LogError("DataGridResultsWindow", $"Export to Wordlist failed: {ex}");
-                UpdateStatus($"Export failed: {ex.Message}");
-            }
+            UpdateStatus($"Exported {_filteredResults.Count} seeds to wordlist");
         }
 
         private void CopyToClipboard(object? sender, RoutedEventArgs e)
@@ -638,14 +413,7 @@ LIMIT 50;",
             var sb = new StringBuilder();
 
             // Headers
-            sb.AppendLine(
-                "Rank\tSeed\tTotal Score\t"
-                    + string.Join(
-                        "\t",
-                        _searchInstance?.ColumnNames.Skip(2).Select(n => n.Replace("_", " "))
-                            ?? new List<string>()
-                    )
-            );
+            sb.AppendLine("Rank\tSeed\tTotal Score");
 
             // Data
             foreach (var item in _filteredResults)
@@ -749,7 +517,7 @@ LIMIT 50;",
             // F5 to run query
             if (e.Key == Key.F5)
             {
-                _ = RunSqlQueryAsync();
+                RunSqlQuery();
                 e.Handled = true;
             }
             // Ctrl+C to copy

@@ -34,9 +34,6 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
     public partial class VisualBuilderTabViewModel : ObservableObject
     {
         private readonly FiltersModalViewModel? _parentViewModel;
-        private readonly FavoritesService? _favoritesService;
-        private readonly IConfigurationService? _configurationService;
-        private readonly IFilterService? _filterService;
 
         // Auto-save debouncing
         private CancellationTokenSource? _autoSaveCts;
@@ -390,17 +387,9 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         // Item configurations
         public Dictionary<string, ItemConfig> ItemConfigs { get; }
 
-        public VisualBuilderTabViewModel(
-            FiltersModalViewModel? parentViewModel = null,
-            FavoritesService? favoritesService = null,
-            IConfigurationService? configurationService = null,
-            IFilterService? filterService = null
-        )
+        public VisualBuilderTabViewModel(FiltersModalViewModel? parentViewModel = null)
         {
             _parentViewModel = parentViewModel;
-            _favoritesService = favoritesService;
-            _configurationService = configurationService;
-            _filterService = filterService;
 
             // Subscribe to parent's property changes to update FilterName and edit mode
             if (_parentViewModel is not null)
@@ -599,7 +588,6 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             if (item is null)
                 return;
 
-            _favoritesService?.RemoveFavoriteItem(item.Name);
             item.IsFavorite = false;
             SetCategory(SelectedMainCategory);
         }
@@ -2118,33 +2106,6 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     );
                 }
 
-                // Mark favorite items AFTER all items are loaded with their proper categories
-                // This ensures favorited items appear in BOTH Favorites AND their original category
-                var favoriteNames = (_favoritesService ?? FavoritesService.Instance)
-                    ?.GetFavoriteItems() ?? new List<string>();
-
-                var allLoadedItems = AllJokers
-                    .Concat(AllTags)
-                    .Concat(AllVouchers)
-                    .Concat(AllTarots)
-                    .Concat(AllPlanets)
-                    .Concat(AllSpectrals)
-                    .Concat(AllStandardCards);
-                foreach (var favoriteName in favoriteNames)
-                {
-                    var match = allLoadedItems.FirstOrDefault(i =>
-                        i.Name.Equals(favoriteName, StringComparison.OrdinalIgnoreCase)
-                    );
-                    if (match is not null)
-                    {
-                        match.IsFavorite = true;
-                        DebugLogger.Log(
-                            "VisualBuilderTab",
-                            $"Marked {favoriteName} as favorite (Category={match.Category})"
-                        );
-                    }
-                }
-
                 DebugLogger.Log(
                     "VisualBuilderTab",
                     $"Loaded {AllJokers.Count} jokers, {AllTags.Count} tags, {AllVouchers.Count} vouchers, {AllTarots.Count} tarots, {AllPlanets.Count} planets, {AllSpectrals.Count} spectrals, {AllBosses.Count} bosses, {AllStandardCards.Count} standard cards with images"
@@ -2659,76 +2620,26 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 // Build config from current state using parent's method
                 var config = _parentViewModel.BuildConfigFromCurrentState();
 
-                // Get configuration service
-                var configService = _configurationService;
-                var filterService = _filterService;
-
-                if (configService is null || filterService is null)
-                {
-                    DebugLogger.LogError(
-                        "VisualBuilderTab",
-                        "Auto-save failed: services not available"
-                    );
-                    return;
-                }
-
-                // Generate filter file path (normalized with underscores)
-                var filePath = filterService.GenerateFilterFileName(filterName);
-
-                // Check if there's an old file with spaces instead of underscores and delete it
-                if (filterName.Contains(' '))
-                {
-                    var oldFilePath = Path.Combine(
-                        configService.GetFiltersDirectory(),
-                        $"{filterName}.json"
-                    );
-                    if (File.Exists(oldFilePath) && oldFilePath != filePath)
-                    {
-                        try
-                        {
-                            File.Delete(oldFilePath);
-                            DebugLogger.Log(
-                                "VisualBuilderTab",
-                                $"Deleted old filter file with spaces: {oldFilePath}"
-                            );
-                        }
-                        catch (Exception ex)
-                        {
-                            DebugLogger.LogError(
-                                "VisualBuilderTab",
-                                $"Failed to delete old filter file: {ex.Message}"
-                            );
-                        }
-                    }
-                }
-
-                // Save the filter
-                var success = await configService.SaveFilterAsync(filePath, config);
+                // Save the filter (normalized with underscores)
+                var filePath = FilterFiles.Resolve(filterName.Replace(" ", "_"));
+                FilterFiles.Save(config, filePath);
 
                 // Update UI with result
                 await Dispatcher.UIThread.InvokeAsync(() =>
                 {
                     IsAutoSaving = false;
-                    if (success)
-                    {
-                        AutoSaveStatus = "Auto-saved";
-                        DebugLogger.Log("VisualBuilderTab", $"Auto-saved filter: {filterName}");
+                    AutoSaveStatus = "Auto-saved";
+                    DebugLogger.Log("VisualBuilderTab", $"Auto-saved filter: {filterName}");
 
-                        // Clear the status after 2 seconds
-                        Task.Delay(2000)
-                            .ContinueWith(_ =>
+                    // Clear the status after 2 seconds
+                    Task.Delay(2000)
+                        .ContinueWith(_ =>
+                        {
+                            Dispatcher.UIThread.InvokeAsync(() =>
                             {
-                                Dispatcher.UIThread.InvokeAsync(() =>
-                                {
-                                    AutoSaveStatus = "";
-                                });
+                                AutoSaveStatus = "";
                             });
-                    }
-                    else
-                    {
-                        AutoSaveStatus = "Auto-save failed";
-                        DebugLogger.LogError("VisualBuilderTab", "Auto-save failed");
-                    }
+                        });
                 });
             }
             catch (Exception ex)
