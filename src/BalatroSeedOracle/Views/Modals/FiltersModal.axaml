@@ -34,7 +34,7 @@
                 Margin="0,4,0,0"
                 ClipToBounds="True">
             <!-- Show the selected tab content directly -->
-            <ContentControl Content="{ReflectionBinding CurrentTabContent}"
+            <ContentControl Content="{Binding CurrentTabContent}"
                               HorizontalAlignment="Stretch"
                               VerticalAlignment="Stretch"/>
         </Border>

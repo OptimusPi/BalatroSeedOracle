@@ -251,15 +251,8 @@ namespace BalatroSeedOracle.ViewModels
         [ObservableProperty]
         private object? _currentPopup;
 
-        // Expose the currently selected tab’s content to the view
-        public object? CurrentTabContent
-        {
-            get
-            {
-                var index = SelectedTabIndex;
-                return (index >= 0 && index < TabItems.Count) ? TabItems[index].Content : null;
-            }
-        }
+        [ObservableProperty]
+        private object? _currentTabContent;
 
         // ===== PARTIAL METHODS (Property change handlers) =====
         partial void OnFilterNameEditModeChanged(bool value)
@@ -662,7 +655,7 @@ namespace BalatroSeedOracle.ViewModels
             BsoLogger.Log("FiltersModalViewModel", $"Tab switch to {value}");
 
             UpdateTabVisibility(value);
-            OnPropertyChanged(nameof(CurrentTabContent));
+            CurrentTabContent = (value >= 0 && value < TabItems.Count) ? TabItems[value].Content : null;
 
             // Tab order: 0=Build Filter, 1=Deck/Stake, 2=JAML Editor, 3=Validate Filter
             switch (value)
@@ -1121,7 +1114,8 @@ namespace BalatroSeedOracle.ViewModels
             // Ensure initial tab content and visibility are set
             // Order: 0=Build Filter, 1=Deck/Stake, 2=JAML Editor, 3=Validate Filter
             UpdateTabVisibility(SelectedTabIndex);
-            OnPropertyChanged(nameof(CurrentTabContent));
+            CurrentTabContent = (SelectedTabIndex >= 0 && SelectedTabIndex < TabItems.Count)
+                ? TabItems[SelectedTabIndex].Content : null;
         }
 
         private object CreateLoadTabContent()
