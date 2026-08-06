@@ -1,0 +1,20 @@
+PowerShell tool option for Claude Code on Windows (source: https://code.claude.com/docs/en/setup)
+
+To use PowerShell instead of Git Bash, add to %USERPROFILE%\.claude\settings.json:
+
+{
+  "env": {
+    "CLAUDE_CODE_USE_POWERSHELL_TOOL": "1"
+  },
+  "defaultShell": "powershell"
+}
+
+Notes:
+- CLAUDE_CODE_USE_POWERSHELL_TOOL: "1" opts into the PowerShell tool (rolling out alongside Bash
+  when Git for Windows is present). Set to "0" to opt back out.
+- defaultShell: "powershell" routes interactive commands through PowerShell. Requires the env var
+  above to also be set (added in v2.1.84).
+- Without Git for Windows installed at all, Claude Code already defaults to the PowerShell tool
+  automatically -- no config needed in that case.
+
+Not yet applied to ~/.claude/settings.json -- this is a note only, saved per user request.

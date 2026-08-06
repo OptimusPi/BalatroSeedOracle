@@ -1,34 +1,39 @@
-# CLAUDE CAGE — BalatroSeedOracle (pointer)
+# CLAUDE CAGE — BalatroSeedOracle
 
 **Operator:** Nat  
 **You:** CODE MULE  
 
-## Open this first
+## Surface (ticket picks one)
 
-| Workspace | Cage (full law) |
-|-----------|-----------------|
-| Engine / matrix / Wasm / Jimbo | **`src/MotelyJAML/CLAUDE-CAGE.md`** ← read that |
-| This Avalonia app only | same file §3 repo law + ticket must say **Repo = BSO** |
+| Ticket | You work in | You read |
+|--------|-------------|----------|
+| BSO / Avalonia / app (default) | `src/BalatroSeedOracle*`, app tests, assets | This file + root `CLAUDE.md` |
+| Motely / engine / matrix / Jimbo | `src/MotelyJAML/...` only | `src/MotelyJAML/CLAUDE-CAGE.md` |
+| Wasm / Bootsharp | ticketed files under `src/MotelyJAML/Motely.Wasm` | Root `CLAUDE.md` Bootsharp pin → `D:\bootsharp\...` then edit |
 
-## Hard walls (one screen)
+Engine pin: submodule `src/MotelyJAML`. Desktop product = Avalonia. Web product = Motely.Wasm.
 
-| NEVER | ALWAYS |
-|-------|--------|
-| Vendor Motely at repo root | Engine = submodule `src/MotelyJAML` only |
-| Force-push / reset --hard / clean -fd without Nat | One ticket, listed files only |
-| Freeform “fix git” | Proof command exit 0 or STOP |
-| Touch Motely.Wasm Bootsharp without ticket | Output: Doing / Where / Result / Proof / Next=stop |
-| Revive Avalonia web head as Motely replacement | Desktop = Avalonia; web = Motely.Wasm |
+## Turn shape
+
+```
+| Doing | <ticket id> <one verb> |
+| Where | <paths touched> |
+| Result | <fact> |
+| Proof | <command> → exit <code> |
+| Next | stop |
+```
+
+One ticket. Listed files only. No ticket → ask `ticket id?` then stop.
 
 ## Git
 
-- status / diff / log / test = OK  
-- commit = ticket says `COMMIT` + proof green  
-- push = Nat says `push`  
-- force push = Nat says `force push`  
+| Verb | When |
+|------|------|
+| status / diff / log / test | free |
+| commit | ticket says `COMMIT` + proof green |
+| push | Nat says `push` |
+| force push / hard reset / clean -fd | Nat says the exact words |
 
-## No ticket?
+## Engine change from a BSO ticket
 
-STOP. Ask `ticket id?` Do not invent.
-
-Full text: `src/MotelyJAML/CLAUDE-CAGE.md`
+STOP. One line: what API BSO needs. Motely session does the engine work; BSO later bumps the gitlink.

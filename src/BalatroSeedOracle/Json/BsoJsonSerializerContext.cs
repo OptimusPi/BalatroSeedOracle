@@ -72,6 +72,4 @@ namespace BalatroSeedOracle.Json;
 [JsonSerializable(typeof(List<DataGridResultItem>))]
 // Search result export (DbListExportService)
 [JsonSerializable(typeof(SearchResultExport))]
-// EventFX config
-[JsonSerializable(typeof(EventFXConfig))]
 public partial class BsoJsonSerializerContext : JsonSerializerContext { }
