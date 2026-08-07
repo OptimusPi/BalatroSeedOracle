@@ -14,9 +14,15 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 
-  <!-- Common packages for all platforms -->
+  <!-- Embedded UI assets: sprite sheets + the Balatro font, served via avares:// -->
+  <ItemGroup>
+    <AvaloniaResource Include="Assets\**" />
+    <AvaloniaResource Include="m6x11plusplus.otf" />
+  </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="Avalonia" />
+    <PackageReference Include="Avalonia.Desktop" />
     <PackageReference Include="AvaloniaUI.DiagnosticsSupport" />
     <PackageReference Include="Avalonia.Controls.Charts" />
     <PackageReference Include="Avalonia.Controls.RichTextEditor" />

@@ -61,14 +61,9 @@ namespace BalatroSeedOracle.Helpers
             bool enableAnalyze = false
         )
         {
-            var configurationService = App.GetService<IConfigurationService>()
-                ?? throw new InvalidOperationException("IConfigurationService not registered");
-            var filterService = App.GetService<IFilterService>()
-                ?? throw new InvalidOperationException("IFilterService not registered");
-            var vm = App.GetService<FilterSelectionModalViewModel>()
-                ?? throw new InvalidOperationException("FilterSelectionModalViewModel not registered");
+            var vm = new FilterSelectionModalViewModel(new PaginatedFilterBrowserViewModel());
             vm.Configure(enableSearch, enableEdit, enableCopy, enableDelete, enableAnalyze);
-            var modal = new FilterSelectionModal(vm, configurationService, filterService);
+            var modal = new FilterSelectionModal(vm);
 
             var result = await modal.ShowDialog(menu.GetWindow());
             return vm.Result;
@@ -257,28 +252,16 @@ namespace BalatroSeedOracle.Helpers
             string? configPath = null
         )
         {
+            // The singleton SearchModalViewModel still holds the live search — reopening
+            // the modal IS the reconnect.
             var searchModal = new SearchModal(menu.ViewModel.SearchModalViewModel);
-
-            // Remove the desktop widget that opened this modal
             menu.RemoveSearchDesktopIcon(searchId);
 
-            // Set the search ID so the modal can reconnect
             if (searchModal.ViewModel != null)
             {
-                _ = searchModal.ViewModel.ConnectToExistingSearch(searchId);
-
-                // AUTO-NAVIGATE: Take user directly to search tab after connection!
                 Dispatcher.UIThread.Post(() => searchModal.ViewModel.SelectedTabIndex = 1);
-
-                // Handle desktop icon creation when modal closes with active search
                 searchModal.ViewModel.CreateShortcutRequested += (sender, cfgPath) =>
-                {
-                    DebugLogger.Log(
-                        "ModalHelper",
-                        $"Desktop icon requested for search: {searchId}"
-                    );
                     menu.ShowSearchDesktopIcon(searchId, cfgPath);
-                };
             }
 
             return menu.ShowModal("MOTELY SEARCH", searchModal);

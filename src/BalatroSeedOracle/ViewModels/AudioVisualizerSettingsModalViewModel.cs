@@ -623,7 +623,7 @@ namespace BalatroSeedOracle.ViewModels
         {
             var profile = _userProfileService.GetProfile();
             profile.VisualizerSettings.ThemeIndex = ThemeIndex;
-            _userProfileService.SaveProfile(profile);
+            _userProfileService.SaveProfile();
             DebugLogger.Log("AudioVisualizerSettingsModalViewModel", $"Theme saved: {ThemeIndex}");
         }
 

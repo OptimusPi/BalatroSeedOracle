@@ -23,7 +23,6 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
     public partial class ConfigureFilterTabViewModel : ObservableObject
     {
         private readonly FiltersModalViewModel? _parentViewModel;
-        private readonly IConfigurationService? _configurationService;
 
         // Auto-save debouncing
         private CancellationTokenSource? _autoSaveCts;
@@ -156,13 +155,9 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         // Item configurations
         public Dictionary<string, ItemConfig> ItemConfigs { get; }
 
-        public ConfigureFilterTabViewModel(
-            FiltersModalViewModel? parentViewModel = null,
-            IConfigurationService? configurationService = null
-        )
+        public ConfigureFilterTabViewModel(FiltersModalViewModel? parentViewModel = null)
         {
             _parentViewModel = parentViewModel;
-            _configurationService = configurationService;
 
             // Subscribe to parent's property changes
             if (_parentViewModel is not null)
@@ -924,22 +919,6 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     $"Loaded {AllJokers.Count} jokers, {AllTags.Count} tags, {AllVouchers.Count} vouchers"
                 );
 
-                // Mark favorites across all collections
-                var favoriteNames = FavoritesService.Instance?.GetFavoriteItems() ?? new List<string>();
-                var allItems = AllJokers
-                    .Concat(AllTags)
-                    .Concat(AllVouchers)
-                    .Concat(AllTarots)
-                    .Concat(AllPlanets)
-                    .Concat(AllSpectrals)
-                    .Concat(AllStandardCards);
-                foreach (var favoriteName in favoriteNames)
-                {
-                    var match = allItems.FirstOrDefault(i =>
-                        i.Name.Equals(favoriteName, StringComparison.OrdinalIgnoreCase));
-                    if (match is not null)
-                        match.IsFavorite = true;
-                }
             }
             catch (Exception ex)
             {
@@ -1186,33 +1165,19 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 }
 
                 var config = _parentViewModel.BuildConfigFromCurrentState();
-                var configService = _configurationService;
 
-                if (configService is null)
-                    return;
-
-                var filePath = System.IO.Path.Combine(
-                    configService.GetFiltersDirectory(),
-                    $"{filterName.Replace(" ", "_")}.json"
-                );
-                var success = await configService.SaveFilterAsync(filePath, config);
+                var filePath = FilterFiles.Resolve(filterName.Replace(" ", "_"));
+                FilterFiles.Save(config, filePath);
 
                 await Dispatcher.UIThread.InvokeAsync(() =>
                 {
                     IsAutoSaving = false;
-                    if (success)
-                    {
-                        AutoSaveStatus = "Auto-saved";
-                        Task.Delay(2000)
-                            .ContinueWith(_ =>
-                            {
-                                Dispatcher.UIThread.InvokeAsync(() => AutoSaveStatus = "");
-                            });
-                    }
-                    else
-                    {
-                        AutoSaveStatus = "Auto-save failed";
-                    }
+                    AutoSaveStatus = "Auto-saved";
+                    Task.Delay(2000)
+                        .ContinueWith(_ =>
+                        {
+                            Dispatcher.UIThread.InvokeAsync(() => AutoSaveStatus = "");
+                        });
                 });
             }
             catch (Exception ex)

@@ -33,15 +33,8 @@ namespace BalatroSeedOracle.ViewModels
         : ObservableObject,
             BalatroSeedOracle.Helpers.IModalBackNavigable
     {
-        private readonly IConfigurationService _configurationService;
-        private readonly IFilterService _filterService;
-        private readonly IPlatformServices _platformServices;
-        private readonly NotificationService? _notificationService;
         private readonly UserProfileService? _userProfileService;
-        private readonly SearchManager? _searchManager;
-        private readonly FilterSerializationService? _serializationService;
         private readonly Func<ValidateFilterTabViewModel>? _validateTabFactory;
-        private readonly ClauseConversionService _clauseConversion = new();
 
         // ===== CORE STATE (using [ObservableProperty] for automatic INotifyPropertyChanged) =====
         [ObservableProperty]
@@ -149,23 +142,11 @@ namespace BalatroSeedOracle.ViewModels
         public BalatroSeedOracle.ViewModels.FilterTabs.FilterTabViewModel MustNotHaveItems { get; }
 
         public FiltersModalViewModel(
-            IConfigurationService configurationService,
-            IFilterService filterService,
-            IPlatformServices platformServices,
-            NotificationService? notificationService = null,
             UserProfileService? userProfileService = null,
-            SearchManager? searchManager = null,
-            FilterSerializationService? serializationService = null,
             Func<ValidateFilterTabViewModel>? validateTabFactory = null
         )
         {
-            _configurationService = configurationService;
-            _filterService = filterService;
-            _platformServices = platformServices;
-            _notificationService = notificationService;
             _userProfileService = userProfileService;
-            _searchManager = searchManager;
-            _serializationService = serializationService;
             _validateTabFactory = validateTabFactory;
 
             _itemCategories = InitializeItemCategories();
@@ -270,15 +251,8 @@ namespace BalatroSeedOracle.ViewModels
         [ObservableProperty]
         private object? _currentPopup;
 
-        // Expose the currently selected tab’s content to the view
-        public object? CurrentTabContent
-        {
-            get
-            {
-                var index = SelectedTabIndex;
-                return (index >= 0 && index < TabItems.Count) ? TabItems[index].Content : null;
-            }
-        }
+        [ObservableProperty]
+        private object? _currentTabContent;
 
         // ===== PARTIAL METHODS (Property change handlers) =====
         partial void OnFilterNameEditModeChanged(bool value)
@@ -313,128 +287,52 @@ namespace BalatroSeedOracle.ViewModels
         // ===== COMMANDS (using [RelayCommand] source generator) =====
 
         [RelayCommand]
-        private async Task SaveCurrentFilter()
+        private void SaveCurrentFilter()
         {
-            try
+            // If we're creating a new filter (or currently pointing at an _UNSAVED_ temp file),
+            // and the user has provided a name, save to a real filter file name so it shows up
+            // in the filter picker (which excludes _UNSAVED_ files).
+            var originalPath = CurrentFilterPath;
+
+            if (
+                string.IsNullOrWhiteSpace(CurrentFilterPath)
+                || Path.GetFileName(CurrentFilterPath)
+                    .StartsWith("_UNSAVED_", StringComparison.OrdinalIgnoreCase)
+            )
             {
-                // If we're creating a new filter (or currently pointing at an _UNSAVED_ temp file),
-                // and the user has provided a name, save to a real filter file name so it shows up
-                // in the filter picker (which excludes _UNSAVED_ files).
-                var originalPath = CurrentFilterPath;
-
-                if (
-                    string.IsNullOrWhiteSpace(CurrentFilterPath)
-                    || Path.GetFileName(CurrentFilterPath)
-                        .StartsWith("_UNSAVED_", StringComparison.OrdinalIgnoreCase)
-                )
-                {
-                    if (!string.IsNullOrWhiteSpace(FilterName))
-                    {
-                        CurrentFilterPath = _filterService.GenerateFilterFileName(
-                            FilterName.Trim()
-                        );
-                    }
-                    else
-                    {
-                        CurrentFilterPath = _configurationService.GetTempFilterPath();
-                    }
-                }
-
-                // Clean up result DBs for this filter before save (Motely.DB owns the work)
-                await CleanupFilterDatabases();
-
-                var config = BuildConfigFromCurrentState();
-                var success = await _configurationService.SaveFilterAsync(
-                    CurrentFilterPath,
-                    config
+                CurrentFilterPath = FilterFiles.Resolve(
+                    string.IsNullOrWhiteSpace(FilterName) ? "_UNSAVED_CREATION" : FilterName.Trim()
                 );
-
-                if (success)
-                {
-                    LoadedConfig = config;
-                    BsoLogger.Log("FiltersModalViewModel", $"✅ Filter saved: {CurrentFilterPath}");
-
-                    // Show notification
-                    _notificationService?.ShowSuccess(
-                        "Filter Saved",
-                        $"Filter '{FilterName}' saved successfully",
-                        TimeSpan.FromSeconds(3)
-                    );
-
-                    // If we successfully saved to a new non-_UNSAVED_ path, clean up the old temp file.
-                    // This prevents orphaned _UNSAVED_ files accumulating and removes confusion.
-                    if (
-                        !string.IsNullOrWhiteSpace(originalPath)
-                        && !string.Equals(
-                            originalPath,
-                            CurrentFilterPath,
-                            StringComparison.OrdinalIgnoreCase
-                        )
-                        && Path.GetFileName(originalPath)
-                            .StartsWith("_UNSAVED_", StringComparison.OrdinalIgnoreCase)
-                    )
-                    {
-                        try
-                        {
-                            await _filterService.DeleteFilterAsync(originalPath);
-                        }
-                        catch
-                        {
-                            // Best-effort cleanup only
-                        }
-                    }
-                }
-                else
-                {
-                    BsoLogger.LogError("FiltersModalViewModel", "Failed to save filter");
-                }
             }
-            catch (Exception ex)
+
+            var config = BuildConfigFromCurrentState();
+            FilterFiles.Save(config, CurrentFilterPath);
+            LoadedConfig = config;
+            BsoLogger.Log("FiltersModalViewModel", $"✅ Filter saved: {CurrentFilterPath}");
+
+            // If we saved to a new non-_UNSAVED_ path, clean up the old temp file.
+            if (
+                !string.IsNullOrWhiteSpace(originalPath)
+                && !string.Equals(
+                    originalPath,
+                    CurrentFilterPath,
+                    StringComparison.OrdinalIgnoreCase
+                )
+                && Path.GetFileName(originalPath)
+                    .StartsWith("_UNSAVED_", StringComparison.OrdinalIgnoreCase)
+            )
             {
-                BsoLogger.LogError("FiltersModalViewModel", $"Error saving filter: {ex.Message}");
+                FilterFiles.Delete(originalPath);
             }
-        }
-
-        /// <summary>
-        /// Stop running searches for this filter before save. Database file cleanup is handled elsewhere.
-        /// </summary>
-        private async Task CleanupFilterDatabases()
-        {
-            if (string.IsNullOrEmpty(CurrentFilterPath))
-                return;
-            try
-            {
-                var filterName = Path.GetFileNameWithoutExtension(CurrentFilterPath);
-                if (_searchManager is not null)
-                {
-                    _searchManager.StopSearchesForFilter(filterName);
-                    BsoLogger.Log(
-                        "FiltersModalViewModel",
-                        $"Stopped searches for filter: {filterName}"
-                    );
-                }
-            }
-            catch (Exception ex)
-            {
-                BsoLogger.LogError("FiltersModalViewModel", $"Cleanup failed: {ex.Message}");
-            }
-            await Task.CompletedTask;
         }
 
         [RelayCommand]
-        public async Task LoadFilter()
+        public void LoadFilter()
         {
-            try
-            {
-                var filters = await _filterService.GetAvailableFiltersAsync();
-                // This would typically open a file dialog or selection UI
-                // For now, we'll need UI interaction to select which filter to load
-                BsoLogger.Log("FiltersModalViewModel", $"Found {filters.Count} available filters");
-            }
-            catch (Exception ex)
-            {
-                BsoLogger.LogError("FiltersModalViewModel", $"Error loading filter: {ex.Message}");
-            }
+            BsoLogger.Log(
+                "FiltersModalViewModel",
+                $"Found {FilterFiles.List().Count()} available filters"
+            );
         }
 
         /// <summary>
@@ -525,26 +423,14 @@ namespace BalatroSeedOracle.ViewModels
         }
 
         [RelayCommand(CanExecute = nameof(HasLoadedFilter))]
-        private async Task DeleteFilter()
+        private void DeleteFilter()
         {
-            try
+            if (!string.IsNullOrEmpty(CurrentFilterPath))
             {
-                if (!string.IsNullOrEmpty(CurrentFilterPath))
-                {
-                    var success = await _filterService.DeleteFilterAsync(CurrentFilterPath);
-                    if (success)
-                    {
-                        CreateNewFilter();
-                        BsoLogger.Log(
-                            "FiltersModalViewModel",
-                            $"Deleted filter: {CurrentFilterPath}"
-                        );
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                BsoLogger.LogError("FiltersModalViewModel", $"Error deleting filter: {ex.Message}");
+                var deletedPath = CurrentFilterPath;
+                FilterFiles.Delete(deletedPath);
+                CreateNewFilter();
+                BsoLogger.Log("FiltersModalViewModel", $"Deleted filter: {deletedPath}");
             }
         }
 
@@ -620,54 +506,41 @@ namespace BalatroSeedOracle.ViewModels
         [RelayCommand]
         public async Task ReloadVisualFromSavedFile()
         {
-            try
+            if (string.IsNullOrEmpty(CurrentFilterPath) || !File.Exists(CurrentFilterPath))
             {
-                if (
-                    string.IsNullOrEmpty(CurrentFilterPath)
-                    || !_configurationService.FileExists(CurrentFilterPath)
-                )
-                {
-                    BsoLogger.Log("FiltersModalViewModel", "No saved file to reload visual from");
-                    return;
-                }
-
-                BsoLogger.Log(
-                    "FiltersModalViewModel",
-                    $"Reloading visual from file: {CurrentFilterPath}"
-                );
-
-                var config =
-                    await _configurationService.LoadFilterAsync<Motely.Filters.Jaml.JamlConfig>(
-                        CurrentFilterPath
-                    );
-                if (config is not null)
-                {
-                    PopulateFilterTabs(config);
-                    LoadConfigIntoState(config);
-                    LoadedConfig = config;
-
-                    // Update JAML editor with loaded content
-                    if (JamlEditorTab is FilterTabs.JamlEditorTabViewModel jamlVm)
-                    {
-                        jamlVm.AutoGenerateFromVisual();
-                    }
-
-                    // Update Visual Builder with FilterItem objects
-                    await UpdateVisualBuilderFromItemConfigs();
-
-                    // CRITICAL: Expand drop zones that have items so they render
-                    ExpandDropZonesWithItems();
-
-                    BsoLogger.Log("FiltersModalViewModel", "Visual reloaded from saved file");
-                }
+                BsoLogger.Log("FiltersModalViewModel", "No saved file to reload visual from");
+                return;
             }
-            catch (Exception ex)
+
+            BsoLogger.Log(
+                "FiltersModalViewModel",
+                $"Reloading visual from file: {CurrentFilterPath}"
+            );
+
+            var config = FilterFiles.Load(CurrentFilterPath, out var loadError);
+            if (config is null)
             {
-                BsoLogger.LogError(
-                    "FiltersModalViewModel",
-                    $"Error reloading visual: {ex.Message}"
-                );
+                BsoLogger.LogError("FiltersModalViewModel", $"Reload failed: {loadError}");
+                return;
             }
+
+            PopulateFilterTabs(config);
+            LoadConfigIntoState(config);
+            LoadedConfig = config;
+
+            // Update JAML editor with loaded content
+            if (JamlEditorTab is FilterTabs.JamlEditorTabViewModel jamlVm)
+            {
+                jamlVm.AutoGenerateFromVisual();
+            }
+
+            // Update Visual Builder with FilterItem objects
+            await UpdateVisualBuilderFromItemConfigs();
+
+            // CRITICAL: Expand drop zones that have items so they render
+            ExpandDropZonesWithItems();
+
+            BsoLogger.Log("FiltersModalViewModel", "Visual reloaded from saved file");
         }
 
         // ===== TAB VISIBILITY MANAGEMENT (MVVM) =====
@@ -712,7 +585,7 @@ namespace BalatroSeedOracle.ViewModels
                     break;
                 case 4:
                     IsSaveTabVisible = true;
-                    _ = RefreshSaveTabData(); // Fire-and-forget when switching tabs
+                    RefreshSaveTabData();
                     BsoLogger.Log("FiltersModalViewModel", "Validate Filter tab visible");
                     break;
             }
@@ -727,31 +600,20 @@ namespace BalatroSeedOracle.ViewModels
         /// <summary>
         /// Refresh Save tab data when switching to it
         /// </summary>
-        private async Task RefreshSaveTabData()
+        private void RefreshSaveTabData()
         {
-            try
+            // Find the Validate Filter tab and refresh its data
+            if (
+                TabItems
+                    .FirstOrDefault(t => t.Content is Components.FilterTabs.ValidateFilterTab)
+                    ?.Content
+                    is Components.FilterTabs.ValidateFilterTab validateFilterTab
+                && validateFilterTab.DataContext
+                    is FilterTabs.ValidateFilterTabViewModel validateVm
+            )
             {
-                // Find the Validate Filter tab and refresh its data
-                if (
-                    TabItems
-                        .FirstOrDefault(t => t.Content is Components.FilterTabs.ValidateFilterTab)
-                        ?.Content
-                        is Components.FilterTabs.ValidateFilterTab validateFilterTab
-                    && validateFilterTab.DataContext
-                        is FilterTabs.ValidateFilterTabViewModel validateVm
-                )
-                {
-                    validateVm.PreFillFilterData();
-                    await validateVm.RefreshClauseDisplay();
-                    BsoLogger.Log("FiltersModalViewModel", "Refreshed Validate Filter tab data");
-                }
-            }
-            catch (Exception ex)
-            {
-                BsoLogger.LogError(
-                    "FiltersModalViewModel",
-                    $"Error refreshing Save tab: {ex.Message}"
-                );
+                validateVm.PreFillFilterData();
+                BsoLogger.Log("FiltersModalViewModel", "Refreshed Validate Filter tab data");
             }
         }
 
@@ -793,7 +655,7 @@ namespace BalatroSeedOracle.ViewModels
             BsoLogger.Log("FiltersModalViewModel", $"Tab switch to {value}");
 
             UpdateTabVisibility(value);
-            OnPropertyChanged(nameof(CurrentTabContent));
+            CurrentTabContent = (value >= 0 && value < TabItems.Count) ? TabItems[value].Content : null;
 
             // Tab order: 0=Build Filter, 1=Deck/Stake, 2=JAML Editor, 3=Validate Filter
             switch (value)
@@ -811,8 +673,8 @@ namespace BalatroSeedOracle.ViewModels
                         jamlVm.AutoGenerateFromVisual();
                     }
                     break;
-                case 3: // Entering Validate Filter - refresh clause display
-                    _ = RefreshSaveTabData();
+                case 3: // Entering Validate Filter - refresh its data
+                    RefreshSaveTabData();
                     break;
             }
         }
@@ -834,24 +696,14 @@ namespace BalatroSeedOracle.ViewModels
                     return;
                 }
 
-                // Parse JAML to config using YamlDotNet (JAML is YAML-based)
-                var deserializer = new YamlDotNet.Serialization.DeserializerBuilder()
-                    .WithNamingConvention(
-                        YamlDotNet
-                            .Serialization
-                            .NamingConventions
-                            .CamelCaseNamingConvention
-                            .Instance
-                    )
-                    .Build();
-
-                var config = deserializer.Deserialize<JamlConfig>(jamlVm.JamlContent);
-
-                if (config is null)
+                if (
+                    !JamlConfigLoader.TryLoad(jamlVm.JamlContent, out var config, out var loadError)
+                    || config is null
+                )
                 {
                     BsoLogger.LogError(
                         "FiltersModalViewModel",
-                        "❌ Failed to parse JAML - skipping save"
+                        $"❌ Failed to parse JAML - skipping save: {loadError}"
                     );
                     return;
                 }
@@ -877,7 +729,6 @@ namespace BalatroSeedOracle.ViewModels
             // Initialize from BalatroData
             return new Dictionary<string, List<string>>
             {
-                ["Favorites"] = FavoritesService.Instance.GetFavoriteItems(),
                 ["Jokers"] = new List<string>(BalatroData.Jokers.Keys),
                 ["Tarots"] = new List<string>(BalatroData.TarotCards.Keys),
                 ["Planets"] = new List<string>(BalatroData.PlanetCards.Keys),
@@ -945,12 +796,6 @@ namespace BalatroSeedOracle.ViewModels
                 AppendVisualClauses(visualBuilder.SelectedShould, config.Should);
                 AppendBannedItemsAsMustNot(visualBuilder.SelectedMust, config.MustNot);
             }
-            else
-            {
-                AppendKeyedClauses(SelectedMust, config.Must);
-                AppendKeyedClauses(SelectedShould, config.Should);
-                AppendKeyedClauses(SelectedMustNot, config.MustNot);
-            }
 
             return config;
         }
@@ -1007,27 +852,6 @@ namespace BalatroSeedOracle.ViewModels
                         mustNot.Add(clause);
                 }
             }
-        }
-
-        private void AppendKeyedClauses(
-            IEnumerable<string> itemKeys,
-            List<IJamlClause> target
-        )
-        {
-            foreach (var itemKey in itemKeys)
-            {
-                if (!ItemConfigs.TryGetValue(itemKey, out var itemConfig))
-                    continue;
-
-                var clause = ConvertItemConfigToClause(itemConfig);
-                if (clause is not null)
-                    target.Add(clause);
-            }
-        }
-
-        private IJamlClause? ConvertItemConfigToClause(ItemConfig itemConfig)
-        {
-            return _clauseConversion.ConvertItemConfigToClause(itemConfig);
         }
 
         private IJamlClause? ConvertFilterItemToClause(Models.FilterItem filterItem)
@@ -1274,24 +1098,9 @@ namespace BalatroSeedOracle.ViewModels
             JamlEditorTab = jamlEditorViewModel; // Store reference
             TabItems.Add(new TabItemViewModel("JAML EDITOR", jamlEditorTab));
 
-            // Save Filter tab - resolve through DI factory so dependencies stay in one place
-            ValidateFilterTabViewModel validateFilterViewModel;
-            if (_validateTabFactory is not null)
-            {
-                validateFilterViewModel = _validateTabFactory();
-            }
-            else
-            {
-                // Fallback: construct directly from the services already injected here.
-                validateFilterViewModel = new ValidateFilterTabViewModel(
-                    this,
-                    _configurationService,
-                    _filterService,
-                    _platformServices,
-                    _serializationService,
-                    _searchManager
-                );
-            }
+            // Validate Filter tab
+            var validateFilterViewModel =
+                _validateTabFactory?.Invoke() ?? new ValidateFilterTabViewModel(this);
             var validateFilterTab = new Components.FilterTabs.ValidateFilterTab
             {
                 DataContext = validateFilterViewModel,
@@ -1299,14 +1108,14 @@ namespace BalatroSeedOracle.ViewModels
 
             // Initialize the ValidateFilterTab with current filter data
             validateFilterViewModel.PreFillFilterData();
-            _ = validateFilterViewModel.RefreshClauseDisplay();
 
             TabItems.Add(new TabItemViewModel("VALIDATE FILTER", validateFilterTab));
 
             // Ensure initial tab content and visibility are set
             // Order: 0=Build Filter, 1=Deck/Stake, 2=JAML Editor, 3=Validate Filter
             UpdateTabVisibility(SelectedTabIndex);
-            OnPropertyChanged(nameof(CurrentTabContent));
+            CurrentTabContent = (SelectedTabIndex >= 0 && SelectedTabIndex < TabItems.Count)
+                ? TabItems[SelectedTabIndex].Content : null;
         }
 
         private object CreateLoadTabContent()
@@ -1325,8 +1134,8 @@ namespace BalatroSeedOracle.ViewModels
                 {
                     BsoLogger.Log("FiltersModalViewModel", $"Editing filter from: {filterPath}");
 
-                    var yaml = await File.ReadAllTextAsync(filterPath);
-                    if (!JamlConfigLoader.TryLoad(yaml, out var config, out var loadError) || config is null)
+                    var jaml = await File.ReadAllTextAsync(filterPath);
+                    if (!JamlConfigLoader.TryLoad(jaml, out var config, out var loadError) || config is null)
                     {
                         BsoLogger.LogError(
                             "FiltersModalViewModel",
@@ -1368,7 +1177,7 @@ namespace BalatroSeedOracle.ViewModels
             {
                 try
                 {
-                    var directory = Path.GetDirectoryName(originalPath) ?? "JamlFilters";
+                    var directory = Path.GetDirectoryName(originalPath) ?? FilterFiles.Dir;
                     var baseName = Path.GetFileNameWithoutExtension(originalPath);
                     var extension = Path.GetExtension(originalPath);
 
@@ -1386,8 +1195,8 @@ namespace BalatroSeedOracle.ViewModels
                     JamlConfig? config = null;
                     try
                     {
-                        var yaml = await File.ReadAllTextAsync(originalPath);
-                        if (JamlConfigLoader.TryLoad(yaml, out var loadedConfig, out _))
+                        var jaml = await File.ReadAllTextAsync(originalPath);
+                        if (JamlConfigLoader.TryLoad(jaml, out var loadedConfig, out _))
                             config = loadedConfig;
                     }
                     catch
@@ -1400,8 +1209,7 @@ namespace BalatroSeedOracle.ViewModels
                         config.Name = string.IsNullOrWhiteSpace(config.Name)
                             ? candidateName
                             : $"{config.Name} (copy)";
-                        var newYaml = JamlConfigLoader.ToJaml(config);
-                        await File.WriteAllTextAsync(newPath, newYaml);
+                        await File.WriteAllTextAsync(newPath, JamlConfigLoader.ToJaml(config));
                     }
                     else
                     {
@@ -1413,8 +1221,8 @@ namespace BalatroSeedOracle.ViewModels
 
                     try
                     {
-                        var newYaml = await File.ReadAllTextAsync(newPath);
-                        var newConfig = JamlConfigLoader.TryLoad(newYaml, out var loadedConfig, out _)
+                        var newJaml = await File.ReadAllTextAsync(newPath);
+                        var newConfig = JamlConfigLoader.TryLoad(newJaml, out var loadedConfig, out _)
                             ? loadedConfig
                             : null;
                         if (newConfig is not null)

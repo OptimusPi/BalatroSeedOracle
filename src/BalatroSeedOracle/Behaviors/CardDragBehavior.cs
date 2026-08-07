@@ -201,9 +201,6 @@ namespace BalatroSeedOracle.Behaviors
                 _juiceStartTime = DateTime.Now;
             }
 
-            // Play Balatro card hover sound (paper1.ogg with random pitch)
-            var sfxService = ServiceHelper.GetService<SoundEffectsService>();
-            sfxService?.PlayCardHover();
         }
 
         private void OnPointerExited(object? sender, PointerEventArgs e)

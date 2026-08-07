@@ -13,9 +13,7 @@ namespace BalatroSeedOracle.Views.Modals
         public SettingsModal()
         {
             InitializeComponent();
-            var modalHost = App.GetService<IModalHost>();
-            var platformServices = App.GetService<IPlatformServices>();
-            DataContext = new SettingsModalViewModel(modalHost, platformServices);
+            DataContext = new SettingsModalViewModel();
         }
     }
 }

@@ -31,40 +31,10 @@ namespace BalatroSeedOracle.Views.SearchModalTabs
                 ResultsGrid.ExportAllRequested += async (s, results) =>
                     await vm.ExportSearchResultsAsync(TopLevel.GetTopLevel(this), results);
 
-                ResultsGrid.AddToFavoritesRequested += (s, result) =>
-                    vm.AddSeedToFavorites(result?.Seed);
-
                 ResultsGrid.AnalyzeRequested += (s, result) =>
                     vm.OpenAnalyzeModalForSeed(result?.Seed);
 
-                // VM raises ShowDataGridResultsRequested; the View opens the window
-                // (window construction is a View concern, kept out of the VM).
-                vm.ShowDataGridResultsRequested -= OnShowDataGridResultsRequested;
-                vm.ShowDataGridResultsRequested += OnShowDataGridResultsRequested;
-
                 ResultsGrid.PopOutRequested += (s, e2) => vm.RequestPopOutResults();
-            }
-        }
-
-        private void OnShowDataGridResultsRequested(
-            object? sender,
-            (Services.ActiveSearchContext Search, string? FilterName) args
-        )
-        {
-            try
-            {
-                var exportService = App.GetService<Services.Export.ResultsExportService>();
-                if (exportService == null)
-                {
-                    DebugLogger.LogError("ResultsTab", "ResultsExportService not found in App services");
-                    return;
-                }
-                var window = new Windows.DataGridResultsWindow(args.Search, exportService, args.FilterName);
-                window.Show();
-            }
-            catch (Exception ex)
-            {
-                DebugLogger.LogError("ResultsTab", $"Failed to open DataGrid window: {ex.Message}");
             }
         }
 

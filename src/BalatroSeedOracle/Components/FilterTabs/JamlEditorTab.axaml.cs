@@ -14,8 +14,7 @@ using AvaloniaEdit.Highlighting;
 using AvaloniaEdit.Highlighting.Xshd;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.ViewModels.FilterTabs;
-using YamlDotNet.Serialization;
-using YamlDotNet.Serialization.NamingConventions;
+using Motely.Filters.Jaml;
 
 namespace BalatroSeedOracle.Components.FilterTabs
 {
@@ -212,50 +211,30 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
             _errorMarkerService.ClearErrors();
 
-            try
-            {
-                var yamlContent = JamlEditor.Document.Text;
-                if (string.IsNullOrWhiteSpace(yamlContent))
-                    return;
+            var jamlContent = JamlEditor.Document.Text;
+            if (string.IsNullOrWhiteSpace(jamlContent))
+                return;
 
-                // Basic YAML validation
-                var deserializer = new YamlDotNet.Serialization.DeserializerBuilder()
-                    .WithNamingConvention(CamelCaseNamingConvention.Instance)
-                    .IgnoreUnmatchedProperties()
-                    .Build();
-
-                deserializer.Deserialize<object>(yamlContent);
-
-                // Check for undefined anchor references
-                CheckAnchorReferences(yamlContent);
-            }
-            catch (YamlDotNet.Core.YamlException yamlEx)
+            // JAML validation via the engine's own loader (one grammar, no YAML)
+            if (!JamlConfigLoader.TryLoad(jamlContent, out _, out var error) && error is not null)
             {
-                // Parse YAML error location
-                var lineMatch = Regex.Match(yamlEx.Message, @"line (\d+)");
-                if (
-                    lineMatch.Success && int.TryParse(lineMatch.Groups[1].Value, out var lineNumber)
-                )
-                {
-                    _errorMarkerService.AddError(
-                        lineNumber,
-                        0,
-                        50,
-                        yamlEx.Message,
-                        JamlErrorMarkerService.ErrorSeverity.Error
-                    );
-                }
-            }
-            catch (Exception ex)
-            {
-                // General error - mark first line
+                var lineMatch = Regex.Match(error, @"line (\d+)");
+                var lineNumber =
+                    lineMatch.Success && int.TryParse(lineMatch.Groups[1].Value, out var parsed)
+                        ? parsed
+                        : 1;
                 _errorMarkerService.AddError(
-                    1,
+                    lineNumber,
                     0,
                     50,
-                    ex.Message,
+                    error,
                     JamlErrorMarkerService.ErrorSeverity.Error
                 );
+            }
+            else
+            {
+                // Check for undefined anchor references
+                CheckAnchorReferences(jamlContent);
             }
 
             _errorMarkerService.UpdateErrors();

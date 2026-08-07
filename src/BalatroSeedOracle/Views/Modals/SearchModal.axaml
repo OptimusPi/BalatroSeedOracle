@@ -59,7 +59,7 @@
             <!-- Show the selected tab’s content directly.
                  Removing the outer ScrollViewer prevents the Results DataGrid
                  from measuring to infinite height and pushing the footer far below. -->
-            <ContentPresenter Content="{Binding CurrentTabContent}"
+            <ContentControl Content="{Binding CurrentTabContent}"
                               HorizontalAlignment="Stretch"
                               VerticalAlignment="Stretch"/>
         </Border>

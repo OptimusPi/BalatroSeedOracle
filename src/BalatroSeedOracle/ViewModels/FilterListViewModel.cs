@@ -22,7 +22,6 @@ namespace BalatroSeedOracle.ViewModels
         private const int DEFAULT_FILTERS_PER_PAGE = 10;
         private const double ITEM_HEIGHT = 23.0; // default fallback: 22px button + 1px safety
 
-        private readonly IFilterCacheService _filterCacheService;
         private readonly SpriteService? _spriteService;
 
         [ObservableProperty]
@@ -103,9 +102,8 @@ namespace BalatroSeedOracle.ViewModels
 
         private List<FilterListItem> _allFilters = new();
 
-        public FilterListViewModel(IFilterCacheService filterCacheService, SpriteService? spriteService = null)
+        public FilterListViewModel(SpriteService? spriteService = null)
         {
-            _filterCacheService = filterCacheService;
             _spriteService = spriteService;
             LoadFilters();
         }
@@ -128,21 +126,21 @@ namespace BalatroSeedOracle.ViewModels
         {
             try
             {
-                // Use the FilterCacheService instead of reading files manually
-                var allCachedFilters = _filterCacheService.GetAllFilters();
-
                 _allFilters.Clear();
-                for (int i = 0; i < allCachedFilters.Count; i++)
+                foreach (var path in Services.FilterFiles.List())
                 {
-                    var cached = allCachedFilters[i];
+                    var config = Services.FilterFiles.Load(path, out _);
+                    if (config is null)
+                        continue;
+
                     _allFilters.Add(
                         new FilterListItem
                         {
-                            Number = i + 1,
-                            Name = cached.Name,
-                            Author = cached.Author,
-                            Description = cached.Description,
-                            FilePath = cached.FilePath,
+                            Number = _allFilters.Count + 1,
+                            Name = config.Name ?? Path.GetFileNameWithoutExtension(path),
+                            Author = config.Author ?? "",
+                            Description = config.Description ?? "",
+                            FilePath = path,
                         }
                     );
                 }
@@ -152,7 +150,7 @@ namespace BalatroSeedOracle.ViewModels
 
                 DebugLogger.Log(
                     "FilterListViewModel",
-                    $"Loaded {_allFilters.Count} filters from cache"
+                    $"Loaded {_allFilters.Count} filters"
                 );
             }
             catch (Exception ex)
@@ -212,12 +210,12 @@ namespace BalatroSeedOracle.ViewModels
         {
             try
             {
-                var config = _filterCacheService.GetFilterByPath(filterPath);
+                var config = Services.FilterFiles.Load(filterPath, out _);
                 if (config is null)
                 {
                     DebugLogger.Log(
                         "FilterListViewModel",
-                        "Cannot auto-select tab - filter not found in cache"
+                        "Cannot auto-select tab - filter failed to load"
                     );
                     return;
                 }
@@ -302,10 +300,10 @@ namespace BalatroSeedOracle.ViewModels
             try
             {
                 SelectedFilterDescription = "";
-                var config = _filterCacheService.GetFilterByPath(filterPath);
+                var config = Services.FilterFiles.Load(filterPath, out _);
                 if (config is null)
                 {
-                    DebugLogger.LogError("FilterListViewModel", "Filter not found in cache");
+                    DebugLogger.LogError("FilterListViewModel", "Filter failed to load");
                     return;
                 }
 
@@ -492,10 +490,10 @@ namespace BalatroSeedOracle.ViewModels
                     return;
                 }
 
-                var config = _filterCacheService.GetFilterByPath(filterPath);
+                var config = Services.FilterFiles.Load(filterPath, out _);
                 if (config is null)
                 {
-                    DebugLogger.Log("FilterListViewModel", "Filter not found in cache");
+                    DebugLogger.Log("FilterListViewModel", "Filter failed to load");
                     FilterItems.Clear();
                     HasFilterItems = false;
                     return;

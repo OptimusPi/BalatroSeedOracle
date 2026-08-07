@@ -354,17 +354,6 @@
                                                     Width="180"
                                                     ShadowDirection="south-east"/>
 
-                            <!-- Continue Checkbox -->
-                            <CheckBox Name="ContinueCheckBox"
-                                      Content="Continue from last position"
-                                      IsChecked="{Binding ContinueFromLast}"
-                                      Foreground="{StaticResource White}"
-                                      FontFamily="{StaticResource BalatroFont}"
-                                      FontSize="18"
-                                      IsVisible="{Binding IsContinueVisible}"
-                                      VerticalAlignment="Center"
-                                      Margin="0,0,16,0"/>
-
                             <!-- COOK button - Dynamic classes based on state -->
                             <Button Name="CookButton"
                                     Content="{Binding CookButtonText}"
@@ -374,8 +363,7 @@
                                     FontFamily="{StaticResource BalatroFont}"
                                     FontSize="18"
                                     Height="52"
-                                    MinWidth="200"
-                                    Margin="0,0,12,0"/>
+                                    MinWidth="160"/>
 
                             <!-- Edit Filter button - Opens filter designer with current filter -->
                             <Button Name="EditFilterButton"
@@ -386,7 +374,7 @@
                                     FontFamily="{StaticResource BalatroFont}"
                                     FontSize="18"
                                     Height="52"
-                                    MinWidth="160"/>
+                                    MinWidth="120"/>
                     </StackPanel>
                 </Grid>
             </Border>

@@ -12,7 +12,6 @@ namespace BalatroSeedOracle.ViewModels
     public partial class MainWindowViewModel : ObservableObject
     {
         private readonly UserProfileService _userProfileService;
-        private readonly SearchManager _searchManager;
 
         [ObservableProperty]
         private string _windowTitle = "Balatro Seed Oracle";
@@ -26,13 +25,9 @@ namespace BalatroSeedOracle.ViewModels
         [ObservableProperty]
         private bool _isVibeOutMode = false;
 
-        public MainWindowViewModel(
-            UserProfileService userProfileService,
-            SearchManager searchManager
-        )
+        public MainWindowViewModel(UserProfileService userProfileService)
         {
             _userProfileService = userProfileService;
-            _searchManager = searchManager;
 
             _ = InitializeWindowAsync();
         }
@@ -112,15 +107,8 @@ namespace BalatroSeedOracle.ViewModels
         {
             try
             {
-                var profile = await _userProfileService.LoadUserProfileAsync();
-                if (profile is not null)
-                {
-                    DebugLogger.Log("MainWindowViewModel", "User profile loaded successfully");
-                }
-                else
-                {
-                    DebugLogger.Log("MainWindowViewModel", "No user profile found, using defaults");
-                }
+                await _userProfileService.LoadUserProfileAsync();
+                DebugLogger.Log("MainWindowViewModel", "User profile loaded");
             }
             catch (Exception ex)
             {

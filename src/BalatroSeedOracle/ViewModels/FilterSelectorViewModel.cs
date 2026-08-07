@@ -26,7 +26,6 @@ namespace BalatroSeedOracle.ViewModels
     public partial class FilterSelectorViewModel : ObservableObject
     {
         private readonly SpriteService _spriteService;
-        private readonly IFilterCacheService _filterCacheService;
 
         [ObservableProperty]
         private bool _autoLoadEnabled = true;
@@ -75,21 +74,10 @@ namespace BalatroSeedOracle.ViewModels
         public event EventHandler<string>? FilterDeleteRequested;
         public event EventHandler? NewFilterRequested;
 
-        private readonly IConfigurationService _configurationService;
-
-        public FilterSelectorViewModel(
-            SpriteService spriteService,
-            IConfigurationService configurationService,
-            IFilterCacheService filterCacheService
-        )
+        public FilterSelectorViewModel(SpriteService spriteService)
         {
             _spriteService =
                 spriteService ?? throw new ArgumentNullException(nameof(spriteService));
-            _configurationService =
-                configurationService
-                ?? throw new ArgumentNullException(nameof(configurationService));
-            _filterCacheService =
-                filterCacheService ?? throw new ArgumentNullException(nameof(filterCacheService));
         }
 
         #region Property Changed Handlers
@@ -117,20 +105,18 @@ namespace BalatroSeedOracle.ViewModels
         }
 
         /// <summary>
-        /// Loads all available filter files from the FilterCacheService
+        /// Loads all available filter files from JamlFilters/
         /// </summary>
-        public async Task LoadAvailableFiltersAsync()
+        public Task LoadAvailableFiltersAsync()
         {
             try
             {
-                // Use the FilterCacheService instead of reading files manually
-                var allCachedFilters = _filterCacheService.GetAllFilters();
-
                 var filterItems = new List<PanelItem>();
 
-                foreach (var cached in allCachedFilters)
+                foreach (var path in FilterFiles.List())
                 {
-                    var item = await CreateFilterPanelItemFromCacheAsync(cached);
+                    var config = FilterFiles.Load(path, out _);
+                    var item = CreateFilterPanelItem(path, config);
                     if (item is not null)
                     {
                         filterItems.Add(item);
@@ -139,7 +125,7 @@ namespace BalatroSeedOracle.ViewModels
 
                 DebugLogger.Log(
                     "FilterSelectorViewModel",
-                    $"Found {filterItems.Count} filters from cache"
+                    $"Found {filterItems.Count} filters"
                 );
 
                 FilterItems = filterItems;
@@ -165,50 +151,38 @@ namespace BalatroSeedOracle.ViewModels
                     $"Error loading filters: {ex.Message}"
                 );
             }
+
+            return Task.CompletedTask;
         }
 
         /// <summary>
-        /// Creates a PanelItem from a cached filter
+        /// Creates a PanelItem from a loaded filter config
         /// </summary>
-        private Task<PanelItem?> CreateFilterPanelItemFromCacheAsync(Services.CachedFilter cached)
+        private PanelItem? CreateFilterPanelItem(string filePath, JamlConfig? config)
         {
-            try
+            if (config is null || string.IsNullOrEmpty(config.Name))
             {
-                var config = cached.Config;
-                if (config is null || string.IsNullOrEmpty(config.Name))
-                {
-                    DebugLogger.Log(
-                        "FilterSelectorViewModel",
-                        $"Skipping filter with no name: {cached.FilterId}"
-                    );
-                    return Task.FromResult<PanelItem?>(null);
-                }
-
-                // Build description
-                string description = config.Description ?? "No description";
-                if (!string.IsNullOrEmpty(config.Author))
-                {
-                    description = $"by {config.Author}\n{description}";
-                }
-
-                var item = new PanelItem
-                {
-                    Title = config.Name,
-                    Description = description,
-                    Value = cached.FilePath,
-                    GetImage = () => CreateFannedPreviewImageFromConfig(config),
-                };
-
-                return Task.FromResult<PanelItem?>(item);
-            }
-            catch (Exception ex)
-            {
-                DebugLogger.LogError(
+                DebugLogger.Log(
                     "FilterSelectorViewModel",
-                    $"Error creating panel item from cache for {cached.FilterId}: {ex.Message}"
+                    $"Skipping filter with no name: {filePath}"
                 );
-                return Task.FromResult<PanelItem?>(null);
+                return null;
             }
+
+            // Build description
+            string description = config.Description ?? "No description";
+            if (!string.IsNullOrEmpty(config.Author))
+            {
+                description = $"by {config.Author}\n{description}";
+            }
+
+            return new PanelItem
+            {
+                Title = config.Name,
+                Description = description,
+                Value = filePath,
+                GetImage = () => CreateFannedPreviewImageFromConfig(config),
+            };
         }
 
         /// <summary>
