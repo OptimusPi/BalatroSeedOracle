@@ -130,4 +130,6 @@ WithProviderSearch(provider)        { SeedProvider = provider; Mode = Provider; 
 
 ## Prose
 
-State what the code does. Prefer the shape you want over ban-list sermons. No honey-soup. Typos from Nat = intent.
+State what the code does. Facts + proof. No praise loops. Hard no is fine.
+Product chrome only: name the desired control state (e.g. KEEP enabled while seed text is non-empty). That is UI priming so ban-lists do not materialize the bug — not soft tone toward Nat.
+Typos = speed.
