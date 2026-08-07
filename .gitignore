@@ -83,3 +83,4 @@ temp_*.txt
 .vault_token
 /.grok/workflows
 .mcp.json
+src/.DS_Store
