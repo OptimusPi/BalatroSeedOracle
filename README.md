@@ -82,9 +82,9 @@ dotnet run -- --help
 Use the in-app visual filter designer to create complex filters by dragging and dropping criteria.
 
 ### JAML Configuration
-Filters are authored in **JAML** (Jimbo's Ante Markup Language), a YAML dialect. The app loads JAML only; the underlying Motely engine also understands JSON (they round-trip losslessly), but BSO has no JSON load path. Create custom filters manually:
+Filters are authored in **JAML** (Jimbo's Ante Markup Language). JAML is YAML-shaped but is not YAML — it has its own parser, no YamlDotNet. The app loads JAML only; the underlying Motely engine also understands JSON (they round-trip losslessly), but BSO has no JSON load path. Create custom filters manually:
 
-```yaml
+```jaml
 name: Negative Perkeo Hunt
 mode: sum            # optional: "sum" (default), "max", or "max_count"
 deck: Red
@@ -144,7 +144,7 @@ Typical speeds: 10-50 million seeds per second depending on filter complexity.
 
 Example using max aggregation:
 
-```yaml
+```jaml
 name: Tarot or Planet Rush
 mode: max
 should:
