@@ -6,6 +6,41 @@ Law for Claude, Grok, human. Same rules.
 
 Do not read, write, or propose entries in Claude auto-memory / `MEMORY.md` for this project. Work from this file, git, and the current conversation only.
 
+## First 30 seconds (every session — no poetry)
+
+**Before** diagnose, build, Avalonia rant, or “fixing” anything:
+
+1. Prove Motely is present (submodule, not empty shell):
+
+```sh
+# Unix
+test -f src/MotelyJAML/Motely/Motely.csproj && echo SUBMODULE_OK || echo SUBMODULE_MISSING
+
+# Windows PowerShell
+Test-Path src/MotelyJAML/Motely/Motely.csproj
+```
+
+2. If **MISSING** → run **only** this, then re-prove. Do **not** invent license keys, do **not** rewrite Avalonia, do **not** copy Motely into BSO root:
+
+```sh
+git submodule update --init --recursive
+```
+
+3. Report one line: `SUBMODULE_OK` or the exact command exit. Then take **one** ticket Nat named.
+
+| Forbidden first moves | Why |
+|----------------------|-----|
+| Essay about Avalonia licenses | Core is MIT; see README |
+| Build without submodule proof | Empty Motely = fake “broken app” |
+| “While I’m here” engine thrash | One ticket |
+| Soft praise / nanny poetry | Honey-soup ban — table + proof |
+
+No ticket → STOP. Ask `ticket id?` Do not invent work. Do not “while I’m here” into the submodule.
+
+Cage pointer: `CLAUDE-CAGE.md`. Full engine mule law: `src/MotelyJAML/CLAUDE-CAGE.md` (only when ticket is Motely).
+
+---
+
 ## Default surface
 
 | Working on | Paths | Law |
@@ -13,10 +48,6 @@ Do not read, write, or propose entries in Claude auto-memory / `MEMORY.md` for t
 | **BSO app** (default) | `src/BalatroSeedOracle*`, app tests, assets, `JamlFilters/` as product data | Avalonia desktop only |
 | **Engine** | `src/MotelyJAML/...` | Ticket must say Motely / engine. Commit **inside** the submodule, then bump gitlink in BSO |
 | **WASM / Bootsharp** | `src/MotelyJAML/Motely.Wasm/...` | Ticket required. **Before first edit:** read the Bootsharp pin below (local files — not this novel, not `obj/**/*.g.cs` archaeology) |
-
-No ticket → STOP. Ask `ticket id?` Do not invent work. Do not “while I’m here” into the submodule.
-
-Cage pointer: `CLAUDE-CAGE.md`. Full engine mule law: `src/MotelyJAML/CLAUDE-CAGE.md` (only when ticket is Motely).
 
 ---
 

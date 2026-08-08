@@ -31,22 +31,53 @@ Built for the Balatro community to discover optimal seeds for challenge runs, hi
 - I think I might need some changes to Motely's Vector helpers to make it work, but it's possible the fallbacks (if AVX512 and/or AVX2 not supported) tacodiva added already will be compatible.
 - Mobile support is planned for future releases.
 
-## Clone this repository (or download zip, or use Github Desktop)
+## Avalonia license (you usually need nothing)
 
-Either click the green button in the upper-right of this page and download in your favorite way...or:
+**Avalonia UI itself is MIT** — free to build and ship. BSO also references some **Avalonia Accelerate** packages (TreeDataGrid, Markdown, Charts, …). Those packages have a *separate* commercial license layer.
+
+| Who | What you need |
+|-----|----------------|
+| **Contributor / clone from GitHub** | **No key.** `dotnet build` / `dotnet run` work without `avalonia.license` or env vars. |
+| **Maintainer shipping Release with a real Accelerate subscription** | Offline key via `ACCELERATE_LICENSE_KEY` or gitignored `avalonia.license` / `avalonia.license.local` (see `Directory.Build.props`). |
+
+If a build fails with `AVLIC*` errors, you are not missing “an Avalonia license for the framework” — either a bad/online key is in your environment, or force OSS mode:
 
 ```sh
-git clone https://github.com/OptimusPi/BalatroSeedOracle.git
-cd BalatroSeedOracle
-dotnet run -c Release --project ./src/BalatroSeedOracle.Desktop/BalatroSeedOracle.Desktop.csproj
+dotnet build -c Release -p:AvaloniaUILicenseDisableTask=true
 ```
 
-## Initialize the git Submodule
+## Clone + build (READ THIS or the app will not build)
 
-This repo uses a git submodule for the **Motely (MotelyJAML)** search engine at `src/MotelyJAML` (fork of [tacodiva/Motely](https://github.com/tacodiva/motely), with MotelyJson support). You must initialize and update the submodule after cloning:
+**Motely (the seed engine) lives in a git submodule** at `src/MotelyJAML`.  
+A plain `git clone` or **GitHub “Download ZIP” leaves that folder empty.** That is not Avalonia. That is not a license. That is a missing submodule.
 
-```bash
+### Correct clone (pick one)
+
+```sh
+# Best — pulls Motely in one shot
+git clone --recurse-submodules https://github.com/OptimusPi/BalatroSeedOracle.git
+cd BalatroSeedOracle
+```
+
+```sh
+# Already cloned without submodule?
+cd BalatroSeedOracle
 git submodule update --init --recursive
+```
+
+```sh
+# ZIP download / empty src/MotelyJAML?
+# Prefer git clone with --recurse-submodules instead.
+# If you must use an existing tree:
+git submodule update --init --recursive
+```
+
+**Smoke check:** `ls src/MotelyJAML/Motely/Motely.csproj` must exist. If it doesn’t, you did not init the submodule.
+
+Then:
+
+```sh
+dotnet run -c Release --project ./src/BalatroSeedOracle/BalatroSeedOracle.csproj
 ```
 
 ## Run the Balatro Seed Oracle GUI Application
@@ -55,13 +86,13 @@ If you are making code changes on your own fork for example, you can specify Deb
 NOTE: This searches a *lot* slower than release version!
 
 ```sh
-dotnet run -c Debug --project ./src/BalatroSeedOracle.Desktop/BalatroSeedOracle.Desktop.csproj
+dotnet run -c Debug --project ./src/BalatroSeedOracle/BalatroSeedOracle.csproj
 ```
 
 To run the optimized release build:
 
 ```sh
-dotnet run -c Release --project ./src/BalatroSeedOracle.Desktop/BalatroSeedOracle.Desktop.csproj
+dotnet run -c Release --project ./src/BalatroSeedOracle/BalatroSeedOracle.csproj
 ```
 
 ## Using the Command Line Interface

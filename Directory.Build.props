@@ -14,6 +14,12 @@
   </PropertyGroup>
 
   <!-- Avalonia Accelerate license (TreeDataGrid / Markdown / Charts / Media).
+       Avalonia *core* is MIT — free. Accelerate is a separate paid layer for some controls.
+
+       OSS / GitHub: you do NOT need a key. Clone + build works. The license MSBuild task
+       runs only when a key is present (see below). Without a key we disable the task so
+       AVLIC* cannot brick contributors.
+
        Key sources (first wins): ACCELERATE_LICENSE_KEY env, PARCEL_LICENSE env,
        avalonia.license.local, avalonia.license. Both license files are gitignored.
 
@@ -24,8 +30,10 @@
        holds the short online key used by the parcel/avdt tooling, and letting it win here
        broke every Release build. Do not reorder these two.
 
-       Debug defaults to skipping the build-time licensing task so local work is unblocked;
-       Release still validates when a key is present.
+       Defaults:
+         • no key → AvaloniaUILicenseDisableTask=true (Debug and Release)
+         • key + Debug → task skipped (fast local loop)
+         • key + Release → task runs (ship path validates)
        Force either way: -p:AvaloniaUILicenseDisableTask=true|false -->
   <PropertyGroup>
     <_AvaloniaLicensePath Condition="Exists('$(MSBuildThisFileDirectory)avalonia.license.local')">$(MSBuildThisFileDirectory)avalonia.license.local</_AvaloniaLicensePath>
@@ -34,6 +42,9 @@
     <_AvaloniaLicenseKey Condition="'$(ACCELERATE_LICENSE_KEY)' != ''">$(ACCELERATE_LICENSE_KEY)</_AvaloniaLicenseKey>
     <_AvaloniaLicenseKey Condition="'$(_AvaloniaLicenseKey)' == '' AND '$(PARCEL_LICENSE)' != ''">$(PARCEL_LICENSE)</_AvaloniaLicenseKey>
     <_AvaloniaLicenseKey Condition="'$(_AvaloniaLicenseKey)' == '' AND '$(_AvaloniaLicenseFile)' != ''">$(_AvaloniaLicenseFile)</_AvaloniaLicenseKey>
+    <!-- Sane default: no secret → no license task (contributors). -->
+    <AvaloniaUILicenseDisableTask Condition="'$(AvaloniaUILicenseDisableTask)' == '' AND '$(_AvaloniaLicenseKey)' == ''">true</AvaloniaUILicenseDisableTask>
+    <!-- With a key, still skip on Debug; Release validates. -->
     <AvaloniaUILicenseDisableTask Condition="'$(AvaloniaUILicenseDisableTask)' == '' AND '$(Configuration)' != 'Release'">true</AvaloniaUILicenseDisableTask>
   </PropertyGroup>
   <ItemGroup Condition="'$(_AvaloniaLicenseKey)' != ''">
