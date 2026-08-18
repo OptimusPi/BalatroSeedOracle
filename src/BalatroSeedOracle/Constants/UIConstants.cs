@@ -53,8 +53,8 @@ public static class UIConstants
     public const int MediumAnimationDurationMs = 300; // Card flip reveal
     public const int SlowAnimationDurationMs = 320; // Modal content slide
     public const int JuiceDurationMs = 400; // Juice effect on card grab (Balatro: 0.4s exact!)
-    public const int BounceAnimationDurationMs = 600; // Modal rise with bounce
-    public const int GravityAnimationDurationMs = 800; // Modal gravity fall
+    public const int BounceAnimationDurationMs = 340; // Modal slide-up settle (Balatro ~0.25-0.35s)
+    public const int GravityAnimationDurationMs = 260; // Modal slide-out
     public const double JuiceDurationSeconds = 0.4; // Juice duration in seconds for math (Balatro: 0.4s exact!)
 
     // Animation Durations (in seconds for TimeSpan)
@@ -90,6 +90,10 @@ public static class UIConstants
     // Modal Animation Offsets
     public const double ModalSlideOffsetY = -24; // Initial Y offset for slide-up
     public const double ModalSlideOffsetBottomMargin = 24; // Bottom margin during animation
+    // Balatro slides its overlay up from ~10 game-units below center. Scaled to a modest px
+    // offset so the entrance reads as a slide (not a fly-in from off-screen). No opacity fade.
+    public const double ModalSlideOffset = 48; // Modal starts this far below rest, slides up to 0
+    public const double ModalExitOffset = 60; // Modal slides down this far when leaving
 
     // Shadow Offsets (in pixels)
     public const double ShadowOffsetSmallX = 1;

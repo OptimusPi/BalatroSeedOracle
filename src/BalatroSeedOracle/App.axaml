@@ -151,6 +151,9 @@
 
         <!-- Transparent/Overlay Brushes -->
         <SolidColorBrush x:Key="SemiTransparentBlack" Color="#80000000"/>
+        <!-- Balatro's overlay dim: grey #5f7377 at 0.7 alpha (UI_definitions.lua:6333).
+             The animated background shows through as a muted grey-green, not just darkened. -->
+        <SolidColorBrush x:Key="BalatroModalDim" Color="#B35F7377"/>
         <SolidColorBrush x:Key="SemiTransparentDarkBackground" Color="#66000000"/>
         <SolidColorBrush x:Key="TransparentDark1" Color="{StaticResource ColorTranslucentBlack33}"/>
         <SolidColorBrush x:Key="TransparentDark3" Color="#33000000"/>
@@ -172,7 +175,11 @@
         <!-- ============================================================ -->
         <!-- NON-COLOR RESOURCES                                          -->
         <!-- ============================================================ -->
-        <FontFamily x:Key="BalatroFont">avares://BalatroSeedOracle/m6x11plusplus.otf#m6x11plusplus</FontFamily>
+        <!-- TrueType (glyf outlines). The source .otf was CFF/OTTO which Avalonia 12's
+             font parser cannot load (throws "Could not create glyphTypeface"), crashing
+             every text-rendering screen. Converted to .ttf. Trailing system families are a
+             fallback so a font-load failure degrades gracefully instead of crashing. -->
+        <FontFamily x:Key="BalatroFont">avares://BalatroSeedOracle/m6x11plusplus.ttf#m6x11plusPLUS, Consolas, Courier New, monospace</FontFamily>
         <BoxShadows x:Key="StandardModalShadow">0 4 8 0 #777e89</BoxShadows>
         <BoxShadows x:Key="WidgetWindowShadow">0 6 16 0 #55000000</BoxShadows>
         <BoxShadows x:Key="WidgetContentShadow">0 2 8 0 #22000000</BoxShadows>

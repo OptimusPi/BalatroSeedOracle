@@ -57,7 +57,14 @@ public partial class MainWindow : Window
 
         Closing += OnWindowClosing;
         SizeChanged += OnWindowSizeChanged;
+        UpdateUiScale();
     }
+
+    // The fixed design canvas the UI is authored against (must match the inner Panel in XAML).
+    private const double DesignWidth = 1582.0;
+    private const double DesignHeight = 830.0;
+    // Never shrink below this so text stays legible on very small windows.
+    private const double MinScale = 0.4;
 
     private void OnWindowClosing(object? sender, WindowClosingEventArgs e)
     {
@@ -85,7 +92,30 @@ public partial class MainWindow : Window
 
     private void OnWindowSizeChanged(object? sender, SizeChangedEventArgs e)
     {
-        // Previously repositioned desktop widgets on resize; the widget system was removed.
+        UpdateUiScale();
+    }
+
+    /// <summary>
+    /// Balatro-style uniform scaling: fit the fixed design canvas (1582x830) inside the
+    /// current window bounds. Uniform (min of the two ratios) so the UI never distorts —
+    /// it smooths down on small windows and scales up crisply on large / maximized ones.
+    /// </summary>
+    private void UpdateUiScale()
+    {
+        if (ScaleRoot?.LayoutTransform is not Avalonia.Media.ScaleTransform uiScale || ScaleHost is null)
+            return;
+
+        var availW = ScaleHost.Bounds.Width;
+        var availH = ScaleHost.Bounds.Height;
+        if (availW <= 0 || availH <= 0)
+            return;
+
+        var scale = Math.Min(availW / DesignWidth, availH / DesignHeight);
+        if (scale < MinScale)
+            scale = MinScale;
+
+        uiScale.ScaleX = scale;
+        uiScale.ScaleY = scale;
     }
 
     private void CleanupAndExit()

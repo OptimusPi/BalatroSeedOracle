@@ -220,9 +220,15 @@ namespace BalatroSeedOracle.Controls
 
             public void SetAnimating(bool animating)
             {
+                var wasAnimating = _isAnimating;
                 _isAnimating = animating;
-                // Animation will resume/stop on next frame
-                // We can't call Invalidate() here as we may not have compositor lock
+                // Re-arm the animation-frame loop when turning animation back on.
+                // If it was already animating, the loop is already running (re-armed
+                // from OnRender), so avoid double-registering.
+                if (animating && !wasAnimating && !_isDisposed)
+                {
+                    RegisterForNextAnimationFrameUpdate();
+                }
             }
 
             public void SetUniform(string name, float value)
@@ -477,10 +483,15 @@ namespace BalatroSeedOracle.Controls
 
             public override void OnAnimationFrameUpdate()
             {
+                // Only request a repaint here. Do NOT re-register the next frame from
+                // this callback: when the window is minimized the compositor stops
+                // presenting, OnRender never runs, and a self-re-registering loop here
+                // spins the render thread forever (UI thread -> "Not Responding").
+                // The loop is re-armed from OnRender, which only fires when the surface
+                // actually presents. No presentation => loop naturally idles.
                 if (!_isDisposed && _isAnimating)
                 {
                     Invalidate();
-                    RegisterForNextAnimationFrameUpdate();
                 }
             }
 

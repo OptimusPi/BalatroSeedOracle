@@ -1018,9 +1018,6 @@ namespace BalatroSeedOracle.Views
             // Store active content reference
             _activeModalContent = content;
 
-            // CRITICAL: Calculate window height and set initial transform FIRST
-            var windowHeight = this.Bounds.Height;
-
             // Set initial states BEFORE making visible or adding content
             // Backdrop appears INSTANTLY (no fade) - Balatro style
             if (!keepBackdrop)
@@ -1028,8 +1025,9 @@ namespace BalatroSeedOracle.Views
                 _modalOverlay.Opacity = UIConstants.FullOpacity;
             }
 
-            // CRITICAL: Keep content wrapper invisible until transform is applied
-            _modalContentWrapper.Opacity = UIConstants.InvisibleOpacity;
+            // Content is fully opaque the whole time - Balatro never fades modals,
+            // it slides them. Opacity stays at 1; only the transform animates.
+            _modalContentWrapper.Opacity = UIConstants.FullOpacity;
 
             // Get the existing TranslateTransform from XAML (which has transitions attached!)
             var translateTransform = _modalContentWrapper.RenderTransform as TranslateTransform;
@@ -1040,8 +1038,10 @@ namespace BalatroSeedOracle.Views
                 _modalContentWrapper.RenderTransform = translateTransform;
             }
 
-            // Set initial Y position to be off-screen at the bottom
-            translateTransform.Y = windowHeight;
+            // Start a short distance below the resting position and slide up (Balatro slides
+            // its overlay up from ~10 game-units below center; scale that to a modest px offset
+            // rather than off-screen, so the motion reads as a slide, not a fly-in).
+            translateTransform.Y = UIConstants.ModalSlideOffset;
             translateTransform.X = 0;
 
             // Set the content in the wrapper
@@ -1063,12 +1063,8 @@ namespace BalatroSeedOracle.Views
             Dispatcher.UIThread.Post(
                 () =>
                 {
-                    // Make content wrapper visible now that transform is set
-                    _modalContentWrapper.Opacity = UIConstants.FullOpacity;
-
-                    // Backdrop is already instant - no fade animation
-
-                    // Slide up content from below screen (translateY: windowHeight → 0)
+                    // Slide up content into resting position (translateY: offset -> 0).
+                    // No opacity change - the XAML transition eases the transform only.
                     translateTransform.Y = 0;
                 },
                 DispatcherPriority.Render
@@ -1094,11 +1090,12 @@ namespace BalatroSeedOracle.Views
                 if (oldContent == null)
                     return;
 
-                // Gravity fall with bounce - modal falls completely out of view
+                // Slide down out of view - no fade, no scale/spin. Balatro slides overlays
+                // off; the new one slides in via ShowModalWithAnimationAsync afterward.
                 var fallAnimation = new Avalonia.Animation.Animation
                 {
-                    Duration = TimeSpan.FromMilliseconds(UIConstants.GravityAnimationDurationMs), // Smooth gravity fall
-                    Easing = new ExponentialEaseIn(), // Gravity acceleration
+                    Duration = TimeSpan.FromMilliseconds(UIConstants.GravityAnimationDurationMs),
+                    Easing = new BackEaseIn(), // slight anticipation, then slides down
                     Children =
                     {
                         new Avalonia.Animation.KeyFrame
@@ -1107,53 +1104,20 @@ namespace BalatroSeedOracle.Views
                             Setters =
                             {
                                 new Setter(TranslateTransform.YProperty, 0d),
-                                new Setter(OpacityProperty, 1.0d),
-                                new Setter(ScaleTransform.ScaleYProperty, 1.0d),
-                                new Setter(ScaleTransform.ScaleXProperty, 1.0d),
-                                new Setter(RotateTransform.AngleProperty, 0d),
                             },
                         },
                         new Avalonia.Animation.KeyFrame
                         {
-                            Cue = new Cue(0.3), // Start rotating as it falls
+                            Cue = new Cue(1),
                             Setters =
                             {
-                                new Setter(TranslateTransform.YProperty, 100d),
-                                new Setter(OpacityProperty, 0.9d),
-                                new Setter(ScaleTransform.ScaleYProperty, 0.98d),
-                                new Setter(RotateTransform.AngleProperty, 2d),
-                            },
-                        },
-                        new Avalonia.Animation.KeyFrame
-                        {
-                            Cue = new Cue(0.7), // Accelerating
-                            Setters =
-                            {
-                                new Setter(TranslateTransform.YProperty, 400d),
-                                new Setter(OpacityProperty, 0.5d),
-                                new Setter(ScaleTransform.ScaleYProperty, 0.9d),
-                                new Setter(ScaleTransform.ScaleXProperty, 0.95d),
-                                new Setter(RotateTransform.AngleProperty, 5d),
-                            },
-                        },
-                        new Avalonia.Animation.KeyFrame
-                        {
-                            Cue = new Cue(1), // Completely out of view
-                            Setters =
-                            {
-                                new Setter(TranslateTransform.YProperty, 1200d), // Way off screen
-                                new Setter(OpacityProperty, 0.0d),
-                                new Setter(ScaleTransform.ScaleYProperty, 0.7d),
-                                new Setter(ScaleTransform.ScaleXProperty, 0.85d),
-                                new Setter(RotateTransform.AngleProperty, 8d),
+                                new Setter(TranslateTransform.YProperty, UIConstants.ModalExitOffset),
                             },
                         },
                     },
                 };
 
                 var transformGroup = new TransformGroup();
-                transformGroup.Children.Add(new ScaleTransform(1, 1));
-                transformGroup.Children.Add(new RotateTransform(0));
                 transformGroup.Children.Add(new TranslateTransform(0, 0));
                 oldContent.RenderTransform = transformGroup;
                 oldContent.RenderTransformOrigin = new RelativePoint(
@@ -1202,11 +1166,13 @@ namespace BalatroSeedOracle.Views
                     SetTitle(title);
                 }
 
-                // Smooth gravity bounce - rises from below with elastic bounce
+                // Balatro-style slide-up: content stays fully opaque and full-scale; only the
+                // vertical position eases from a short offset below the resting spot up to 0,
+                // with a slight spring overshoot. No opacity fade, no scale pop.
                 var popAnimation = new Avalonia.Animation.Animation
                 {
-                    Duration = TimeSpan.FromMilliseconds(UIConstants.BounceAnimationDurationMs), // Smooth rise with bounce
-                    Easing = new ElasticEaseOut(), // Bouncy landing
+                    Duration = TimeSpan.FromMilliseconds(UIConstants.BounceAnimationDurationMs),
+                    Easing = new BackEaseOut(), // gentle spring overshoot, like Balatro's VT settle
                     Children =
                     {
                         new Avalonia.Animation.KeyFrame
@@ -1214,39 +1180,21 @@ namespace BalatroSeedOracle.Views
                             Cue = new Cue(0),
                             Setters =
                             {
-                                new Setter(TranslateTransform.YProperty, 800d), // Start from below
-                                new Setter(OpacityProperty, 0.0d),
-                                new Setter(ScaleTransform.ScaleYProperty, 0.5d),
-                                new Setter(ScaleTransform.ScaleXProperty, 0.8d),
+                                new Setter(TranslateTransform.YProperty, UIConstants.ModalSlideOffset),
                             },
                         },
                         new Avalonia.Animation.KeyFrame
                         {
-                            Cue = new Cue(0.4), // Rising up
-                            Setters =
-                            {
-                                new Setter(TranslateTransform.YProperty, 200d),
-                                new Setter(OpacityProperty, 0.8d),
-                                new Setter(ScaleTransform.ScaleYProperty, 0.95d),
-                                new Setter(ScaleTransform.ScaleXProperty, 0.98d),
-                            },
-                        },
-                        new Avalonia.Animation.KeyFrame
-                        {
-                            Cue = new Cue(1), // Final position with elastic bounce
+                            Cue = new Cue(1),
                             Setters =
                             {
                                 new Setter(TranslateTransform.YProperty, 0d),
-                                new Setter(OpacityProperty, 1.0d),
-                                new Setter(ScaleTransform.ScaleYProperty, 1.0d),
-                                new Setter(ScaleTransform.ScaleXProperty, 1.0d),
                             },
                         },
                     },
                 };
 
                 var transformGroup = new TransformGroup();
-                transformGroup.Children.Add(new ScaleTransform(1, 1));
                 transformGroup.Children.Add(new TranslateTransform(0, 0));
                 content.RenderTransform = transformGroup;
                 content.RenderTransformOrigin = new RelativePoint(0.5, 0.5, RelativeUnit.Relative);

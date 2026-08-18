@@ -365,10 +365,9 @@
               HorizontalAlignment="Stretch"
               Margin="0">
 
-            <!-- Overlay dimmer - fades in -->
+            <!-- Overlay dimmer: solid Balatro grey at 0.7 alpha, appears instantly (no fade) -->
             <Border x:Name="ModalOverlay"
-                    Background="{StaticResource SemiTransparentBlack}">
-                <!-- Transition removed for now to ensure visibility -->
+                    Background="{StaticResource BalatroModalDim}">
             </Border>
 
             <!-- Modal content wrapper - slides up with bounce -->

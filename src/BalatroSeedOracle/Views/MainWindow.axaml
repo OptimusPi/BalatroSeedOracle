@@ -6,62 +6,81 @@
         x:Class="BalatroSeedOracle.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Title="Balatro Seed Oracle"
-        Width="1582"
-        Height="830"
+        Width="1280"
+        Height="720"
+        WindowStartupLocation="CenterScreen"
         DragDrop.AllowDrop="True">
     
     <Window.Styles>
         <Style Selector="TextBlock.attribution">
-            <Setter Property="FontSize" Value="18"/>
+            <Setter Property="FontSize" Value="14"/>
             <Setter Property="Foreground" Value="{StaticResource Border}"/>
             <Setter Property="HorizontalAlignment" Value="Center"/>
         </Style>
         
         <Style Selector="TextBlock.attribution-link">
-            <Setter Property="FontSize" Value="18"/>
+            <Setter Property="FontSize" Value="14"/>
             <Setter Property="Foreground" Value="{StaticResource Blue}"/>
             <Setter Property="Cursor" Value="Hand"/>
         </Style>
         
         <Style Selector="TextBlock.attribution-link:pointerover">
             <Setter Property="Foreground" Value="{StaticResource Blue}"/>
-            <Setter Property="FontSize" Value="18"/>
+            <Setter Property="FontSize" Value="14"/>
         </Style>
     </Window.Styles>
     
-    <Panel>
-        <!-- Main window border with south edge highlight -->
-        <Border BorderBrush="{StaticResource BrightSilver}" 
-                BorderThickness="0,0,0,2">
-            <Grid RowDefinitions="*,Auto">
-                <!-- Main content wrapped in ErrorBoundary (template-driven control per Avalonia best practices) -->
-                <controls:ErrorBoundary x:Name="MainContentHost" Grid.Row="0" />
+    <!-- Root: footer docked to the true window bottom (always flush, full width, not scaled),
+         the scaled design canvas fills the space above it. -->
+    <DockPanel LastChildFill="True" Background="{StaticResource DarkBackground}">
 
-                <!-- Attribution line (hidden in Vibe Out Mode) -->
-                <Border Grid.Row="1"
-                        Background="{StaticResource DarkBackground}"
-                        Padding="4,3"
-                        IsVisible="{Binding !IsVibeOutMode}">
-                <StackPanel Orientation="Horizontal"
-                            HorizontalAlignment="Center"
-                            Spacing="5">
-                    <TextBlock Classes="attribution"
-                               Text="Not affiliated with LocalThunk or Playstack • "/>
-                    <TextBlock x:Name="BuyBalatroLink"
-                               Classes="attribution-link"
-                               Text="Buy Balatro"/>
-                    <TextBlock Classes="attribution" Text=" • "/>
-                    <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
-                        <TextBlock Classes="attribution" Text="Created with"/>
-                        <PathIcon Data="{StaticResource HeartIconData}" Width="12" Height="12" Foreground="Red" VerticalAlignment="Center"/>
-                        <TextBlock Classes="attribution" Text="for the Balatro community"/>
-                    </StackPanel>
-
+        <!-- Attribution: single-line black strip flush against the very bottom of the window -->
+        <Border DockPanel.Dock="Bottom"
+                Background="Black"
+                Padding="4,2"
+                IsVisible="{Binding !IsVibeOutMode}">
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Spacing="5">
+                <TextBlock Classes="attribution"
+                           VerticalAlignment="Center"
+                           Text="Not affiliated with LocalThunk or Playstack • "/>
+                <TextBlock x:Name="BuyBalatroLink"
+                           Classes="attribution-link"
+                           VerticalAlignment="Center"
+                           Text="Buy Balatro"/>
+                <TextBlock Classes="attribution" VerticalAlignment="Center" Text=" • "/>
+                <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                    <TextBlock Classes="attribution" VerticalAlignment="Center" Text="Created with"/>
+                    <PathIcon Data="{StaticResource HeartIconData}" Width="12" Height="12" Foreground="Red" VerticalAlignment="Center"/>
+                    <TextBlock Classes="attribution" VerticalAlignment="Center" Text="for the Balatro community"/>
                 </StackPanel>
-            </Border>
-            </Grid>
+            </StackPanel>
         </Border>
 
-    </Panel>
-    
+        <!-- Balatro-style scaling: the UI is authored against a fixed 1582x830 design canvas.
+             A LayoutTransformControl uniformly scales that canvas to fill the current window
+             (computed in OnWindowSizeChanged). Content renders at design fidelity and is smoothed
+             to fit smaller windows / scaled up crisply on larger ones. ClipToBounds keeps any
+             sub-pixel overflow from spilling past the edges. -->
+        <Panel x:Name="ScaleHost" ClipToBounds="True" Background="{StaticResource DarkBackground}">
+            <LayoutTransformControl x:Name="ScaleRoot"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Bottom">
+                <LayoutTransformControl.LayoutTransform>
+                    <ScaleTransform ScaleX="1" ScaleY="1" />
+                </LayoutTransformControl.LayoutTransform>
+
+                <!-- Fixed design canvas. BitmapInterpolationMode=None cascades (inherited render
+                     option) to every child Image so Balatro's pixel art stays crisp when scaled up. -->
+                <Panel Width="1582" Height="830"
+                       RenderOptions.BitmapInterpolationMode="None">
+                    <!-- Main content wrapped in ErrorBoundary (template-driven control per Avalonia best practices) -->
+                    <controls:ErrorBoundary x:Name="MainContentHost" />
+                </Panel>
+            </LayoutTransformControl>
+        </Panel>
+    </DockPanel>
+
 </Window>
