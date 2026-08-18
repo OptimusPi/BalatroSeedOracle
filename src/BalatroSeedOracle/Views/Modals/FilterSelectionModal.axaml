@@ -192,7 +192,7 @@
                                 </Grid>
 
                                 <!-- SCORE SETUP HEADER: Fanned Card Hand for Should items (visible on Score Setup tab) -->
-                                <Grid Grid.Row="0" Margin="0,0,0,10" IsVisible="{Binding ShowScoreTab}" ClipToBounds="False">
+                                <Grid Grid.Row="0" Margin="0,0,0,10" ZIndex="10" IsVisible="{Binding ShowScoreTab}" ClipToBounds="False">
                                     <!-- Should Items - Fanned Hand -->
                                     <controls:FannedCardHand Items="{Binding SelectedFilter.Should.AllItems}"
                                                              HorizontalAlignment="Center"/>
@@ -813,9 +813,12 @@
                                 </Grid>
 
                                 <Grid Grid.Row="3"
-                                      ColumnDefinitions="*,15,*"
-                                      Margin="0,8,0,0"
+                                      RowDefinitions="Auto,8,Auto"
                                       IsVisible="{Binding ShowDetailsPanel}">
+
+                                    <Grid Grid.Row="0"
+                                          ColumnDefinitions="*,15,*"
+                                          Margin="0,8,0,0">
 
                                     <Grid Grid.Column="0">
                                         <Button Content="Make a Copy of this Filter"
@@ -853,6 +856,26 @@
                                                 FontSize="18"
                                                 HorizontalAlignment="Stretch"
                                                 Command="{Binding DeleteCommand}"/>
+                                    </Grid>
+                                    </Grid>
+
+                                    <!-- Rename + Create New row (issues #15, #12) -->
+                                    <Grid Grid.Row="2" ColumnDefinitions="*,15,*">
+                                        <Button Grid.Column="0"
+                                                Content="Rename this Filter"
+                                                Classes="btn-orange"
+                                                Height="45"
+                                                FontSize="18"
+                                                HorizontalAlignment="Stretch"
+                                                Command="{Binding RenameCommand}"/>
+
+                                        <Button Grid.Column="2"
+                                                Content="+ Create New Filter"
+                                                Classes="btn-blue"
+                                                Height="45"
+                                                FontSize="18"
+                                                HorizontalAlignment="Stretch"
+                                                Command="{Binding CreateNewCommand}"/>
                                     </Grid>
                                 </Grid>
                             </Grid>

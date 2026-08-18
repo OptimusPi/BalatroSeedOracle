@@ -26,11 +26,11 @@ namespace BalatroSeedOracle.Converters
                     $"Expected string operatorType, got {value?.GetType().Name ?? "null"}"
                 );
 
-            var colorKey = operatorType switch
+            var colorKey = operatorType.ToUpperInvariant() switch
             {
                 "OR" => "Green", // Matches SHOULD zone
                 "AND" => "Blue", // Matches MUST zone
-                "BannedItems" => "Red", // Matches MustNot logic - RED theme
+                "BANNEDITEMS" => "Red", // Matches MustNot logic - RED theme
                 _ => throw new ArgumentException($"Unknown operator type: {operatorType}"),
             };
 

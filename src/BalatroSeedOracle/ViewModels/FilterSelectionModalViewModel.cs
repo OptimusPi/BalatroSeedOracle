@@ -1,5 +1,6 @@
 using System;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading.Tasks;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Models;
@@ -320,6 +321,76 @@ namespace BalatroSeedOracle.ViewModels
 
             // Request confirmation from View (code-behind will show dialog)
             DeleteConfirmationRequested?.Invoke(this, SelectedFilter.Name);
+        }
+
+        /// <summary>
+        /// Raised when the user asks to rename the selected filter. The View shows a
+        /// text-input dialog and calls <see cref="ConfirmRenameAsync"/> with the new name.
+        /// </summary>
+        public event EventHandler<string>? RenameRequested;
+
+        [RelayCommand]
+        private void Rename()
+        {
+            if (SelectedFilter is null || SelectedFilter.IsCreateNew)
+                return;
+
+            RenameRequested?.Invoke(this, SelectedFilter.Name);
+        }
+
+        /// <summary>
+        /// Called by View after the user enters a new name. Updates the filter's display
+        /// name (JamlConfig.Name) in place and refreshes the list. Issue #15.
+        /// </summary>
+        public async Task ConfirmRenameAsync(string newName)
+        {
+            if (SelectedFilter is null || SelectedFilter.IsCreateNew)
+                return;
+
+            newName = newName?.Trim() ?? string.Empty;
+            if (string.IsNullOrWhiteSpace(newName) || newName == SelectedFilter.Name)
+                return;
+
+            var path = System.IO.Path.Combine(
+                Services.FilterFiles.Dir,
+                $"{SelectedFilter.FilterId}.jaml"
+            );
+
+            try
+            {
+                var config = Services.FilterFiles.Load(path, out var loadError);
+                if (config is null)
+                {
+                    DebugLogger.LogError(
+                        "FilterSelectionModalVM",
+                        $"Rename failed to load '{path}': {loadError}"
+                    );
+                    return;
+                }
+
+                config.Name = newName;
+                Services.FilterFiles.Save(config, path);
+
+                DebugLogger.Log(
+                    "FilterSelectionModalVM",
+                    $"Renamed filter {SelectedFilter.FilterId} -> '{newName}'"
+                );
+
+                FilterList.RefreshFilters();
+
+                // Re-select the same file so the details panel shows the new name.
+                var match = FilterList.CurrentPageFilters.FirstOrDefault(
+                    f => f.FilterBrowserItem.FilterId == SelectedFilter.FilterId
+                );
+                if (match is not null)
+                {
+                    await FilterList.SelectFilterCommand.ExecuteAsync(match);
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("FilterSelectionModalVM", $"Rename error: {ex.Message}");
+            }
         }
 
         /// <summary>

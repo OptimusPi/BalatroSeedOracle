@@ -18,8 +18,6 @@ using Motely.Filters.Jaml;
 using MsBox.Avalonia;
 using MsBox.Avalonia.Enums;
 
-#pragma warning disable CS0618 // Suppress obsolete warnings for DataObject/DragDrop - new DataTransfer API not fully available in Avalonia 11.3
-
 namespace BalatroSeedOracle.Views.Modals
 {
     public partial class FilterSelectionModal : UserControl
@@ -129,6 +127,7 @@ namespace BalatroSeedOracle.Views.Modals
                 _subscribedViewModel.ModalCloseRequested -= OnModalCloseRequested;
                 _subscribedViewModel.PropertyChanged -= OnViewModelPropertyChanged;
                 _subscribedViewModel.DeleteConfirmationRequested -= OnDeleteConfirmationRequested;
+                _subscribedViewModel.RenameRequested -= OnRenameRequested;
                 _subscribedViewModel = null;
             }
 
@@ -143,6 +142,7 @@ namespace BalatroSeedOracle.Views.Modals
                 newVm.ModalCloseRequested += OnModalCloseRequested;
                 newVm.PropertyChanged += OnViewModelPropertyChanged;
                 newVm.DeleteConfirmationRequested += OnDeleteConfirmationRequested;
+                newVm.RenameRequested += OnRenameRequested;
 
                 // Load initial deck/stake if filter is already selected
                 if (newVm.SelectedFilter is not null)
@@ -337,6 +337,140 @@ namespace BalatroSeedOracle.Views.Modals
                     "FilterSelectionModal",
                     $"OnDeleteConfirmationRequested: {ex.Message}"
                 );
+            }
+        }
+
+        private async void OnRenameRequested(object? sender, string currentName)
+        {
+            try
+            {
+                var parentWindow = TopLevel.GetTopLevel(this) as Window;
+                if (parentWindow == null)
+                {
+                    DebugLogger.LogError(
+                        "FilterSelectionModal",
+                        "FilterSelectionModal must be shown from a Window context."
+                    );
+                    return;
+                }
+
+                var dialog = new Window
+                {
+                    Width = 450,
+                    SizeToContent = SizeToContent.Height,
+                    CanResize = false,
+                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                    WindowDecorations = WindowDecorations.None,
+                    Background = Brushes.Transparent,
+                    TransparencyLevelHint = new[] { WindowTransparencyLevel.Transparent },
+                };
+
+                bool confirmed = false;
+
+                var input = new TextBox
+                {
+                    Text = currentName,
+                    FontSize = 18,
+                    PlaceholderText = "New filter name",
+                };
+
+                var okButton = new Button
+                {
+                    Content = "Rename",
+                    Classes = { "btn-blue" },
+                    MinWidth = 120,
+                    Height = 45,
+                };
+
+                var cancelButton = new Button
+                {
+                    Content = "Cancel",
+                    Classes = { "btn-red" },
+                    MinWidth = 120,
+                    Height = 45,
+                };
+
+                okButton.Click += (s, ev) =>
+                {
+                    confirmed = true;
+                    dialog.Close();
+                };
+                cancelButton.Click += (s, ev) =>
+                {
+                    confirmed = false;
+                    dialog.Close();
+                };
+
+                var mainBorder = new Border
+                {
+                    Background = this.FindResource("DarkBorder") as Avalonia.Media.IBrush,
+                    BorderBrush = this.FindResource("LightGrey") as Avalonia.Media.IBrush,
+                    BorderThickness = new Thickness(3),
+                    CornerRadius = new CornerRadius(16),
+                };
+
+                var mainGrid = new Grid { RowDefinitions = new RowDefinitions("Auto,*,Auto") };
+
+                var titleBar = new Border
+                {
+                    [Grid.RowProperty] = 0,
+                    Background = this.FindResource("ModalGrey") as Avalonia.Media.IBrush,
+                    CornerRadius = new CornerRadius(14, 14, 0, 0),
+                    Padding = new Thickness(20, 12),
+                };
+                titleBar.Child = new TextBlock
+                {
+                    Text = "Rename Filter",
+                    FontSize = 18,
+                    Foreground = this.FindResource("White") as Avalonia.Media.IBrush,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                };
+                mainGrid.Children.Add(titleBar);
+
+                var contentBorder = new Border
+                {
+                    [Grid.RowProperty] = 1,
+                    Background = this.FindResource("DarkBackground") as Avalonia.Media.IBrush,
+                    Padding = new Thickness(24),
+                };
+                contentBorder.Child = new StackPanel
+                {
+                    Spacing = 12,
+                    Children = { input },
+                };
+                mainGrid.Children.Add(contentBorder);
+
+                var buttonBorder = new Border
+                {
+                    [Grid.RowProperty] = 2,
+                    Background = this.FindResource("DarkBackground") as Avalonia.Media.IBrush,
+                    CornerRadius = new CornerRadius(0, 0, 14, 14),
+                    Padding = new Thickness(20, 12, 20, 20),
+                };
+                var buttonPanel = new StackPanel
+                {
+                    Orientation = Orientation.Horizontal,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    Spacing = 12,
+                };
+                buttonPanel.Children.Add(okButton);
+                buttonPanel.Children.Add(cancelButton);
+                buttonBorder.Child = buttonPanel;
+                mainGrid.Children.Add(buttonBorder);
+
+                mainBorder.Child = mainGrid;
+                dialog.Content = mainBorder;
+
+                await dialog.ShowDialog(parentWindow);
+
+                if (confirmed && ViewModel != null)
+                {
+                    await ViewModel.ConfirmRenameAsync(input.Text ?? string.Empty);
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("FilterSelectionModal", $"OnRenameRequested: {ex.Message}");
             }
         }
 

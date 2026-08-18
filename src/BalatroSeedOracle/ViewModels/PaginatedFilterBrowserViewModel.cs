@@ -171,6 +171,12 @@ namespace BalatroSeedOracle.ViewModels
                     }
                 }
 
+                // Newest saved filters first (issue #14).
+                var sorted = _allFilters.OrderByDescending(f => f.DateCreated).ToList();
+                _allFilters.Clear();
+                foreach (var f in sorted)
+                    _allFilters.Add(f);
+
                 UpdateCurrentPage();
             }
             catch (Exception ex)

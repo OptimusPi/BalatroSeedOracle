@@ -2734,6 +2734,13 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         [RelayCommand]
         public void SetEdition(string edition)
         {
+            // Toggle: clicking the already-selected edition clears it back to default,
+            // mirroring how stickers toggle off on re-click.
+            if (edition == SelectedEdition && edition != "None")
+            {
+                edition = "None";
+            }
+
             SelectedEdition = edition;
 
             // Apply to currently visible shelf items (for visual feedback)

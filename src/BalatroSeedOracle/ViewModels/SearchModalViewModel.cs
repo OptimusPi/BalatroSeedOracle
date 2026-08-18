@@ -45,6 +45,33 @@ namespace BalatroSeedOracle.ViewModels
         private Task? _searchCompletionTask;
         private string _currentSearchId = string.Empty;
 
+        // The search owns its own Motely DuckDB lake. Matches always land on disk
+        // (deduped). The UI list is only fed while the modal is on screen — when
+        // minimized we stop posting to the UI entirely so the search never floods
+        // the UI thread. Reopen reads counts/results back from here.
+        private Motely.DataLake.SeedLakeSink? _resultSink;
+
+        /// <summary>
+        /// True while the search modal is off-screen (minimized to a desktop icon).
+        /// Set by the View on minimize/restore. When true, result callbacks write to
+        /// the DuckDB sink only and skip all UI-thread posts.
+        /// </summary>
+        public bool IsMinimized { get; set; }
+
+        /// <summary>Max rows kept in the live UI grid. The full set lives in the DuckDB lake.</summary>
+        private const int MaxLiveResults = 5000;
+
+        /// <summary>DuckDB lake files are named after the filter — strip anything path-hostile.</summary>
+        private static string SanitizeFilterId(string filterId)
+        {
+            if (string.IsNullOrWhiteSpace(filterId))
+                return "search";
+            var cleaned = new string(
+                filterId.Select(c => char.IsLetterOrDigit(c) || c is '-' or '_' ? c : '_').ToArray()
+            );
+            return string.IsNullOrWhiteSpace(cleaned) ? "search" : cleaned;
+        }
+
         public Views.BalatroMainMenu? MainMenu { get; set; }
 
         // Callback for CREATE NEW FILTER button (set by View)
@@ -516,6 +543,9 @@ namespace BalatroSeedOracle.ViewModels
 
             IsSearching = true;
 
+            // Fresh search is on-screen by definition.
+            IsMinimized = false;
+
             ClearResults();
             AddConsoleMessage(
                 $"Starting search in {SearchModeDisplayValues[(int)SelectedSearchMode]} mode..."
@@ -598,6 +628,14 @@ namespace BalatroSeedOracle.ViewModels
             {
                 settings = settings.WithScoredResultCallback(tally =>
                 {
+                    // Disk first, always. This is on a worker thread.
+                    _resultSink?.OnScored(in tally);
+
+                    // Feed the UI only when the modal is on screen. Minimized =
+                    // DB-only, no UI-thread post, no flood, no freeze.
+                    if (IsMinimized)
+                        return;
+
                     var seed = tally.Seed;
                     var score = tally.Score;
                     var scores = tally.TallyValuesSpan.ToArray();
@@ -609,13 +647,26 @@ namespace BalatroSeedOracle.ViewModels
             else
             {
                 settings = settings.WithSeedMatchCallback(seed =>
+                {
+                    _resultSink?.OnSeed(seed);
+
+                    if (IsMinimized)
+                        return;
+
                     Avalonia.Threading.Dispatcher.UIThread.Post(() =>
                         AddSearchResult(seed, 0, null)
-                    )
-                );
+                    );
+                });
             }
 
             _currentSearchId = Guid.NewGuid().ToString("N");
+
+            // Open the per-filter DuckDB lake. This is the source of truth: every
+            // match hits disk (deduped) regardless of whether the UI is visible.
+            var filterId = LoadedConfig?.Name ?? _currentSearchId;
+            _resultSink?.Dispose();
+            _resultSink = new Motely.DataLake.SeedLakeSink(null, SanitizeFilterId(filterId));
+
             _searchCts = new CancellationTokenSource();
             _search = settings.Start(_searchCts.Token);
 
@@ -698,6 +749,8 @@ namespace BalatroSeedOracle.ViewModels
             _searchCts?.Cancel();
             _search?.Dispose();
             _search = null;
+            _resultSink?.Dispose();
+            _resultSink = null;
             IsSearching = false;
 
             MinimizeToDesktopCommand.NotifyCanExecuteChanged();
@@ -725,6 +778,9 @@ namespace BalatroSeedOracle.ViewModels
             }
 
             var filterName = LoadedConfig?.Name ?? "Unknown Filter";
+
+            // Search goes off-screen: stop feeding the UI, keep filling the DuckDB lake.
+            IsMinimized = true;
 
             BsoLogger.Log(
                 "SearchModalViewModel",
@@ -757,7 +813,57 @@ namespace BalatroSeedOracle.ViewModels
             BsoLogger.Log("SearchModalViewModel", "Results cleared");
         }
 
-        [RelayCommand]
+        /// <summary>
+        /// Called when the modal returns from a minimized state. Resumes live UI
+        /// feeding and backfills the grid with the most recent seeds from the DuckDB
+        /// lake (found while the modal was off screen).
+        /// </summary>
+        public void ReconnectFromLake()
+        {
+            IsMinimized = false;
+
+            var filterId = LoadedConfig?.Name ?? _currentSearchId;
+            if (string.IsNullOrWhiteSpace(filterId))
+                return;
+
+            var lakePath = Motely.DataLake.SeedLakeSink.LakePath(null, SanitizeFilterId(filterId));
+            if (!File.Exists(lakePath))
+                return;
+
+            try
+            {
+                using var conn = new DuckDB.NET.Data.DuckDBConnection($"Data Source={lakePath}");
+                conn.Open();
+
+                using var countCmd = conn.CreateCommand();
+                countCmd.CommandText = "SELECT COUNT(*) FROM seeds";
+                var total = Convert.ToInt64(countCmd.ExecuteScalar());
+                LastKnownResultCount = (int)Math.Min(total, int.MaxValue);
+
+                using var cmd = conn.CreateCommand();
+                cmd.CommandText = $"SELECT seed FROM seeds LIMIT {MaxLiveResults}";
+                using var reader = cmd.ExecuteReader();
+
+                SearchResults.Clear();
+                while (reader.Read())
+                {
+                    var seed = reader.GetString(0);
+                    if (!string.IsNullOrWhiteSpace(seed))
+                        SearchResults.Add(new Models.SearchResult { Seed = seed });
+                }
+
+                OnPropertyChanged(nameof(ResultsCount));
+                PanelText = $"Reconnected — {total:N0} seeds in lake";
+                AddConsoleMessage($"Reconnected to search. {total:N0} seeds saved to lake.");
+            }
+            catch (Exception ex)
+            {
+                BsoLogger.LogError(
+                    "SearchModalViewModel",
+                    $"Failed to reconnect from lake '{lakePath}': {ex.Message}"
+                );
+            }
+        }        [RelayCommand]
         private Task LoadFilterAsync()
         {
             // This would typically show a file dialog
@@ -1117,6 +1223,15 @@ namespace BalatroSeedOracle.ViewModels
             }
 
             SearchResults.Add(result);
+
+            // The DuckDB lake is the source of truth for the full result set. The
+            // in-memory grid is just a live window — cap it so a loose filter can't
+            // grow the UI collection without bound and choke the UI thread.
+            while (SearchResults.Count > MaxLiveResults)
+            {
+                SearchResults.RemoveAt(0);
+            }
+
             AddSeedFoundMessage(seed, score);
             PanelText = $"Found {SearchResults.Count} seeds so far...";
             OnPropertyChanged(nameof(ResultsCount));
@@ -1182,6 +1297,8 @@ namespace BalatroSeedOracle.ViewModels
         {
             _searchCts?.Cancel();
             _search?.Dispose();
+            _resultSink?.Dispose();
+            _resultSink = null;
         }
 
         [RelayCommand(CanExecute = nameof(CanPauseSearch))]

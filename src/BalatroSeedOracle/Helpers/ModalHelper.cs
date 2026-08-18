@@ -259,6 +259,9 @@ namespace BalatroSeedOracle.Helpers
 
             if (searchModal.ViewModel != null)
             {
+                // Back on screen: resume feeding the UI and backfill the grid from
+                // the DuckDB lake (results found while minimized).
+                searchModal.ViewModel.ReconnectFromLake();
                 Dispatcher.UIThread.Post(() => searchModal.ViewModel.SelectedTabIndex = 1);
                 searchModal.ViewModel.CreateShortcutRequested += (sender, cfgPath) =>
                     menu.ShowSearchDesktopIcon(searchId, cfgPath);

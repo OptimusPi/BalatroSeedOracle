@@ -17,7 +17,7 @@
   <!-- Embedded UI assets: sprite sheets + the Balatro font, served via avares:// -->
   <ItemGroup>
     <AvaloniaResource Include="Assets\**" />
-    <AvaloniaResource Include="m6x11plusplus.otf" />
+    <AvaloniaResource Include="m6x11plusplus.ttf" />
   </ItemGroup>
 
   <ItemGroup>
@@ -46,6 +46,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MotelyJAML\Motely\Motely.csproj" />
+    <ProjectReference Include="..\MotelyJAML\Motely.DataLake\Motely.DataLake.csproj" />
   </ItemGroup>
   <ItemGroup>
     <TrimmerRootDescriptor Include="TrimmerRoots.xml" />
