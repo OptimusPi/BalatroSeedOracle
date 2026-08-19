@@ -583,6 +583,16 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         }
 
         [RelayCommand]
+        private void AddToFavorites(FilterItem? item)
+        {
+            if (item is null)
+                return;
+
+            item.IsFavorite = true;
+            SetCategory(SelectedMainCategory);
+        }
+
+        [RelayCommand]
         private void RemoveFromFavorites(FilterItem? item)
         {
             if (item is null)

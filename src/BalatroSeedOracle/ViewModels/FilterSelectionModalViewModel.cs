@@ -339,6 +339,33 @@ namespace BalatroSeedOracle.ViewModels
         }
 
         /// <summary>
+        /// Right-click → Delete on a specific list row. Selects that row first so the
+        /// existing delete flow (which operates on SelectedFilter) targets it. Issue #14.
+        /// </summary>
+        [RelayCommand]
+        private async Task DeleteFromContext(FilterBrowserItemViewModel? row)
+        {
+            if (row?.FilterBrowserItem is null || row.FilterBrowserItem.IsCreateNew)
+                return;
+
+            await FilterList.SelectFilterCommand.ExecuteAsync(row);
+            SelectedFilter = FilterList.SelectedFilter;
+            Delete();
+        }
+
+        /// <summary>Right-click → Rename on a specific list row. Issue #14/#15.</summary>
+        [RelayCommand]
+        private async Task RenameFromContext(FilterBrowserItemViewModel? row)
+        {
+            if (row?.FilterBrowserItem is null || row.FilterBrowserItem.IsCreateNew)
+                return;
+
+            await FilterList.SelectFilterCommand.ExecuteAsync(row);
+            SelectedFilter = FilterList.SelectedFilter;
+            Rename();
+        }
+
+        /// <summary>
         /// Called by View after the user enters a new name. Updates the filter's display
         /// name (JamlConfig.Name) in place and refreshes the list. Issue #15.
         /// </summary>
@@ -462,6 +489,22 @@ namespace BalatroSeedOracle.ViewModels
             }
 
             // Only close if we're already on the placeholder page
+            Result = new FilterSelectionResult
+            {
+                Cancelled = true,
+                Action = FilterAction.Cancelled,
+            };
+
+            ModalCloseRequested?.Invoke(this, EventArgs.Empty);
+        }
+
+        /// <summary>
+        /// Exit closes the modal outright, skipping the step-back-within-modal logic
+        /// that Back uses. Issue #14 (separate Exit button next to Back).
+        /// </summary>
+        [RelayCommand]
+        private void Exit()
+        {
             Result = new FilterSelectionResult
             {
                 Cancelled = true,

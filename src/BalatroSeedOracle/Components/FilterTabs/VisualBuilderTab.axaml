@@ -536,6 +536,10 @@
                                                                 Height="95">
                                                             <Border.ContextMenu>
                                                                 <ContextMenu>
+                                                                    <MenuItem Header="★ Add to Favorites"
+                                                                              IsVisible="{Binding !IsFavorite}"
+                                                                              Command="{Binding $parent[UserControl].((vm:VisualBuilderTabViewModel)DataContext).AddToFavoritesCommand}"
+                                                                              CommandParameter="{Binding}"/>
                                                                     <MenuItem Header="★ Remove from Favorites"
                                                                               IsVisible="{Binding IsFavorite}"
                                                                               Command="{Binding $parent[UserControl].((vm:VisualBuilderTabViewModel)DataContext).RemoveFromFavoritesCommand}"

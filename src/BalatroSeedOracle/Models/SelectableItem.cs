@@ -180,7 +180,20 @@ namespace BalatroSeedOracle.Models
             }
         }
 
-        public bool IsFavorite { get; set; }
+        public bool IsFavorite
+        {
+            get => _isFavorite;
+            set
+            {
+                if (_isFavorite != value)
+                {
+                    _isFavorite = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        private bool _isFavorite;
 
         public string DisplayName
         {

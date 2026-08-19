@@ -127,7 +127,18 @@
                                                         Classes.selected="{Binding IsSelected}"
                                                         Content="{Binding DisplayText}"
                                                         Command="{Binding $parent[UserControl].DataContext.FilterList.SelectFilterCommand}"
-                                                        CommandParameter="{Binding}"/>
+                                                        CommandParameter="{Binding}">
+                                                    <Button.ContextMenu>
+                                                        <ContextMenu>
+                                                            <MenuItem Header="Delete"
+                                                                      Command="{Binding $parent[UserControl].DataContext.DeleteFromContextCommand}"
+                                                                      CommandParameter="{Binding}"/>
+                                                            <MenuItem Header="Rename"
+                                                                      Command="{Binding $parent[UserControl].DataContext.RenameFromContextCommand}"
+                                                                      CommandParameter="{Binding}"/>
+                                                        </ContextMenu>
+                                                    </Button.ContextMenu>
+                                                </Button>
 
                                                 <!-- Triangle attached to left edge of button -->
                                                 <Polygon Points="0,0 14,8.5 0,17"
@@ -882,13 +893,21 @@
                         </Border>
                     </Grid>
 
-                    <!-- Footer with BACK button -->
-                    <Button Grid.Row="1"
-                            Content="Back"
-                            Classes="back-button"
-                            HorizontalAlignment="Stretch"
-                            Command="{Binding BackCommand}"
-                            Margin="0"/>
+                    <!-- Footer with BACK + EXIT buttons -->
+                    <Grid Grid.Row="1" ColumnDefinitions="*,10,*">
+                        <Button Grid.Column="0"
+                                Content="Back"
+                                Classes="back-button"
+                                HorizontalAlignment="Stretch"
+                                Command="{Binding BackCommand}"
+                                Margin="0"/>
+                        <Button Grid.Column="2"
+                                Content="Exit"
+                                Classes="back-button"
+                                HorizontalAlignment="Stretch"
+                                Command="{Binding ExitCommand}"
+                                Margin="0"/>
+                    </Grid>
                 </Grid>
             </Border>
         </Grid>
