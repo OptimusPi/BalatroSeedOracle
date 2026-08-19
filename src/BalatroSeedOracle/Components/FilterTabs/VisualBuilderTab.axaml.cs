@@ -261,10 +261,13 @@ namespace BalatroSeedOracle.Components.FilterTabs
             double totalWidth = (count - 1) * xOffset + cardWidth;
             double startX = -totalWidth / 2.0 + cardWidth / 2.0;
 
-            // Apply transforms to each card container
+            // Apply transforms to each card container. Match only the tagged
+            // top-level transform Border (the card now contains a FilterItemCard
+            // and a remove button with their own inner Borders).
             var containers = UnifiedTrayItemsControl
                 .GetVisualDescendants()
                 .OfType<Border>()
+                .Where(b => (b.Tag as string) == "trayCard")
                 .ToList();
 
             for (int i = 0; i < Math.Min(count, containers.Count); i++)

@@ -1564,6 +1564,20 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         }
 
         /// <summary>
+        /// Removes a single card from the unified operator tray. Issue #13:
+        /// previously the only way to clear a tray card was starting a new filter.
+        /// </summary>
+        [RelayCommand]
+        private void RemoveFromTray(FilterItem? item)
+        {
+            if (item is null)
+                return;
+
+            UnifiedOperator.Children.Remove(item);
+            DebugLogger.Log("VisualBuilderTab", $"Removed {item.Name} from unified tray");
+        }
+
+        /// <summary>
         /// Removes an item from the parent's collections and ItemConfigs
         /// </summary>
         private void RemoveItemFromParent(

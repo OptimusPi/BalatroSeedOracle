@@ -665,7 +665,7 @@
                                     </ItemsControl.ItemsPanel>
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
-                                            <Border Width="71" Height="95" Background="Transparent" RenderTransformOrigin="0.5,0.8">
+                                            <Border Width="71" Height="95" Tag="trayCard" Background="Transparent" RenderTransformOrigin="0.5,0.8">
                                                 <Border.RenderTransform>
                                                     <TransformGroup>
                                                         <RotateTransform Angle="0"/>
@@ -673,10 +673,26 @@
                                                     </TransformGroup>
                                                 </Border.RenderTransform>
                                                 <Grid Width="71" Height="95">
-                                                    <Image Source="{Binding ItemImage}" Width="71" Height="95" Stretch="Uniform"/>
-                                                    <Image Source="{Binding SoulFaceImage}"
-                                                           Width="71" Height="95" Stretch="Uniform"
-                                                           IsVisible="{Binding SoulFaceImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                                                    <!-- Full card with edition/sticker/soul overlays (fixes visual-only edition bug).
+                                                         Viewbox scales the card+label to fit the tray cell instead of overflowing. -->
+                                                    <Viewbox Stretch="Uniform" StretchDirection="DownOnly">
+                                                        <components:FilterItemCard DataContext="{Binding}"/>
+                                                    </Viewbox>
+                                                    <!-- Remove-from-tray button (fixes 'can't remove without new filter') -->
+                                                    <Button Content="✕"
+                                                            Width="18" Height="18"
+                                                            Padding="0"
+                                                            FontSize="11"
+                                                            HorizontalAlignment="Right"
+                                                            VerticalAlignment="Top"
+                                                            ZIndex="200"
+                                                            Background="{StaticResource Red}"
+                                                            Foreground="{StaticResource White}"
+                                                            CornerRadius="9"
+                                                            Cursor="Hand"
+                                                            ToolTip.Tip="Remove from clause"
+                                                            Command="{Binding $parent[UserControl].((vm:VisualBuilderTabViewModel)DataContext).RemoveFromTrayCommand}"
+                                                            CommandParameter="{Binding}"/>
                                                 </Grid>
                                             </Border>
                                         </DataTemplate>
