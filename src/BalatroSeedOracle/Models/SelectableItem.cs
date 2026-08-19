@@ -195,6 +195,36 @@ namespace BalatroSeedOracle.Models
 
         private bool _isFavorite;
 
+        /// <summary>
+        /// Hover tooltip text for the card picker (issue #12). Shows the name, type,
+        /// and any configured edition/stickers. If a card-effect description is
+        /// available in <see cref="Data.BalatroData.Descriptions"/> it is appended;
+        /// otherwise only the known metadata is shown (no fabricated effect text).
+        /// </summary>
+        public string TooltipText
+        {
+            get
+            {
+                var sb = new System.Text.StringBuilder();
+                sb.Append(DisplayName);
+
+                if (!string.IsNullOrEmpty(Type))
+                    sb.Append("  (").Append(Type).Append(')');
+
+                if (!string.IsNullOrEmpty(Edition) && Edition != "None")
+                    sb.Append("\nEdition: ").Append(Edition);
+
+                if (Stickers is { Count: > 0 })
+                    sb.Append("\nStickers: ").Append(string.Join(", ", Stickers));
+
+                var desc = BalatroData.GetDescription(Name);
+                if (!string.IsNullOrWhiteSpace(desc))
+                    sb.Append("\n\n").Append(desc);
+
+                return sb.ToString();
+            }
+        }
+
         public string DisplayName
         {
             get => string.IsNullOrEmpty(_displayName) ? _name : _displayName;

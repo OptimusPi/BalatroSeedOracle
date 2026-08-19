@@ -47,6 +47,23 @@ namespace BalatroSeedOracle.Models
         public static readonly Dictionary<string, string> Decks = new Dictionary<string, string>();
         public static readonly Dictionary<string, string> Stakes = new Dictionary<string, string>();
 
+        /// <summary>
+        /// Card-effect descriptions keyed by item name (lowercased), for the card-picker
+        /// hover tooltip (issue #12). Empty by default — populate from a data file or
+        /// hand-authored entries. The tooltip mechanism gracefully shows only known
+        /// metadata when no description exists here, so no fabricated effect text ships.
+        /// </summary>
+        public static readonly Dictionary<string, string> Descriptions =
+            new Dictionary<string, string>();
+
+        /// <summary>Returns the effect description for an item name, or null if unknown.</summary>
+        public static string? GetDescription(string? name)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+                return null;
+            return Descriptions.TryGetValue(name.ToLowerInvariant(), out var d) ? d : null;
+        }
+
         public static readonly Dictionary<string, string> Editions = new()
         {
             { "None", "None" },

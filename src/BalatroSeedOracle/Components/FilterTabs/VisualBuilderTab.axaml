@@ -525,15 +525,16 @@
                                                         <!-- Self-contained FilterItemCard -->
                                                         <components:FilterItemCard DataContext="{Binding}"/>
 
-                                                        <!-- Hitbox overlay for pointer events -->
-                                                        <Border ZIndex="1"
-                                                                Background="Transparent"
-                                                                Cursor="Hand"
-                                                                IsHitTestVisible="True"
-                                                                PointerPressed="OnItemPointerPressed"
-                                                                PointerEntered="OnCardPointerEntered"
-                                                                VerticalAlignment="Top"
-                                                                Height="95">
+                                                         <!-- Hitbox overlay for pointer events -->
+                                                         <Border ZIndex="1"
+                                                                 Background="Transparent"
+                                                                 Cursor="Hand"
+                                                                 IsHitTestVisible="True"
+                                                                 ToolTip.Tip="{Binding TooltipText}"
+                                                                 PointerPressed="OnItemPointerPressed"
+                                                                 PointerEntered="OnCardPointerEntered"
+                                                                 VerticalAlignment="Top"
+                                                                 Height="95">
                                                             <Border.ContextMenu>
                                                                 <ContextMenu>
                                                                     <MenuItem Header="★ Add to Favorites"
