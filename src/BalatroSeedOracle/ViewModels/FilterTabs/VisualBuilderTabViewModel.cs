@@ -582,6 +582,26 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             SetCategory(category);
         }
 
+        /// <summary>
+        /// Marks shelf items as favorite based on the persisted favorites.json set,
+        /// so favorites survive restarts. Called once after all item collections load.
+        /// </summary>
+        private void ApplyPersistedFavorites()
+        {
+            var favs = Services.FavoritesService.Instance;
+            foreach (var group in new[]
+            {
+                AllJokers, AllTags, AllVouchers, AllTarots, AllPlanets,
+                AllSpectrals, AllBosses, AllWildcards, AllStandardCards,
+            })
+            {
+                foreach (var item in group)
+                {
+                    item.IsFavorite = favs.IsFavorite(item.ItemKey);
+                }
+            }
+        }
+
         [RelayCommand]
         private void AddToFavorites(FilterItem? item)
         {
@@ -589,6 +609,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 return;
 
             item.IsFavorite = true;
+            Services.FavoritesService.Instance.Add(item.ItemKey);
             SetCategory(SelectedMainCategory);
         }
 
@@ -599,6 +620,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 return;
 
             item.IsFavorite = false;
+            Services.FavoritesService.Instance.Remove(item.ItemKey);
             SetCategory(SelectedMainCategory);
         }
 
@@ -2120,6 +2142,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     "VisualBuilderTab",
                     $"Loaded {AllJokers.Count} jokers, {AllTags.Count} tags, {AllVouchers.Count} vouchers, {AllTarots.Count} tarots, {AllPlanets.Count} planets, {AllSpectrals.Count} spectrals, {AllBosses.Count} bosses, {AllStandardCards.Count} standard cards with images"
                 );
+                ApplyPersistedFavorites();
                 DebugLogger.Log(
                     "VisualBuilderTab",
                     $"Joker types: {string.Join(", ", AllJokers.Take(5).Select(j => $"{j.Name}:{j.Type}:{j.Category}"))}"
