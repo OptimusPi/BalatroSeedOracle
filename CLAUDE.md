@@ -37,7 +37,6 @@ git submodule update --init --recursive
 
 No ticket → STOP. Ask `ticket id?` Do not invent work. Do not “while I’m here” into the submodule.
 
-Cage pointer: `CLAUDE-CAGE.md`. Full engine mule law: `src/MotelyJAML/CLAUDE-CAGE.md` (only when ticket is Motely).
 
 ---
 

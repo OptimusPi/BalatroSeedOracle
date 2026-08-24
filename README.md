@@ -22,7 +22,7 @@ Built for the Balatro community to discover optimal seeds for challenge runs, hi
 - Windows, Linux, or macOS*
 - Intel, AMD, or Apple Silicon CPU**
 - [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
-- [git](https://git-scm.com/downloads)]
+- [git](https://git-scm.com/downloads)
 
 ### NOTE on other compatibilities
 
