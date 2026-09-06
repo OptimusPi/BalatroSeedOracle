@@ -22,7 +22,8 @@
                HorizontalAlignment="Center"
                TextWrapping="Wrap"/>
                
-    <Button Content="Close" 
+    <Button Content="Back"
+            Classes="back-button"
             Command="{Binding CloseCommand}"
             HorizontalAlignment="Center"
             Width="120"/>

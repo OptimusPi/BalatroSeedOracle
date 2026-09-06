@@ -893,21 +893,13 @@
                         </Border>
                     </Grid>
 
-                    <!-- Footer with BACK + EXIT buttons -->
-                    <Grid Grid.Row="1" ColumnDefinitions="*,10,*">
-                        <Button Grid.Column="0"
-                                Content="Back"
-                                Classes="back-button"
-                                HorizontalAlignment="Stretch"
-                                Command="{Binding BackCommand}"
-                                Margin="0"/>
-                        <Button Grid.Column="2"
-                                Content="Exit"
-                                Classes="back-button"
-                                HorizontalAlignment="Stretch"
-                                Command="{Binding ExitCommand}"
-                                Margin="0"/>
-                    </Grid>
+                    <!-- Footer: the bottom button of every modal is one orange "Back". Nothing else. -->
+                    <Button Grid.Row="1"
+                            Content="Back"
+                            Classes="back-button"
+                            HorizontalAlignment="Stretch"
+                            Command="{Binding BackCommand}"
+                            Margin="0"/>
                 </Grid>
             </Border>
         </Grid>

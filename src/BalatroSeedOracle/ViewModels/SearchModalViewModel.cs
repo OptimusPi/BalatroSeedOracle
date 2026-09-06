@@ -659,13 +659,22 @@ namespace BalatroSeedOracle.ViewModels
                 });
             }
 
-            _currentSearchId = Guid.NewGuid().ToString("N");
+            // The JAML owns the search identity. A search IS its filter — same filter,
+            // same id, same lake, same desktop icon, same resume state, across restarts.
+            // (This used to be a fresh Guid per Start, which forked the lake and left
+            // orphan desktop icons for what was really one search.)
+            _currentSearchId = SanitizeFilterId(
+                LoadedConfig?.Name
+                    ?? (string.IsNullOrWhiteSpace(CurrentFilterPath)
+                        ? null
+                        : Path.GetFileNameWithoutExtension(CurrentFilterPath))
+                    ?? "search"
+            );
 
             // Open the per-filter DuckDB lake. This is the source of truth: every
             // match hits disk (deduped) regardless of whether the UI is visible.
-            var filterId = LoadedConfig?.Name ?? _currentSearchId;
             _resultSink?.Dispose();
-            _resultSink = new Motely.DataLake.SeedLakeSink(null, SanitizeFilterId(filterId));
+            _resultSink = new Motely.DataLake.SeedLakeSink(null, _currentSearchId);
 
             _searchCts = new CancellationTokenSource();
             _search = settings.Start(_searchCts.Token);
@@ -735,11 +744,13 @@ namespace BalatroSeedOracle.ViewModels
         [RelayCommand(CanExecute = nameof(CanStopSearch))]
         private void StopSearch()
         {
-            if (ContinueFromLast && LatestProgress is not null)
+            if (ContinueFromLast && _search is { ResumeBatchIndex: >= 0 } pausing)
             {
-                // PAUSE mode: persist the exact batch the user paused at.
+                // PAUSE mode: persist the engine's resume hint — the lowest batch no thread has run
+                // yet, so restarting there re-covers at most threadCount−1 batches and skips none.
+                // (−1 in provider mode: nothing to resume.)
                 AddConsoleMessage("Pausing search and saving progress...");
-                SaveResumeState(LatestProgress.CompletedBatchCount, LatestProgress.TotalBatchCount);
+                SaveResumeState(pausing.ResumeBatchIndex, pausing.TotalBatchCount);
             }
             else
             {
@@ -822,11 +833,10 @@ namespace BalatroSeedOracle.ViewModels
         {
             IsMinimized = false;
 
-            var filterId = LoadedConfig?.Name ?? _currentSearchId;
-            if (string.IsNullOrWhiteSpace(filterId))
+            if (string.IsNullOrWhiteSpace(_currentSearchId))
                 return;
 
-            var lakePath = Motely.DataLake.SeedLakeSink.LakePath(null, SanitizeFilterId(filterId));
+            var lakePath = Motely.DataLake.SeedLakeSink.LakePath(null, _currentSearchId);
             if (!File.Exists(lakePath))
                 return;
 
@@ -1451,21 +1461,23 @@ namespace BalatroSeedOracle.ViewModels
                 ApplyShaderParametersToMainMenu(MainMenu, interpolatedParams);
             }
 
-            // Save state every 10 batches (only for AllSeeds mode)
+            // Save state every 10 batches (only for AllSeeds mode). Batch counts live on the
+            // running search, not on the progress record.
             if (
                 SelectedSearchMode == SearchMode.AllSeeds
-                && e.CompletedBatchCount > 0
-                && e.CompletedBatchCount % 10 == 0
+                && _search is { CompletedBatchCount: > 0 and var completed, ResumeBatchIndex: >= 0 } running
+                && completed % 10 == 0
                 && !string.IsNullOrEmpty(CurrentFilterPath)
             )
             {
-                SaveResumeState(e.CompletedBatchCount, e.TotalBatchCount);
+                SaveResumeState(running.ResumeBatchIndex, running.TotalBatchCount);
             }
 
             UpdateUIFromProgress(e);
         }
 
-        private void SaveResumeState(long completedBatch, long totalBatchCount)
+        /// <param name="resumeBatch">The batch to start from on resume (<see cref="Motely.IMotelySearch.ResumeBatchIndex"/>).</param>
+        private void SaveResumeState(long resumeBatch, long totalBatchCount)
         {
             if (string.IsNullOrEmpty(CurrentFilterPath))
                 return;
@@ -1474,7 +1486,7 @@ namespace BalatroSeedOracle.ViewModels
                 new Models.SearchResumeState
                 {
                     ConfigPath = CurrentFilterPath,
-                    LastCompletedBatch = (ulong)Math.Max(0, completedBatch),
+                    LastCompletedBatch = (ulong)Math.Max(0, resumeBatch),
                     EndBatch = ulong.MaxValue,
                     BatchSize = 3,
                     ThreadCount = ThreadCount,
@@ -1519,8 +1531,11 @@ namespace BalatroSeedOracle.ViewModels
                     .ToString(@"hh\:mm\:ss")
                 : "--:--:--";
 
-            CurrentBatch = (int)Math.Min(e.CompletedBatchCount, int.MaxValue);
-            MaxBatch = (int)Math.Min(e.TotalBatchCount, int.MaxValue);
+            if (_search is { } search)
+            {
+                CurrentBatch = (int)Math.Min(search.CompletedBatchCount, int.MaxValue);
+                MaxBatch = (int)Math.Min(search.TotalBatchCount, int.MaxValue);
+            }
 
             // Smart Rate Formatting - Adaptive precision based on rarity tier
             if (e.SeedsSearched > 0 && e.MatchingSeeds > 0)

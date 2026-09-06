@@ -2,6 +2,18 @@
   "authorName": "pifreak",
   "savedSearchWidgets": [],
   "animationEnabled": true,
+  "lastSearchState": {
+    "configPath": "JamlFilters\\sixtid4.jaml",
+    "lastCompletedBatch": 33843,
+    "endBatch": 18446744073709551615,
+    "batchSize": 3,
+    "threadCount": 8,
+    "minScore": 0,
+    "deck": "Plasma",
+    "stake": "White",
+    "lastActiveTime": "2026-09-06T08:41:23.7731135Z",
+    "totalBatches": 52521875
+  },
   "visualizerSettings": {
     "shaderType": 0,
     "drums1Volume": 1,

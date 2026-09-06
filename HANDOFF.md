@@ -78,3 +78,23 @@ left untouched on purpose. Review and commit these separately:
 git submodule update --init --recursive   # if Motely is empty
 dotnet build src/BalatroSeedOracle/BalatroSeedOracle.csproj -c Debug
 ```
+
+## 2026-09-06 — build break at `a9f5fbd`, fixed, UNCOMMITTED
+
+"Every commit builds clean" above was no longer true: `a9f5fbd` read
+`MotelyProgress.CompletedBatchCount` / `TotalBatchCount`, which engine commit `44727419`
+(in the `src/MotelyJAML` submodule) removed. 8× CS1061 in `SearchModalViewModel.cs`.
+
+Fix — read the counters from the running `IMotelySearch` instead (one file, four edits,
+`src/BalatroSeedOracle/ViewModels/SearchModalViewModel.cs`):
+- `:738-744` pause: `if (ContinueFromLast && _search is { ResumeBatchIndex: >= 0 } pausing) SaveResumeState(pausing.ResumeBatchIndex, pausing.TotalBatchCount)` — `ResumeBatchIndex` is the engine's resume hint (re-covers at most threadCount−1 batches, skips none; −1 in provider mode → nothing saved).
+- `:1460-1465` every-10-batches autosave reads `_search.CompletedBatchCount` / `ResumeBatchIndex` / `TotalBatchCount`.
+- `:1471` `SaveResumeState(long resumeBatch, long totalBatchCount)` — first param renamed to what it is.
+- `:1528-1529` `CurrentBatch` / `MaxBatch` read `search.CompletedBatchCount` / `TotalBatchCount`.
+
+```
+dotnet build src/BalatroSeedOracle/BalatroSeedOracle.csproj -c Debug
+  → Build succeeded. 0 Warning(s) 0 Error(s)
+```
+Not launched yet. Submodule pin unchanged (`eee395f8`). To commit just this:
+`git add src/BalatroSeedOracle/ViewModels/SearchModalViewModel.cs HANDOFF.md`.

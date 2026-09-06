@@ -499,22 +499,6 @@ namespace BalatroSeedOracle.ViewModels
         }
 
         /// <summary>
-        /// Exit closes the modal outright, skipping the step-back-within-modal logic
-        /// that Back uses. Issue #14 (separate Exit button next to Back).
-        /// </summary>
-        [RelayCommand]
-        private void Exit()
-        {
-            Result = new FilterSelectionResult
-            {
-                Cancelled = true,
-                Action = FilterAction.Cancelled,
-            };
-
-            ModalCloseRequested?.Invoke(this, EventArgs.Empty);
-        }
-
-        /// <summary>
         /// Implements IModalBackNavigable - Navigate back through internal state
         /// </summary>
         public bool TryGoBack()

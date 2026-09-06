@@ -31,9 +31,12 @@
        broke every Release build. Do not reorder these two.
 
        Defaults:
-         • no key → AvaloniaUILicenseDisableTask=true (Debug and Release)
-         • key + Debug → task skipped (fast local loop)
-         • key + Release → task runs (ship path validates)
+         • no key → AvaloniaUILicenseDisableTask=true (Debug and Release). The Accelerate
+           controls then THROW at runtime (TreeDataGrid's static ctor: "No AvaloniaUI license
+           key found") — the Results tab is dead in that build. Core UI still works.
+         • key → task runs in every configuration. It used to be skipped on Debug "for a fast
+           local loop"; that skip is what killed the Results tab in Debug (the runtime check
+           needs the embedded key, not just the build). The task costs well under a second.
        Force either way: -p:AvaloniaUILicenseDisableTask=true|false -->
   <PropertyGroup>
     <_AvaloniaLicensePath Condition="Exists('$(MSBuildThisFileDirectory)avalonia.license.local')">$(MSBuildThisFileDirectory)avalonia.license.local</_AvaloniaLicensePath>
@@ -44,8 +47,6 @@
     <_AvaloniaLicenseKey Condition="'$(_AvaloniaLicenseKey)' == '' AND '$(_AvaloniaLicenseFile)' != ''">$(_AvaloniaLicenseFile)</_AvaloniaLicenseKey>
     <!-- Sane default: no secret → no license task (contributors). -->
     <AvaloniaUILicenseDisableTask Condition="'$(AvaloniaUILicenseDisableTask)' == '' AND '$(_AvaloniaLicenseKey)' == ''">true</AvaloniaUILicenseDisableTask>
-    <!-- With a key, still skip on Debug; Release validates. -->
-    <AvaloniaUILicenseDisableTask Condition="'$(AvaloniaUILicenseDisableTask)' == '' AND '$(Configuration)' != 'Release'">true</AvaloniaUILicenseDisableTask>
   </PropertyGroup>
   <ItemGroup Condition="'$(_AvaloniaLicenseKey)' != ''">
     <AvaloniaUILicenseKey Include="$(_AvaloniaLicenseKey)" />

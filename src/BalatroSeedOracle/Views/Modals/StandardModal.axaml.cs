@@ -70,11 +70,8 @@ namespace BalatroSeedOracle.Views.Modals
             return ModalContent.Content;
         }
 
-        /// <summary>Sets the back button text.</summary>
-        public void SetBackButtonText(string text)
-        {
-            BackButton.Content = text;
-        }
+        // No SetBackButtonText. The bottom button of every modal reads "Back", in orange,
+        // full width, and nothing else. Never "Exit", "Home", "Close" or "Done".
 
         private void OnBackButtonClick(object? sender, RoutedEventArgs e)
         {
