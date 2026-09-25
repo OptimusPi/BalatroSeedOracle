@@ -806,7 +806,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
                 // Check if dropped on unified operator tray (only for FilterItem, NOT operators)
                 if (
-                    _draggedItem is FilterItem
+                    _draggedItem is not FilterOperatorItem
                     && IsPointOverControl(cursorPos, UnifiedTray, _topLevel)
                 )
                 {
