@@ -2,5 +2,4 @@
   <Project Path="src/BalatroSeedOracle/BalatroSeedOracle.csproj" />
   <Project Path="src/BalatroSeedOracle.Tests/BalatroSeedOracle.Tests.csproj" />
   <Project Path="src/MotelyJAML/Motely/Motely.csproj" />
-  <Project Path="src/MotelyJAML/Motely.Tests/Motely.Tests.csproj" />
 </Solution>

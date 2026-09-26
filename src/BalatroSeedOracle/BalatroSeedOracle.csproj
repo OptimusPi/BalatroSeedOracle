@@ -46,7 +46,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MotelyJAML\Motely\Motely.csproj" />
-    <ProjectReference Include="..\MotelyJAML\Motely.DataLake\Motely.DataLake.csproj" />
   </ItemGroup>
   <ItemGroup>
     <TrimmerRootDescriptor Include="TrimmerRoots.xml" />
