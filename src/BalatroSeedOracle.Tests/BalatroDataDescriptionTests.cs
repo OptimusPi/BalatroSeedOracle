@@ -78,6 +78,11 @@ public class BalatroDataDescriptionTests
     [InlineData("Pluto", "+10 Chips per level")]
     [InlineData("ClearanceSale", "discounts vouchers")]
     [InlineData("Liquidation", "discounts vouchers")]
+    // A corpus ";" before a parenthetical is the game's line break; it joins with a space.
+    [InlineData("EvenSteven", "when scored (10, 8, 6, 4, 2)")]
+    [InlineData("InvisibleJoker", "random Joker (Removes Negative from copy)")]
+    // A prose semicolon is kept.
+    [InlineData("GrosMichel", "+15 Mult; 1 in 6 chance")]
     public void TextComesFromTheCorpus(string name, string fragment)
     {
         Assert.Contains(fragment, BalatroData.GetDescription(name));
@@ -101,6 +106,15 @@ public class BalatroDataDescriptionTests
         // en-us strings with #1# vars flattened to X: "+X Mult", "xX Mult", "X in X chance", "$X".
         var desc = BalatroData.GetDescription(name) ?? "";
         Assert.DoesNotMatch(@"(\+|x|\$)X\b|\bX in X\b", desc);
+        Assert.True(desc.Length > 0, $"{list}[{name}]");
+    }
+
+    [Theory]
+    [MemberData(nameof(AllItems))]
+    public void NoLineBreakMarkerBeforeParenthetical(string list, string name)
+    {
+        var desc = BalatroData.GetDescription(name) ?? "";
+        Assert.DoesNotMatch(@";\s*\(", desc);
         Assert.True(desc.Length > 0, $"{list}[{name}]");
     }
 

@@ -41,8 +41,8 @@ namespace BalatroSeedOracle.Models
             Descriptions["AbstractJoker"] = "+3 Mult for each Joker card";
             Descriptions["DelayedGratification"] = "Earn $2 per discard if no discards are used by end of the round";
             Descriptions["GrosMichel"] = "+15 Mult; 1 in 6 chance this card is destroyed at the end of round.";
-            Descriptions["EvenSteven"] = "Played cards with even rank give +4 Mult when scored; (10, 8, 6, 4, 2)";
-            Descriptions["OddTodd"] = "Played cards with odd rank give +31 Chips when scored; (A, 9, 7, 5, 3)";
+            Descriptions["EvenSteven"] = "Played cards with even rank give +4 Mult when scored (10, 8, 6, 4, 2)";
+            Descriptions["OddTodd"] = "Played cards with odd rank give +31 Chips when scored (A, 9, 7, 5, 3)";
             Descriptions["Scholar"] = "Played Aces give +20 Chips and +4 Mult when scored";
             Descriptions["BusinessCard"] = "Played face cards have a 1 in 2 chance to give $2 when scored";
             Descriptions["Supernova"] = "Adds the number of times poker hand has been played this run to Mult";
@@ -96,7 +96,7 @@ namespace BalatroSeedOracle.Models
             Descriptions["Madness"] = "When Small Blind or Big Blind is selected, gain X0.5 Mult and destroy a random Joker";
             Descriptions["Seance"] = "If poker hand is a Straight Flush, create a random Spectral card (Must have room)";
             Descriptions["Vampire"] = "This Joker gains X0.1 Mult per scoring Enhanced card played, removes card Enhancement";
-            Descriptions["Shortcut"] = "Allows Straights to be made with gaps of 1 rank; (ex: 10 8 6 5 3)";
+            Descriptions["Shortcut"] = "Allows Straights to be made with gaps of 1 rank (ex: 10 8 6 5 3)";
             Descriptions["Hologram"] = "This Joker gains X0.25 Mult every time a playing card is added to your deck";
             Descriptions["Cloud9"] = "Earn $1 for each 9 in your full deck at end of round";
             Descriptions["Rocket"] = "Earn $1 at end of round. Payout increases by $2 when Boss Blind is defeated";
@@ -133,7 +133,7 @@ namespace BalatroSeedOracle.Models
             Descriptions["ring_master"] = "Joker, Tarot, Planet, and Spectral cards may appear multiple times";
             Descriptions["FlowerPot"] = "X3 Mult if poker hand contains a Diamond card, Club card, Heart card, and Spade card";
             Descriptions["MerryAndy"] = "+3 discards each round, -1 hand size";
-            Descriptions["OopsAll6s"] = "Doubles all listed probabilities; (ex: 1 in 3 -> 2 in 3)";
+            Descriptions["OopsAll6s"] = "Doubles all listed probabilities (ex: 1 in 3 -> 2 in 3)";
             Descriptions["TheIdol"] = "Each played [rank] of [suit] gives X2 Mult when scored; Card changes every round";
             Descriptions["SeeingDouble"] = "X2 Mult if played hand has a scoring Club card and a scoring card of any other suit";
             Descriptions["Matador"] = "Earn $8 if played hand triggers the Boss Blind ability";
@@ -157,7 +157,7 @@ namespace BalatroSeedOracle.Models
             Descriptions["TheOrder"] = "X3 Mult if played hand contains a Straight";
             Descriptions["TheTribe"] = "X2 Mult if played hand contains a Flush";
             Descriptions["Stuntman"] = "+250 Chips, -2 hand size";
-            Descriptions["InvisibleJoker"] = "After 2 rounds, sell this card to Duplicate a random Joker; (Removes Negative from copy)";
+            Descriptions["InvisibleJoker"] = "After 2 rounds, sell this card to Duplicate a random Joker (Removes Negative from copy)";
             Descriptions["Brainstorm"] = "Copies the ability of leftmost Joker";
             Descriptions["DriversLicense"] = "X3 Mult if you have at least 16 Enhanced cards in your full deck";
             Descriptions["BurntJoker"] = "Upgrade the level of the first discarded poker hand each round";

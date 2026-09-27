@@ -112,6 +112,7 @@ for (const { meta, body } of blocks("jokers.md")) {
     .replace(/;\s*\d+ remaining$/, "") // Loyalty Card countdown readout
     .replace(/\s*\[\d+\]/g, "") // Yorick's "23 [23]" remaining-count readout
     .replace(/,;\s*/g, ", ")
+    .replace(/;\s*(?=\()/g, " ") // ";" before a parenthetical is the game's line break, not prose
     .trim();
   // Game-internal key as a second lookup name, only where it is a different word from the
   // enum name (j_caino, j_ring_master, j_selzer, j_gluttenous_joker). Truncated keys like
@@ -171,6 +172,12 @@ try {
   corpusRev = execFileSync("git", ["-C", corpusDir, "log", "-1", "--format=%h", "--", "."], {
     encoding: "utf8",
   }).trim() || "unknown";
+  // `git log` ignores uncommitted edits; mark the rev so the header never claims text from a
+  // dirty tree came from that commit.
+  const dirty = execFileSync("git", ["-C", corpusDir, "status", "--porcelain", "--", "."], {
+    encoding: "utf8",
+  }).trim();
+  if (dirty && corpusRev !== "unknown") corpusRev += "-dirty";
 } catch {}
 
 const cs = (s) => JSON.stringify(s); // JSON string literal is a valid C# regular string literal here
