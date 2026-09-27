@@ -10,7 +10,7 @@ namespace BalatroSeedOracle.Models
     /// Complete Balatro game data for .json configuration
     /// Uses Motely enums as the source of truth for item names
     /// </summary>
-    public static class BalatroData
+    public static partial class BalatroData
     {
         static BalatroData()
         {
@@ -51,20 +51,22 @@ namespace BalatroSeedOracle.Models
         public static readonly Dictionary<string, string> Stakes = new Dictionary<string, string>();
 
         /// <summary>
-        /// Card-effect descriptions keyed by item name (lowercased), for the card-picker
-        /// hover tooltip (issue #12). Empty by default — populate from a data file or
-        /// hand-authored entries. The tooltip mechanism gracefully shows only known
-        /// metadata when no description exists here, so no fabricated effect text ships.
+        /// Card-effect descriptions for the card-picker hover tooltip (issue #12). Keys
+        /// compare through <see cref="ItemNameComparer"/>, so the Motely enum name the
+        /// pickers use (<c>EightBall</c>, <c>OopsAll6s</c>, <c>Seance</c>) and the in-game
+        /// display name (<c>8 Ball</c>, <c>Oops! All 6s</c>, <c>Séance</c>) hit the same entry.
         /// </summary>
-        public static readonly Dictionary<string, string> Descriptions =
-            new Dictionary<string, string>();
+        public static readonly Dictionary<string, string> Descriptions = new Dictionary<
+            string,
+            string
+        >(ItemNameComparer.Instance);
 
         /// <summary>Returns the effect description for an item name, or null if unknown.</summary>
         public static string? GetDescription(string? name)
         {
             if (string.IsNullOrWhiteSpace(name))
                 return null;
-            return Descriptions.TryGetValue(name.ToLowerInvariant(), out var d) ? d : null;
+            return Descriptions.TryGetValue(name, out var d) ? d : null;
         }
 
         public static readonly Dictionary<string, string> Editions = new()
