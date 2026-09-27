@@ -31,6 +31,11 @@ namespace BalatroSeedOracle.Models
 
             // Initialize effect-text descriptions from en-us localization (#12)
             InitializeDescriptions();
+
+            // Corpus effect text for jokers/tarots/spectrals/planets/vouchers (#12).
+            // Runs second so it replaces the placeholder ("+X Mult") entries above.
+            // Generated: scripts/gen-descriptions.mjs -> BalatroData.Descriptions.g.cs
+            InitializeCorpusDescriptions();
         }
 
         public static readonly Dictionary<string, string> Jokers = new Dictionary<string, string>();
