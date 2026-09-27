@@ -3,7 +3,7 @@ using Xunit;
 
 namespace BalatroSeedOracle.Tests;
 
-// Issue #12: every joker / tarot / spectral / planet / voucher the pickers list must have
+// Issue #12: every joker / tarot / spectral / planet / voucher / tag / boss the pickers list must have
 // hover effect text. Item lists are BSO's own (BalatroData.*), keyed by Motely enum name,
 // which is exactly what SelectableItem.TooltipText passes to GetDescription.
 public class BalatroDataDescriptionTests
@@ -24,6 +24,8 @@ public class BalatroDataDescriptionTests
         Add(nameof(BalatroData.SpectralCards), BalatroData.SpectralCards.Keys);
         Add(nameof(BalatroData.PlanetCards), BalatroData.PlanetCards.Keys);
         Add(nameof(BalatroData.Vouchers), BalatroData.Vouchers.Keys);
+        Add(nameof(BalatroData.Tags), BalatroData.Tags.Keys);
+        Add(nameof(BalatroData.BossBlinds), BalatroData.BossBlinds.Keys);
         return data;
     }
 
@@ -43,6 +45,8 @@ public class BalatroDataDescriptionTests
         Assert.Equal(18, BalatroData.SpectralCards.Count);
         Assert.Equal(12, BalatroData.PlanetCards.Keys.Count(k => !Wildcards.Contains(k)));
         Assert.Equal(32, BalatroData.Vouchers.Count);
+        Assert.Equal(24, BalatroData.Tags.Count);
+        Assert.Equal(28, BalatroData.BossBlinds.Count);
     }
 
     [Theory]
@@ -83,6 +87,14 @@ public class BalatroDataDescriptionTests
     [InlineData("InvisibleJoker", "random Joker (Removes Negative from copy)")]
     // A prose semicolon is kept.
     [InlineData("GrosMichel", "+15 Mult; 1 in 6 chance")]
+    // Tags and bosses: the legacy en-us text here was "gain $X" and "Playing a X".
+    [InlineData("InvestmentTag", "Gain $25 after defeating the next Boss Blind")]
+    [InlineData("EconomyTag", "max +$40")]
+    [InlineData("TheOx", "most-played hand sets money to $0")]
+    [InlineData("TheOx", "Appears from ante 6")]
+    [InlineData("NegativeTag", "(+1 Joker slot)")]
+    [InlineData("VioletVessel", "Showdown boss")]
+    [InlineData("Top-up Tag", "2 random Common Jokers")]
     public void TextComesFromTheCorpus(string name, string fragment)
     {
         Assert.Contains(fragment, BalatroData.GetDescription(name));
@@ -97,6 +109,17 @@ public class BalatroDataDescriptionTests
         var desc = BalatroData.GetDescription(name);
         Assert.False(string.IsNullOrWhiteSpace(desc));
         Assert.DoesNotContain(readout, desc);
+    }
+
+    [Theory]
+    // Corpus commentary in a parenthetical with a ";" is not game text.
+    [InlineData("UncommonTag", "force-generated")]
+    [InlineData("InvestmentTag", "pre-1.0.1f")]
+    public void CorpusCommentaryIsStripped(string name, string commentary)
+    {
+        var desc = BalatroData.GetDescription(name);
+        Assert.False(string.IsNullOrWhiteSpace(desc));
+        Assert.DoesNotContain(commentary, desc);
     }
 
     [Theory]
