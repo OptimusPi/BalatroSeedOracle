@@ -124,7 +124,7 @@ first effect sentence after the price; vouchers = the `Base`/`Upgraded` halves, 
 carrying its base line (`"4x more often (…) Upgrades Hone: Foil/Holo/Polychrome appear 2x more often."`).
 Extra keys: `8 Ball`, `caino`, `ring_master`, `selzer`, `gluttenous_joker`.
 
-Regenerate (byte-stable; rerun produced no diff):
+Regenerate (writes CRLF to match `*.cs eol=crlf`, so a rerun is byte-identical to a fresh checkout and `git status` stays clean):
 ```
 node scripts/gen-descriptions.mjs [corpusDir]   # default $BALATRO_CORPUS_DIR, then ../seedfinder.app/corpus/knowledge
 ```
@@ -139,9 +139,10 @@ Not verified: the app was not launched; tooltip wrapping relies on the Fluent `T
 template (corpus text is single-line, no `\n`).
 
 Side effect of normalized lookup (out of #12 scope, not changed): legacy en-us text now also
-shows for tags (24/24; 6 still say `$X`: Investment, Handy, Garbage, Juggle, Speed, Economy)
-and boss blinds (28/28, no placeholders). Pre-existing: the tarot shelf skips `any`/`*` but
-not the `anytarot` wildcard key.
+shows for tags (24/24; 8 carry an `X` placeholder: Investment, Handy, Garbage, Juggle (`+X`),
+Top-up, Speed, Orbital, Economy) and boss blinds (28/28; 1 carries a placeholder: The Ox,
+`Playing a X`). A corpus-backed fill from mechanics.md tags/bosses would close these, as #12 did.
+Pre-existing: the tarot shelf skips `any`/`*` but not the `anytarot` wildcard key.
 
 ### Engine currency: MotelyJAML master `09a0f378` — NOT bumped
 Scratch worktree, submodule at `09a0f378` (91 commits past the pin). One break:

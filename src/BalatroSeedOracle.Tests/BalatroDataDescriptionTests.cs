@@ -76,9 +76,22 @@ public class BalatroDataDescriptionTests
     [InlineData("Antimatter", "+1 Joker slot")]
     [InlineData("GlowUp", "Upgrades Hone")]
     [InlineData("Pluto", "+10 Chips per level")]
+    [InlineData("ClearanceSale", "discounts vouchers")]
+    [InlineData("Liquidation", "discounts vouchers")]
     public void TextComesFromTheCorpus(string name, string fragment)
     {
         Assert.Contains(fragment, BalatroData.GetDescription(name));
+    }
+
+    [Theory]
+    // Run-state readouts are stripped like "(Currently: ...)": they show a fixed number that ticks in-game.
+    [InlineData("LoyaltyCard", "remaining")]
+    [InlineData("Yorick", "[23]")]
+    public void RunStateCountersAreStripped(string name, string readout)
+    {
+        var desc = BalatroData.GetDescription(name);
+        Assert.False(string.IsNullOrWhiteSpace(desc));
+        Assert.DoesNotContain(readout, desc);
     }
 
     [Theory]

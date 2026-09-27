@@ -109,6 +109,8 @@ for (const { meta, body } of blocks("jokers.md")) {
     .slice("Effect:".length)
     .trim()
     .replace(/\s*\(Currently:[^)]*\)/g, "") // run-state readout, not effect text
+    .replace(/;\s*\d+ remaining$/, "") // Loyalty Card countdown readout
+    .replace(/\s*\[\d+\]/g, "") // Yorick's "23 [23]" remaining-count readout
     .replace(/,;\s*/g, ", ")
     .trim();
   // Game-internal key as a second lookup name, only where it is a different word from the
@@ -128,9 +130,12 @@ for (const { meta, body } of blocks("consumables.md")) {
   }
   if (meta.type === "voucher") {
     const line = body[0];
-    const m = line.match(/Base (.+?): (.+?) Upgraded (.+?): (.+?)(?: Upgrade unlock:.*)?$/);
+    // Anything after the unlock sentence is effect text shared by both tiers
+    // (Clearance Sale / Liquidation: "Also discounts vouchers.").
+    const m = line.match(/Base (.+?): (.+?) Upgraded (.+?): (.+?)(?: Upgrade unlock: [^.]*\.\s*(.*))?$/);
     if (!m) throw new Error(`unparsed voucher line (${meta.id}): ${line}`);
-    const baseText = capitalize(m[2].trim());
+    const shared = m[5]?.trim() ? ` ${m[5].trim()}` : "";
+    const baseText = capitalize(m[2].trim()) + shared;
     // The corpus states the upgraded tier relative to its base ("4x more often"), so the
     // upgrade's tooltip carries the base line after it.
     const upText = `${capitalize(m[4].trim())} Upgrades ${m[1]}: ${baseText}`;
@@ -200,7 +205,9 @@ lines.push("        }");
 lines.push("    }");
 lines.push("}");
 lines.push("");
-writeFileSync(outFile, lines.join("\n"));
+// CRLF: .gitattributes has `*.cs text eol=crlf`, so a checkout writes this file with CRLF.
+// Emitting the same bytes keeps a regenerate in a fresh clone from dirtying `git status`.
+writeFileSync(outFile, lines.join("\r\n"));
 
 const counts = Object.fromEntries(
   Object.entries(groups).map(([g, names]) => [g, `${names.filter((n) => resolved.has(n)).length}/${names.length}`]),

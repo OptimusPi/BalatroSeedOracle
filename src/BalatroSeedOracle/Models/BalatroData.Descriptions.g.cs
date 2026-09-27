@@ -80,7 +80,7 @@ namespace BalatroSeedOracle.Models
             Descriptions["Mime"] = "Retrigger all card held in hand abilities";
             Descriptions["CeremonialDagger"] = "When Blind is selected, destroy Joker to the right and permanently add double its sell value to this Joker's Mult";
             Descriptions["MarbleJoker"] = "Adds one Stone card to the deck when Blind is selected";
-            Descriptions["LoyaltyCard"] = "X4 Mult every 6 hands played; 5 remaining";
+            Descriptions["LoyaltyCard"] = "X4 Mult every 6 hands played";
             Descriptions["Dusk"] = "Retrigger all played cards in final hand of the round";
             Descriptions["Fibonacci"] = "Each played Ace, 2, 3, 5, or 8 gives +8 Mult when scored";
             Descriptions["SteelJoker"] = "Gives X0.2 Mult for each Steel Card in your full deck";
@@ -164,7 +164,7 @@ namespace BalatroSeedOracle.Models
             Descriptions["Canio"] = "This Joker gains X1 Mult when a face card is destroyed";
             Descriptions["caino"] = "This Joker gains X1 Mult when a face card is destroyed";
             Descriptions["Triboulet"] = "Played Kings and Queens each give X2 Mult when scored";
-            Descriptions["Yorick"] = "This Joker gains X1 Mult every 23 [23] cards discarded";
+            Descriptions["Yorick"] = "This Joker gains X1 Mult every 23 cards discarded";
             Descriptions["Chicot"] = "Disables effect of every Boss Blind";
             Descriptions["Perkeo"] = "Creates a Negative copy of 1 random consumable card in your possession at the end of the shop";
             // Tarot
@@ -225,8 +225,8 @@ namespace BalatroSeedOracle.Models
             // Voucher
             Descriptions["Overstock"] = "+1 shop card slot (to 3).";
             Descriptions["OverstockPlus"] = "+1 shop card slot (to 4); restocks empty slots on purchase. Upgrades Overstock: +1 shop card slot (to 3).";
-            Descriptions["ClearanceSale"] = "Shop cards/packs 25% off.";
-            Descriptions["Liquidation"] = "50% off (also cuts your Jokers' sell values; prices round half down). Upgrades Clearance Sale: Shop cards/packs 25% off.";
+            Descriptions["ClearanceSale"] = "Shop cards/packs 25% off. Also discounts vouchers.";
+            Descriptions["Liquidation"] = "50% off (also cuts your Jokers' sell values; prices round half down). Upgrades Clearance Sale: Shop cards/packs 25% off. Also discounts vouchers.";
             Descriptions["Hone"] = "Foil/Holo/Polychrome appear 2x more often.";
             Descriptions["GlowUp"] = "4x more often (Polychrome on Jokers actually 3x/7x for Hone/Glow Up). Upgrades Hone: Foil/Holo/Polychrome appear 2x more often.";
             Descriptions["RerollSurplus"] = "Rerolls cost $2 less (starting price $3).";
