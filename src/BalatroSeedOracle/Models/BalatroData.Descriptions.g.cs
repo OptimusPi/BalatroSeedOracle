@@ -208,7 +208,7 @@ namespace BalatroSeedOracle.Models
             Descriptions["Medium"] = "Adds a Purple Seal to 1 selected card (Purple Seal: creates a random Tarot card when discarded, must have room; also triggers from forced discards such as The Hook boss blind).";
             Descriptions["Cryptid"] = "Creates 2 exact copies (including Enhancements, Editions AND Seals) of a selected card in your hand.";
             Descriptions["TheSoul"] = "Creates a Legendary Joker (1 of the 5, random; must have a free Joker slot).";
-            Descriptions["BlackHole"] = "Upgrade EVERY poker hand by 1 level, including undiscovered secret hands - the only way to level Five of a Kind / Flush House / Flush Five before playing them.";
+            Descriptions["BlackHole"] = "Upgrade EVERY poker hand by 1 level, including undiscovered secret hands.";
             // Planet
             Descriptions["Mercury"] = "Levels up Pair by 1: +1 Mult, +15 Chips per level.";
             Descriptions["Venus"] = "Levels up Three of a Kind by 1: +2 Mult, +20 Chips per level.";

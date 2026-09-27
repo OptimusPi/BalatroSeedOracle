@@ -118,6 +118,52 @@ public class BalatroDataDescriptionTests
         Assert.True(desc.Length > 0, $"{list}[{name}]");
     }
 
+    public static TheoryData<string, string> ConsumableItems()
+    {
+        var data = new TheoryData<string, string>();
+        foreach (var (list, names) in new[]
+        {
+            (nameof(BalatroData.TarotCards), BalatroData.TarotCards.Keys),
+            (nameof(BalatroData.SpectralCards), BalatroData.SpectralCards.Keys),
+            (nameof(BalatroData.PlanetCards), BalatroData.PlanetCards.Keys),
+        })
+        {
+            foreach (var name in names.Where(n => !Wildcards.Contains(n)))
+                data.Add(list, name);
+        }
+        return data;
+    }
+
+    // Consumable text is the corpus's first sentence; the corpus appends hunter notes after a
+    // top-level " - " (Black Hole: "... - the only way to level ..."). Inside parentheses the dash
+    // is part of the effect (Deja Vu's Red Seal gloss) and is kept. Vouchers are parsed from the
+    // Base/Upgraded line instead, and Illusion's " - rates 40% enhanced ..." tail is effect data.
+    [Theory]
+    [MemberData(nameof(ConsumableItems))]
+    public void NoCorpusCommentaryAfterTopLevelDash(string list, string name)
+    {
+        var desc = BalatroData.GetDescription(name) ?? "";
+        Assert.True(desc.Length > 0, $"{list}[{name}]");
+        var depth = 0;
+        for (var i = 0; i < desc.Length; i++)
+        {
+            if (desc[i] == '(') depth++;
+            else if (desc[i] == ')') depth = Math.Max(0, depth - 1);
+            else if (depth == 0 && string.CompareOrdinal(desc, i, " - ", 0, 3) == 0)
+                Assert.Fail($"{list}[{name}] has commentary after a top-level dash: {desc}");
+        }
+    }
+
+    [Fact]
+    public void BlackHoleIsTheEffectSentenceOnly()
+    {
+        Assert.Equal(
+            "Upgrade EVERY poker hand by 1 level, including undiscovered secret hands.",
+            BalatroData.GetDescription("Black Hole"));
+        Assert.Contains("(Red Seal: retrigger this card 1 time - applies to scoring AND in-hand effects)",
+            BalatroData.GetDescription("DejaVu"));
+    }
+
     [Fact]
     public void UnknownOrEmptyNamesReturnNull()
     {

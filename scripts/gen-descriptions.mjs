@@ -11,7 +11,7 @@
 // corpusDir defaults to $BALATRO_CORPUS_DIR, then ../seedfinder.app/corpus/knowledge
 // (sibling checkout). Exits non-zero if any enum item has no corpus line or any corpus
 // block matches no enum item. Nothing is invented: an item without a corpus line is
-// reported, not filled.
+// reported and the output file is left untouched.
 
 import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
@@ -66,7 +66,12 @@ const groups = {
 
 // Front-matter blocks: "---\n<yaml>\n---\n<body>" repeated; content before the first "---" is the file header.
 function blocks(file) {
-  const parts = readFileSync(join(corpusDir, file), "utf8").split(/^---\s*$/m).slice(1);
+  // Normalize CRLF: a Windows checkout (core.autocrlf=true) leaves "\r" on every line, and
+  // the meta regex below would then never match.
+  const parts = readFileSync(join(corpusDir, file), "utf8")
+    .replace(/\r\n?/g, "\n")
+    .split(/^---\s*$/m)
+    .slice(1);
   const out = [];
   for (let i = 0; i + 1 < parts.length; i += 2) {
     const meta = {};
@@ -83,7 +88,8 @@ function blocks(file) {
   return out;
 }
 
-// First sentence, not splitting inside parentheses or on decimals like X1.5.
+// First sentence, not splitting inside parentheses or on decimals like X1.5. A top-level
+// " - " also ends it: past that dash the corpus is commentary, not effect text (Black Hole).
 function firstSentence(text) {
   let depth = 0;
   for (let i = 0; i < text.length; i++) {
@@ -92,6 +98,8 @@ function firstSentence(text) {
     else if (c === ")") depth = Math.max(0, depth - 1);
     else if (c === "." && depth === 0 && (i + 1 === text.length || text[i + 1] === " ")) {
       return text.slice(0, i + 1);
+    } else if (c === " " && depth === 0 && text.startsWith(" - ", i)) {
+      return text.slice(0, i) + ".";
     }
   }
   return text;
@@ -171,11 +179,13 @@ let corpusRev = "unknown";
 try {
   corpusRev = execFileSync("git", ["-C", corpusDir, "log", "-1", "--format=%h", "--", "."], {
     encoding: "utf8",
+    stdio: ["ignore", "pipe", "ignore"],
   }).trim() || "unknown";
   // `git log` ignores uncommitted edits; mark the rev so the header never claims text from a
   // dirty tree came from that commit.
   const dirty = execFileSync("git", ["-C", corpusDir, "status", "--porcelain", "--", "."], {
     encoding: "utf8",
+    stdio: ["ignore", "pipe", "ignore"],
   }).trim();
   if (dirty && corpusRev !== "unknown") corpusRev += "-dirty";
 } catch {}
@@ -212,16 +222,20 @@ lines.push("        }");
 lines.push("    }");
 lines.push("}");
 lines.push("");
-// CRLF: .gitattributes has `*.cs text eol=crlf`, so a checkout writes this file with CRLF.
-// Emitting the same bytes keeps a regenerate in a fresh clone from dirtying `git status`.
-writeFileSync(outFile, lines.join("\r\n"));
-
 const counts = Object.fromEntries(
   Object.entries(groups).map(([g, names]) => [g, `${names.filter((n) => resolved.has(n)).length}/${names.length}`]),
 );
-console.log(`wrote ${outFile}`);
 console.log(`corpus ${corpusDir} @ ${corpusRev}`);
 console.log(JSON.stringify(counts));
-if (missing.length) console.log(`MISSING (left empty, no corpus line):\n  ${missing.join("\n  ")}`);
-if (problems.length) console.log(`PROBLEMS:\n  ${problems.join("\n  ")}`);
-process.exit(missing.length || problems.length ? 1 : 0);
+if (missing.length || problems.length) {
+  // Fail before writing: a partial file still compiles and would silently replace the
+  // committed corpus text.
+  if (missing.length) console.log(`MISSING (no corpus line):\n  ${missing.join("\n  ")}`);
+  if (problems.length) console.log(`PROBLEMS:\n  ${problems.join("\n  ")}`);
+  console.log(`not written: ${outFile}`);
+  process.exit(1);
+}
+// CRLF: .gitattributes has `*.cs text eol=crlf`, so a checkout writes this file with CRLF.
+// Emitting the same bytes keeps a regenerate in a fresh clone from dirtying `git status`.
+writeFileSync(outFile, lines.join("\r\n"));
+console.log(`wrote ${outFile}`);
