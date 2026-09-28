@@ -29,7 +29,7 @@ Added project ref: `Motely.DataLake` in `BalatroSeedOracle.csproj`.
 ### #12 — New Filter and Card Info
 - [x] "+ Create New Filter" button in the details panel (`FilterSelectionModal.axaml`), not just the placeholder page.
 - [x] Card hover tooltip **mechanism**: `SelectableItem.TooltipText` (name/type/edition/stickers) bound via `ToolTip.Tip` on the picker card hitbox.
-- [ ] **Effect-text DATA does not exist.** `BalatroData.Descriptions` (keyed by lowercased item name) is an empty dictionary ready to fill; `BalatroData.GetDescription(name)` reads it. No fabricated descriptions were shipped. Populate this to light up the effect text in the tooltip.
+- [x] **Effect text** (2026-09-27, branch `claude/trusting-galileo-ex3005`): all 234 jokers/tarots/spectrals/planets/vouchers resolve to corpus text. See the 2026-09-27 section below.
 
 ### #13 — "or, and, bannedItems" box (operator tray)
 - [x] bug 1: card scale-to-fit (Viewbox in tray template).
@@ -98,3 +98,68 @@ dotnet build src/BalatroSeedOracle/BalatroSeedOracle.csproj -c Debug
 ```
 Not launched yet. Submodule pin unchanged (`eee395f8`). To commit just this:
 `git add src/BalatroSeedOracle/ViewModels/SearchModalViewModel.cs HANDOFF.md`.
+
+## 2026-09-27 — #12 effect text, engine currency check (`claude/trusting-galileo-ex3005`)
+
+Submodule: `git submodule update --init --recursive` → `SUBMODULE_OK`, pinned `eee395f8`.
+The 2026-09-06 `SearchModalViewModel` fix above is already on `main` (landed in `7da02aa`);
+build at the pin was clean before any change: 0 warnings, 0 errors.
+
+### #12 — what was actually wrong
+`ed37605` had already filled `InitializeDescriptions()` with 352 en-us strings, but
+(a) `SelectableItem.TooltipText` passes `Name` = Motely enum member (`EightBall`,
+`OopsAll6s`, `TheWheelOfFortune`) and the keys were display names (`"8 ball"`), so on `main`
+only **106 of 234** in-scope items resolved; (b) 141 of those strings carry flattened
+placeholders (`"X in X chance"`, `"+X Mult"`, `"$X"`).
+
+| Commit | What |
+|--------|------|
+| `1bfcc3c` | `ItemNameComparer` (letters+digits, case/accent-insensitive) on `Descriptions`; enum name and display name hit the same entry. `BalatroData` → `partial`. |
+| `8d66e3e` | `scripts/gen-descriptions.mjs` → `Models/BalatroData.Descriptions.g.cs`, called after the en-us table so corpus text wins. Joker 150/150, Tarot 22/22, Spectral 18/18 (incl. The Soul, Black Hole), Planet 12/12, Voucher 32/32. No item left empty, nothing hand-written. |
+| `c5992eb` | First tests in `BalatroSeedOracle.Tests` (it had zero): every non-wildcard item in `BalatroData.{Jokers,TarotCards,SpectralCards,PlanetCards,Vouchers}` has non-empty, placeholder-free text; roster sizes; aliases; spot numbers. |
+
+Source: seedfinder.app `corpus/knowledge/{jokers,consumables}.md` @ `ea74410` (v1.0.1o-FULL).
+Jokers = `Effect:` line minus the `(Currently: …)` run-state readout; tarot/spectral/planet =
+first effect sentence after the price; vouchers = the `Base`/`Upgraded` halves, the upgrade
+carrying its base line (`"4x more often (…) Upgrades Hone: Foil/Holo/Polychrome appear 2x more often."`).
+Extra keys: `8 Ball`, `caino`, `ring_master`, `selzer`, `gluttenous_joker`.
+
+Regenerate (writes CRLF to match `*.cs eol=crlf`, so a rerun is byte-identical to a fresh checkout and `git status` stays clean):
+```
+node scripts/gen-descriptions.mjs [corpusDir]   # default $BALATRO_CORPUS_DIR, then ../seedfinder.app/corpus/knowledge
+```
+
+Verified:
+```
+dotnet build src/BalatroSeedOracle/BalatroSeedOracle.csproj -c Debug --no-incremental  → 0 Warning(s) 0 Error(s)
+dotnet test src/BalatroSeedOracle.Tests                                                 → Passed 490, Failed 0
+  (negative control, corpus init commented out                                          → Failed 155 / 490)
+```
+Not verified: the app was not launched; tooltip wrapping relies on the Fluent `ToolTip`
+template (corpus text is single-line, no `\n`).
+
+Side effect of normalized lookup (out of #12 scope, not changed): legacy en-us text now also
+shows for tags (24/24; 8 carry an `X` placeholder: Investment, Handy, Garbage, Juggle (`+X`),
+Top-up, Speed, Orbital, Economy) and boss blinds (28/28; 1 carries a placeholder: The Ox,
+`Playing a X`). A corpus-backed fill from mechanics.md tags/bosses would close these, as #12 did.
+Pre-existing: the tarot shelf skips `any`/`*` but not the `anytarot` wildcard key.
+
+### Engine currency: MotelyJAML master `09a0f378` — NOT bumped
+Scratch worktree, submodule at `09a0f378` (91 commits past the pin). One break:
+master deleted `Motely.DataLake` (`5aa6ad48` "datalake removal"), which BSO references
+(`BalatroSeedOracle.csproj:49`) for the freeze fix's `SeedLakeSink` and, transitively,
+`DuckDB.NET.Data` in `ReconnectFromLake`:
+```
+warning MSB9008: The referenced project ../MotelyJAML/Motely.DataLake/Motely.DataLake.csproj does not exist.
+SearchModalViewModel.cs(52,24): error CS0234: The type or namespace name 'DataLake' does not exist in the namespace 'Motely'
+```
+With a throwaway `SeedLakeSink` stub + direct `DuckDB.NET.Data.Full` reference the rest of BSO
+compiled 0/0 against master, so this is the only API break. Not mechanical: master ships no
+disk sink (only `IMotelyResultSink` + `CompositeMotelyResultSink`, now with `Flush()`), so the
+minimized-search persistence needs a BSO-owned `IMotelyResultSink` (e.g. per-filter `.txt`,
+the shape `14be9856` gave the engine's sink before deleting it) and `ReconnectFromLake` rewritten
+to read it. Ticket it before bumping.
+
+Also: `dotnet build BalatroSeedOracle.slnx` fails here only in `src/MotelyJAML/Motely.AppHost`
+(ASPIRE009, Aspire CLI bundle setup, via `Motely.Tests`) — environment, engine side, untouched.
+
