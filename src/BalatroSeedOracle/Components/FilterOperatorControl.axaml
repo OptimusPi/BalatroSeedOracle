@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:models="using:BalatroSeedOracle.Models"
     xmlns:converters="using:BalatroSeedOracle.Converters"
+    xmlns:components="using:BalatroSeedOracle.Components"
     x:DataType="models:FilterOperatorItem">
 
     <UserControl.Styles>
@@ -16,6 +17,11 @@
             <Setter Property="Padding" Value="0"/>
             <Setter Property="MinWidth" Value="120"/>
             <Setter Property="MinHeight" Value="100"/>
+        </Style>
+
+        <!-- OR container - GREEN theme, the same green as the tray and the SHOULD zone -->
+        <Style Selector="Border.operator-card-container.or">
+            <Setter Property="BorderBrush" Value="{StaticResource Green}"/>
         </Style>
 
         <!-- BannedItems container - RED theme -->
@@ -51,6 +57,11 @@
             <Setter Property="CornerRadius" Value="6,6,0,0"/>
         </Style>
 
+        <!-- OR header - GREEN background -->
+        <Style Selector="Border.operator-header.or">
+            <Setter Property="Background" Value="{StaticResource Green}"/>
+        </Style>
+
         <!-- BannedItems header - RED background -->
         <Style Selector="Border.operator-header.banned">
             <Setter Property="Background" Value="{StaticResource Red}"/>
@@ -80,6 +91,7 @@
     <Border
         x:Name="OperatorContainer"
         Classes="operator-card-container"
+        Classes.or="{Binding OperatorType, Converter={x:Static converters:IsOrConverter.Instance}}"
         Classes.banned="{Binding OperatorType, Converter={x:Static converters:IsBannedItemsConverter.Instance}}"
         ClipToBounds="False">
         <Border.Transitions>
@@ -96,6 +108,7 @@
                 x:Name="OperatorHeader"
                 Grid.Row="0"
                 Classes="operator-header"
+                Classes.or="{Binding OperatorType, Converter={x:Static converters:IsOrConverter.Instance}}"
                 Classes.banned="{Binding OperatorType, Converter={x:Static converters:IsBannedItemsConverter.Instance}}"
                 Cursor="Hand">
                 <TextBlock
@@ -128,16 +141,12 @@
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
+                                <!-- The full card, edition/sticker/soul overlays included, the same
+                                     way the tray draws it; the banned overlay goes on top. -->
                                 <Grid Width="71" Height="95" Margin="3">
-                                    <Image Source="{Binding ItemImage}"
-                                           Width="71"
-                                           Height="95"
-                                           Stretch="Uniform"/>
-                                    <Image Source="{Binding SoulFaceImage}"
-                                           Width="71"
-                                           Height="95"
-                                           Stretch="Uniform"
-                                           IsVisible="{Binding SoulFaceImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                                    <Viewbox Stretch="Uniform" StretchDirection="DownOnly">
+                                        <components:FilterItemCard DataContext="{Binding}"/>
+                                    </Viewbox>
                                     <Image Source="{Binding DebuffedOverlayImage}"
                                            Width="71"
                                            Height="95"
@@ -165,7 +174,11 @@
 
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
+                                    <!-- Tag: CalculateFannedPositions finds these Borders and sets
+                                         their rotate/translate transforms. -->
                                     <Border Background="Transparent"
+                                            Tag="fannedCard"
+                                            Width="71" Height="95"
                                             RenderTransformOrigin="0.5,1.0"
                                             ToolTip.Tip="{Binding DisplayName}"
                                             Cursor="Hand">
@@ -177,15 +190,9 @@
                                         </Border.RenderTransform>
 
                                         <Grid Width="71" Height="95">
-                                            <Image Source="{Binding ItemImage}"
-                                                   Width="71"
-                                                   Height="95"
-                                                   Stretch="Uniform"/>
-                                            <Image Source="{Binding SoulFaceImage}"
-                                                   Width="71"
-                                                   Height="95"
-                                                   Stretch="Uniform"
-                                                   IsVisible="{Binding SoulFaceImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                                            <Viewbox Stretch="Uniform" StretchDirection="DownOnly">
+                                                <components:FilterItemCard DataContext="{Binding}"/>
+                                            </Viewbox>
                                             <Image Source="{Binding DebuffedOverlayImage}"
                                                    Width="71"
                                                    Height="95"
