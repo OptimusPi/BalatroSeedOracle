@@ -93,6 +93,19 @@
                        IsVisible="{Binding DebuffedImage, Converter={x:Static ObjectConverters.IsNotNull}}"
                        IsHitTestVisible="False"
                        ZIndex="100"/>
+
+                <!-- Banned overlay (the same red X) for an item inside a Banned Items box.
+                     Drawn here, at the card's own size, so it scales with the card wherever
+                     the card is scaled. -->
+                <Image Source="{Binding DebuffedOverlayImage}"
+                       Width="{Binding Category, Converter={x:Static converters:CategoryToWidthConverter.Instance}}"
+                       Height="{Binding Category, Converter={x:Static converters:CategoryToHeightConverter.Instance}}"
+                       Stretch="Uniform"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       IsVisible="{Binding IsInBannedItemsTray}"
+                       IsHitTestVisible="False"
+                       ZIndex="100"/>
             </Grid>
         </Border>
 

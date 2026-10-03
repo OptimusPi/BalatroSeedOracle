@@ -141,17 +141,12 @@
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <!-- The full card, edition/sticker/soul overlays included, the same
-                                     way the tray draws it; the banned overlay goes on top. -->
+                                <!-- The full card, edition/sticker/soul/banned overlays included,
+                                     the same way the tray draws it. -->
                                 <Grid Width="71" Height="95" Margin="3">
                                     <Viewbox Stretch="Uniform" StretchDirection="DownOnly">
                                         <components:FilterItemCard DataContext="{Binding}"/>
                                     </Viewbox>
-                                    <Image Source="{Binding DebuffedOverlayImage}"
-                                           Width="71"
-                                           Height="95"
-                                           Stretch="Uniform"
-                                           IsVisible="{Binding IsInBannedItemsTray}"/>
                                 </Grid>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
@@ -193,11 +188,6 @@
                                             <Viewbox Stretch="Uniform" StretchDirection="DownOnly">
                                                 <components:FilterItemCard DataContext="{Binding}"/>
                                             </Viewbox>
-                                            <Image Source="{Binding DebuffedOverlayImage}"
-                                                   Width="71"
-                                                   Height="95"
-                                                   Stretch="Uniform"
-                                                   IsVisible="{Binding IsInBannedItemsTray}"/>
                                         </Grid>
                                     </Border>
                                 </DataTemplate>
