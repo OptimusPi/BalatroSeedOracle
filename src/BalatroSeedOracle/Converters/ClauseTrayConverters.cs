@@ -155,6 +155,36 @@ namespace BalatroSeedOracle.Converters
     }
 
     /// <summary>
+    /// Returns true if operator type is "OR"
+    /// Used to conditionally apply the "or" CSS class (green, like the SHOULD zone)
+    /// </summary>
+    public class IsOrConverter : IValueConverter
+    {
+        public static readonly IsOrConverter Instance = new();
+
+        public object? Convert(
+            object? value,
+            Type targetType,
+            object? parameter,
+            CultureInfo culture
+        )
+        {
+            return value is string operatorType
+                && operatorType.Equals("OR", StringComparison.OrdinalIgnoreCase);
+        }
+
+        public object? ConvertBack(
+            object? value,
+            Type targetType,
+            object? parameter,
+            CultureInfo culture
+        )
+        {
+            throw new NotSupportedException("One-way binding only");
+        }
+    }
+
+    /// <summary>
     /// Returns true if operator type is "BannedItems"
     /// Used to conditionally apply the "banned" CSS class
     /// </summary>

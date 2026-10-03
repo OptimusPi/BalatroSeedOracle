@@ -1,0 +1,26 @@
+# The app's gate: every push to main and every PR builds the solution (with the MotelyJAML
+# submodule) and runs the xunit suite in Release. No Accelerate key is needed here:
+# Directory.Build.props disables the license task when no key is present.
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - run: dotnet build BalatroSeedOracle.slnx -c Release
+      - run: dotnet test BalatroSeedOracle.slnx -c Release --no-build
