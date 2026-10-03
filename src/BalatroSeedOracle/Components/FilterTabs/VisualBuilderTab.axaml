@@ -42,6 +42,14 @@
             <Setter Property="TextAlignment" Value="Center"/>
         </Style>
 
+        <!-- The ✕ on a Must/Should card (or operator box) shows while it is hovered. -->
+        <Style Selector="Border.zone-card Button.zone-remove">
+            <Setter Property="IsVisible" Value="False"/>
+        </Style>
+        <Style Selector="Border.zone-card:pointerover Button.zone-remove">
+            <Setter Property="IsVisible" Value="True"/>
+        </Style>
+
         <Style Selector="Border.dropzone-overlay TextBlock > Border.Effect">
             <Setter Property="Effect">
                 <DropShadowEffect Color="{StaticResource ColorBlack}" BlurRadius="12" OffsetX="3" OffsetY="3" Opacity="1"/>
@@ -916,23 +924,29 @@
                                                         Cursor="Hand"
                                                         ClipToBounds="False"
                                                         Margin="1,2,1,8"
+                                                        Classes="zone-card"
                                                         PointerPressed="OnDropZoneItemPointerPressed">
                                                     <i:Interaction.Behaviors>
                                                         <behaviors:CardDragBehavior IsEnabled="True" JuiceAmount="0.15"/>
                                                     </i:Interaction.Behaviors>
 
-                                                    <!-- Reusable FilterItemCard component with Remove button -->
-                                                    <Grid Height="145" ClipToBounds="False" IsHitTestVisible="False">
-                                                        <!-- Cards at original size with room for 2-line labels -->
-                                                        <Grid.RenderTransform>
-                                                            <ScaleTransform ScaleX="{StaticResource CardScaleFactor}" ScaleY="{StaticResource CardScaleFactor}"/>
-                                                        </Grid.RenderTransform>
-                                                        <Grid.RenderTransformOrigin>0.5,0.5</Grid.RenderTransformOrigin>
+                                                    <Grid ClipToBounds="False">
+                                                        <!-- The card is not hit-testable (nor is anything inside it), so a press
+                                                             lands on the Border above and starts the drag. -->
+                                                        <Grid Height="145" ClipToBounds="False" IsHitTestVisible="False">
+                                                            <!-- Cards at original size with room for 2-line labels -->
+                                                            <Grid.RenderTransform>
+                                                                <ScaleTransform ScaleX="{StaticResource CardScaleFactor}" ScaleY="{StaticResource CardScaleFactor}"/>
+                                                            </Grid.RenderTransform>
+                                                            <Grid.RenderTransformOrigin>0.5,0.5</Grid.RenderTransformOrigin>
 
-                                                        <components:FilterItemCard DataContext="{Binding}"/>
+                                                            <components:FilterItemCard DataContext="{Binding}"/>
+                                                        </Grid>
 
-                                                        <!-- Hover-only Remove Button -->
-                                                        <Button Command="{Binding $parent[UserControl].DataContext.RemoveFromMustCommand}"
+                                                        <!-- Remove button: outside the non-hit-testable grid so it can be clicked;
+                                                             shown while the card is hovered (zone-card:pointerover style). -->
+                                                        <Button Classes="zone-remove"
+                                                                Command="{Binding $parent[UserControl].DataContext.RemoveFromMustCommand}"
                                                                 CommandParameter="{Binding}"
                                                                 Background="{StaticResource Red}"
                                                                 Foreground="White"
@@ -943,8 +957,6 @@
                                                                 HorizontalAlignment="Right"
                                                                 VerticalAlignment="Top"
                                                                 Margin="0,-6,-6,0"
-                                                                IsVisible="False"
-                                                                Name="RemoveButton"
                                                                 AutomationProperties.Name="Remove from Must">
                                                             <PathIcon Data="{StaticResource CloseIconData}" Width="12" Height="12" VerticalAlignment="Center" HorizontalAlignment="Center"/>
                                                             <Button.Styles>
@@ -1032,23 +1044,29 @@
                                                         Cursor="Hand"
                                                         ClipToBounds="False"
                                                         Margin="1,2,1,8"
+                                                        Classes="zone-card"
                                                         PointerPressed="OnDropZoneItemPointerPressed">
                                                     <i:Interaction.Behaviors>
                                                         <behaviors:CardDragBehavior IsEnabled="True" JuiceAmount="0.15"/>
                                                     </i:Interaction.Behaviors>
 
-                                                    <!-- Reusable FilterItemCard component with Remove button -->
-                                                    <Grid Height="145" ClipToBounds="False" IsHitTestVisible="False">
-                                                        <!-- Cards at original size with room for 2-line labels -->
-                                                        <Grid.RenderTransform>
-                                                            <ScaleTransform ScaleX="{StaticResource CardScaleFactor}" ScaleY="{StaticResource CardScaleFactor}"/>
-                                                        </Grid.RenderTransform>
-                                                        <Grid.RenderTransformOrigin>0.5,0.5</Grid.RenderTransformOrigin>
+                                                    <Grid ClipToBounds="False">
+                                                        <!-- The card is not hit-testable (nor is anything inside it), so a press
+                                                             lands on the Border above and starts the drag. -->
+                                                        <Grid Height="145" ClipToBounds="False" IsHitTestVisible="False">
+                                                            <!-- Cards at original size with room for 2-line labels -->
+                                                            <Grid.RenderTransform>
+                                                                <ScaleTransform ScaleX="{StaticResource CardScaleFactor}" ScaleY="{StaticResource CardScaleFactor}"/>
+                                                            </Grid.RenderTransform>
+                                                            <Grid.RenderTransformOrigin>0.5,0.5</Grid.RenderTransformOrigin>
 
-                                                        <components:FilterItemCard DataContext="{Binding}"/>
+                                                            <components:FilterItemCard DataContext="{Binding}"/>
+                                                        </Grid>
 
-                                                        <!-- Hover-only Remove Button -->
-                                                        <Button Command="{Binding $parent[UserControl].DataContext.RemoveFromShouldCommand}"
+                                                        <!-- Remove button: outside the non-hit-testable grid so it can be clicked;
+                                                             shown while the card is hovered (zone-card:pointerover style). -->
+                                                        <Button Classes="zone-remove"
+                                                                Command="{Binding $parent[UserControl].DataContext.RemoveFromShouldCommand}"
                                                                 CommandParameter="{Binding}"
                                                                 Background="{StaticResource Red}"
                                                                 Foreground="White"
@@ -1059,8 +1077,6 @@
                                                                 HorizontalAlignment="Right"
                                                                 VerticalAlignment="Top"
                                                                 Margin="0,-6,-6,0"
-                                                                IsVisible="False"
-                                                                Name="RemoveButton"
                                                                 AutomationProperties.Name="Remove from Should">
                                                             <PathIcon Data="{StaticResource CloseIconData}" Width="12" Height="12" VerticalAlignment="Center" HorizontalAlignment="Center"/>
                                                             <Button.Styles>
