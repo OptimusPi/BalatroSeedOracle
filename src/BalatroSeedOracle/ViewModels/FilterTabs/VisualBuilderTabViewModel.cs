@@ -3147,10 +3147,18 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         /// </summary>
         private void ApplyEditionStickersSeal(ItemConfig config, FilterItem item)
         {
-            // Apply Edition (if not None)
-            if (SelectedEdition != "None")
+            // Apply Edition. A card that already carries one (moved between zones, set in its
+            // config popup, a favorite with its own) keeps it, so the stored config matches the
+            // card on screen; otherwise the shelf's selection applies.
+            var edition =
+                !string.IsNullOrEmpty(item.Edition) && item.Edition != "None"
+                    ? item.Edition.ToLowerInvariant()
+                    : SelectedEdition != "None"
+                        ? SelectedEdition.ToLowerInvariant()
+                        : null;
+            if (edition is not null)
             {
-                config.Edition = SelectedEdition.ToLower();
+                config.Edition = edition;
                 item.Edition = config.Edition; // CRITICAL: Update item to trigger EditionImage binding
 
                 // For Negative edition, reload the base ItemImage from negative sprite sheet
@@ -3163,14 +3171,6 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                         item.Name,
                         edition: "negative"
                     );
-                }
-            }
-            else if (item.Type == "Joker" || item.Type == "SoulJoker")
-            {
-                // If edition is None but item was previously negative, reload regular sprite
-                if (item.Edition == "negative")
-                {
-                    item.ItemImage = SpriteService.Instance.GetJokerImage(item.Name, edition: null);
                 }
             }
 
@@ -3198,8 +3198,13 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
             var stickers = new List<string>();
 
+            // Same rule as the edition: a card that already carries stickers keeps them.
+            if (item.Stickers is { Count: > 0 })
+            {
+                stickers.AddRange(item.Stickers);
+            }
             // Perishable and Eternal are mutually exclusive
-            if (StickerPerishable)
+            else if (StickerPerishable)
             {
                 stickers.Add("perishable");
             }
@@ -3217,7 +3222,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             }
 
             // Rental can combine with Eternal but not Perishable
-            if (StickerRental && !StickerPerishable)
+            if (StickerRental && !StickerPerishable && item.Stickers is not { Count: > 0 })
             {
                 stickers.Add("rental");
             }
@@ -3228,10 +3233,13 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 item.Stickers = config.Stickers; // CRITICAL: Update item to trigger sticker image bindings
             }
 
-            // Apply Seal (for StandardCards only)
-            if (item.Type == "StandardCard" && SelectedSeal != "None")
+            // Apply Seal (for StandardCards only); the card's own seal wins, as above.
+            if (item.Type == "StandardCard")
             {
-                config.Seal = SelectedSeal;
+                config.Seal =
+                    !string.IsNullOrEmpty(item.Seal) && item.Seal != "None" ? item.Seal
+                    : SelectedSeal != "None" ? SelectedSeal
+                    : null;
             }
 
             DebugLogger.Log(

@@ -1244,15 +1244,18 @@ namespace BalatroSeedOracle.Components.FilterTabs
                                     IsInBannedItemsTray = _draggedItem.IsInBannedItemsTray,
                                 };
 
-                                // Add the COPY to target zone (allows duplicates from shelf!)
+                                // From the shelf, add the COPY (allows duplicates from shelf!). From
+                                // the other zone, move the card itself: it already belongs to the
+                                // builder, and its antes, score, min count and slots live on it.
+                                var itemToAdd = _sourceDropZone != null ? _draggedItem : itemCopy;
                                 switch (zoneName)
                                 {
                                     case "MustDropZone":
-                                        vm.AddToMustCommand.Execute(itemCopy);
+                                        vm.AddToMustCommand.Execute(itemToAdd);
                                         vm.IsDragging = false;
                                         break;
                                     case "ShouldDropZone":
-                                        vm.AddToShouldCommand.Execute(itemCopy);
+                                        vm.AddToShouldCommand.Execute(itemToAdd);
                                         vm.IsDragging = false;
                                         break;
                                 }
