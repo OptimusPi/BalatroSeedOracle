@@ -152,12 +152,14 @@
 
                     <!-- 5+ cards: fanned layout. The ItemsControl's Canvas panel takes no size
                          from its children, so it sits as a point at the host's top centre and
-                         CalculateFannedPositions spreads the cards around that point; the host's
-                         minimum size holds room for a seven-card fan of full cards. -->
+                         CalculateFannedPositions spreads the cards around that point. The host's
+                         minimum size holds a seven-card fan of full cards after their transforms:
+                         161 wide plus ~41 each side for the ±18° edge cards; ~133 tall plus the
+                         15 arc and the ~11 a rotated card's lower corner drops below its pivot. -->
                     <Grid Name="FannedCardsHost"
                           IsVisible="{Binding Children.Count, Converter={x:Static converters:GreaterThanFourConverter.Instance}}"
-                          MinWidth="240"
-                          MinHeight="150"
+                          MinWidth="250"
+                          MinHeight="160"
                           ClipToBounds="False">
                         <ItemsControl ItemsSource="{Binding Children}"
                                       HorizontalAlignment="Center"
