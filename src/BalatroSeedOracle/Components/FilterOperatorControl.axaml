@@ -150,16 +150,19 @@
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
 
-                    <!-- 5+ cards: fanned Canvas layout. A Canvas takes no size from its
-                         children, so MinHeight holds room for a full card (artwork + label). -->
-                    <Canvas Name="FannedCardsCanvas"
-                            IsVisible="{Binding Children.Count, Converter={x:Static converters:GreaterThanFourConverter.Instance}}"
-                            HorizontalAlignment="Center"
-                            VerticalAlignment="Center"
-                            MinWidth="120"
-                            MinHeight="135"
-                            ClipToBounds="False">
-                        <ItemsControl ItemsSource="{Binding Children}">
+                    <!-- 5+ cards: fanned layout. The ItemsControl's Canvas panel takes no size
+                         from its children, so it sits as a point at the host's top centre and
+                         CalculateFannedPositions spreads the cards around that point; the host's
+                         minimum size holds room for a seven-card fan of full cards. -->
+                    <Grid Name="FannedCardsHost"
+                          IsVisible="{Binding Children.Count, Converter={x:Static converters:GreaterThanFourConverter.Instance}}"
+                          MinWidth="240"
+                          MinHeight="150"
+                          ClipToBounds="False">
+                        <ItemsControl ItemsSource="{Binding Children}"
+                                      HorizontalAlignment="Center"
+                                      VerticalAlignment="Top"
+                                      ClipToBounds="False">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
                                     <Canvas/>
@@ -188,7 +191,7 @@
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
-                    </Canvas>
+                    </Grid>
                 </Grid>
             </Border>
         </Grid>
