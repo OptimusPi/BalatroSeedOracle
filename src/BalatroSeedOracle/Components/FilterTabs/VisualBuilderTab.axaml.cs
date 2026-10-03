@@ -1509,12 +1509,9 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     var vm = DataContext as ViewModels.FilterTabs.VisualBuilderTabViewModel;
                     if (vm != null)
                     {
-                        // Clear all drop zones
-                        vm.SelectedMust.Clear();
-                        vm.SelectedShould.Clear();
-
-                        // Clear unified operator tray
-                        vm.UnifiedOperator.Children.Clear();
+                        // Clear Must/Should/MustNot and the operator tray, keeping the
+                        // parent filter's collections and ItemConfigs in sync
+                        vm.ClearAllCommand.Execute(null);
 
                         // Reset search filter
                         vm.SearchFilter = "";

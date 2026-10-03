@@ -1578,6 +1578,40 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         }
 
         /// <summary>
+        /// Clears every card from the Must box (issue #14: per-box clear). Goes through
+        /// RemoveFromMust so the parent filter's collections and ItemConfigs stay in sync.
+        /// </summary>
+        [RelayCommand]
+        private void ClearMust()
+        {
+            foreach (var item in SelectedMust.ToList())
+                RemoveFromMust(item);
+        }
+
+        /// <summary>
+        /// Clears every card from the Should box (issue #14: per-box clear).
+        /// </summary>
+        [RelayCommand]
+        private void ClearShould()
+        {
+            foreach (var item in SelectedShould.ToList())
+                RemoveFromShould(item);
+        }
+
+        /// <summary>
+        /// Clears the whole filter: Must, Should, Must Not and the operator tray (issue #14: Start Over).
+        /// </summary>
+        [RelayCommand]
+        private void ClearAll()
+        {
+            ClearMust();
+            ClearShould();
+            foreach (var item in SelectedMustNot.ToList())
+                RemoveFromMustNot(item);
+            UnifiedOperator.Children.Clear();
+        }
+
+        /// <summary>
         /// Removes an item from the parent's collections and ItemConfigs
         /// </summary>
         private void RemoveItemFromParent(

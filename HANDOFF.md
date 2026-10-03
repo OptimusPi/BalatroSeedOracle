@@ -45,7 +45,7 @@ Added project ref: `Motely.DataLake` in `BalatroSeedOracle.csproj`.
 - [x] right-click a saved filter → Delete / Rename (`FilterSelectionModal.axaml`, `FilterSelectionModalViewModel.DeleteFromContext` / `RenameFromContext`).
 - [x] Exit button next to Back (`ExitCommand` closes outright, bypasses `TryGoBack`).
 - [ ] Save & Exit vs. auto-save-on-back: designer (FiltersModal) auto-saves on every edit (`VisualBuilderTabViewModel.TriggerAutoSave` ~2550, `ConfigureFilterTabViewModel` ~1113). Reworking to explicit Save&Exit is unstarted.
-- [ ] Clear-filter button (whole search / per box). "Start Over" logic exists (`VisualBuilderTab.axaml.cs` ~1428) but has no XAML `Click` wiring found; per-box clear would call `SelectedMust`/`SelectedShould` `.Clear()`.
+- [x] Clear-filter buttons (2026-10-03): "Clear" in the Must and Should headers (`ClearMustCommand` / `ClearShouldCommand`) and a "Start Over" button in the Must header wired to `OnStartOverClick`, which now runs `ClearAllCommand` (Must, Should, Must Not, tray) so the parent filter's collections and `ItemConfigs` stay in sync. Built 0/0, `dotnet test` 949 passed. Not launched, so the header layout is unchecked visually.
 
 ### #15 — Rename a saved search
 - [x] Done. Rename button + dialog + persists `JamlConfig.Name`.

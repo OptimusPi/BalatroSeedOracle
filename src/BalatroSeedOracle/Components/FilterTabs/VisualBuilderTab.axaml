@@ -874,13 +874,40 @@
                         <Border Grid.Row="0"
                                 Background="{StaticResource DarkBackground}"
                                 Padding="8,0,8,4">
-                            <TextBlock Text="Must"
-                                       FontFamily="{StaticResource BalatroFont}"
-                                       FontSize="18"
-
-                                       Foreground="{StaticResource Blue}"
-                                       VerticalAlignment="Center"
-                                       HorizontalAlignment="Center"/>
+                            <Grid>
+                                <Button Content="Start Over"
+                                        Click="OnStartOverClick"
+                                        HorizontalAlignment="Left"
+                                        VerticalAlignment="Center"
+                                        Padding="8,2"
+                                        FontFamily="{StaticResource BalatroFont}"
+                                        FontSize="14"
+                                        Background="{StaticResource Red}"
+                                        Foreground="{StaticResource White}"
+                                        CornerRadius="4"
+                                        Cursor="Hand"
+                                        ToolTip.Tip="Clear everything and start a fresh filter"
+                                        AutomationProperties.Name="Start over"/>
+                                <TextBlock Text="Must"
+                                           FontFamily="{StaticResource BalatroFont}"
+                                           FontSize="18"
+                                           Foreground="{StaticResource Blue}"
+                                           VerticalAlignment="Center"
+                                           HorizontalAlignment="Center"/>
+                                <Button Content="Clear"
+                                        Command="{Binding ClearMustCommand}"
+                                        HorizontalAlignment="Right"
+                                        VerticalAlignment="Center"
+                                        Padding="8,2"
+                                        FontFamily="{StaticResource BalatroFont}"
+                                        FontSize="14"
+                                        Background="{StaticResource ModalGrey}"
+                                        Foreground="{StaticResource White}"
+                                        CornerRadius="4"
+                                        Cursor="Hand"
+                                        ToolTip.Tip="Remove every card from Must"
+                                        AutomationProperties.Name="Clear Must"/>
+                            </Grid>
                         </Border>
 
                         <!-- Bottom: Drop Area - Always visible -->
@@ -990,13 +1017,27 @@
                         <Border Grid.Row="0"
                                 Background="{StaticResource DarkBackground}"
                                 Padding="8,0,8,4">
-                            <TextBlock Text="Should"
-                                       FontFamily="{StaticResource BalatroFont}"
-                                       FontSize="18"
-
-                                       Foreground="{StaticResource Green}"
-                                       VerticalAlignment="Center"
-                                       HorizontalAlignment="Center"/>
+                            <Grid>
+                                <TextBlock Text="Should"
+                                           FontFamily="{StaticResource BalatroFont}"
+                                           FontSize="18"
+                                           Foreground="{StaticResource Green}"
+                                           VerticalAlignment="Center"
+                                           HorizontalAlignment="Center"/>
+                                <Button Content="Clear"
+                                        Command="{Binding ClearShouldCommand}"
+                                        HorizontalAlignment="Right"
+                                        VerticalAlignment="Center"
+                                        Padding="8,2"
+                                        FontFamily="{StaticResource BalatroFont}"
+                                        FontSize="14"
+                                        Background="{StaticResource ModalGrey}"
+                                        Foreground="{StaticResource White}"
+                                        CornerRadius="4"
+                                        Cursor="Hand"
+                                        ToolTip.Tip="Remove every card from Should"
+                                        AutomationProperties.Name="Clear Should"/>
+                            </Grid>
                         </Border>
 
                         <!-- Bottom: Drop Area - Always visible -->
