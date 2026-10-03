@@ -915,7 +915,39 @@
                                         <ContentControl.DataTemplates>
                                             <!-- Template for FilterOperatorItem -->
                                             <DataTemplate DataType="{x:Type models:FilterOperatorItem}" x:DataType="models:FilterOperatorItem">
-                                                <components:FilterOperatorControl/>
+                                                <!-- Same wrapper as a card: a press on the box starts a drag (back to the
+                                                     shelf removes it, the other zone moves it) and the ✕ removes it in place. -->
+                                                <Border Background="Transparent"
+                                                        Cursor="Hand"
+                                                        ClipToBounds="False"
+                                                        Margin="1,2,1,8"
+                                                        Classes="zone-card"
+                                                        PointerPressed="OnDropZoneOperatorPointerPressed">
+                                                    <Grid ClipToBounds="False">
+                                                        <components:FilterOperatorControl/>
+                                                        <Button Classes="zone-remove"
+                                                                Command="{Binding $parent[UserControl].((vm:VisualBuilderTabViewModel)DataContext).RemoveFromMustCommand}"
+                                                                CommandParameter="{Binding}"
+                                                                Background="{StaticResource Red}"
+                                                                Foreground="White"
+                                                                Width="18"
+                                                                Height="18"
+                                                                CornerRadius="9"
+                                                                Padding="0"
+                                                                HorizontalAlignment="Right"
+                                                                VerticalAlignment="Top"
+                                                                Margin="0,-6,-6,0"
+                                                                ZIndex="300"
+                                                                AutomationProperties.Name="Remove from Must">
+                                                            <PathIcon Data="{StaticResource CloseIconData}" Width="12" Height="12" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                                            <Button.Styles>
+                                                                <Style Selector="Button:pointerover">
+                                                                    <Setter Property="Background" Value="{StaticResource RedHover}"/>
+                                                                </Style>
+                                                            </Button.Styles>
+                                                        </Button>
+                                                    </Grid>
+                                                </Border>
                                             </DataTemplate>
 
                                             <!-- Template for regular FilterItem -->
@@ -1035,7 +1067,39 @@
                                         <ContentControl.DataTemplates>
                                             <!-- Template for FilterOperatorItem -->
                                             <DataTemplate DataType="{x:Type models:FilterOperatorItem}" x:DataType="models:FilterOperatorItem">
-                                                <components:FilterOperatorControl/>
+                                                <!-- Same wrapper as a card: a press on the box starts a drag (back to the
+                                                     shelf removes it, the other zone moves it) and the ✕ removes it in place. -->
+                                                <Border Background="Transparent"
+                                                        Cursor="Hand"
+                                                        ClipToBounds="False"
+                                                        Margin="1,2,1,8"
+                                                        Classes="zone-card"
+                                                        PointerPressed="OnDropZoneOperatorPointerPressed">
+                                                    <Grid ClipToBounds="False">
+                                                        <components:FilterOperatorControl/>
+                                                        <Button Classes="zone-remove"
+                                                                Command="{Binding $parent[UserControl].((vm:VisualBuilderTabViewModel)DataContext).RemoveFromShouldCommand}"
+                                                                CommandParameter="{Binding}"
+                                                                Background="{StaticResource Red}"
+                                                                Foreground="White"
+                                                                Width="18"
+                                                                Height="18"
+                                                                CornerRadius="9"
+                                                                Padding="0"
+                                                                HorizontalAlignment="Right"
+                                                                VerticalAlignment="Top"
+                                                                Margin="0,-6,-6,0"
+                                                                ZIndex="300"
+                                                                AutomationProperties.Name="Remove from Should">
+                                                            <PathIcon Data="{StaticResource CloseIconData}" Width="12" Height="12" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                                            <Button.Styles>
+                                                                <Style Selector="Button:pointerover">
+                                                                    <Setter Property="Background" Value="{StaticResource RedHover}"/>
+                                                                </Style>
+                                                            </Button.Styles>
+                                                        </Button>
+                                                    </Grid>
+                                                </Border>
                                             </DataTemplate>
 
                                             <!-- Template for regular FilterItem -->

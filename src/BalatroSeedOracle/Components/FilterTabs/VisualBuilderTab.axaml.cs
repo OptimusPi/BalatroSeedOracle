@@ -380,6 +380,23 @@ namespace BalatroSeedOracle.Components.FilterTabs
             }
         }
 
+        /// <summary>
+        /// An operator box in Must/Should drags like a card (same pending-drag arming, same
+        /// drop handling), but has no per-item config, so a right-click does nothing.
+        /// </summary>
+        private void OnDropZoneOperatorPointerPressed(
+            object? sender,
+            Avalonia.Input.PointerPressedEventArgs e
+        )
+        {
+            if (e.GetCurrentPoint(sender as Control).Properties.IsRightButtonPressed)
+            {
+                e.Handled = true;
+                return;
+            }
+            OnDropZoneItemPointerPressed(sender, e);
+        }
+
         private void OnDropZoneItemPointerPressed(
             object? sender,
             Avalonia.Input.PointerPressedEventArgs e
