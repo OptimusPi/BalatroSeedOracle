@@ -3196,19 +3196,32 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 "Canio",
             };
 
+            // Which stickers the card asks for: its own when it already carries some (a move, a
+            // popup-configured card, a favorite), else the shelf toggles. The one rule set below
+            // applies either way, so a shelf card carrying Perishable and Rental together lands
+            // in the zone, and in the filter, with Perishable only.
+            bool wantPerishable, wantEternal, wantRental;
+            if (item.Stickers is { Count: > 0 } own)
+            {
+                wantPerishable = own.Contains("perishable", StringComparer.OrdinalIgnoreCase);
+                wantEternal = own.Contains("eternal", StringComparer.OrdinalIgnoreCase);
+                wantRental = own.Contains("rental", StringComparer.OrdinalIgnoreCase);
+            }
+            else
+            {
+                wantPerishable = StickerPerishable;
+                wantEternal = StickerEternal;
+                wantRental = StickerRental;
+            }
+
             var stickers = new List<string>();
 
-            // Same rule as the edition: a card that already carries stickers keeps them.
-            if (item.Stickers is { Count: > 0 })
-            {
-                stickers.AddRange(item.Stickers);
-            }
             // Perishable and Eternal are mutually exclusive
-            else if (StickerPerishable)
+            if (wantPerishable)
             {
                 stickers.Add("perishable");
             }
-            else if (StickerEternal && CanItemBeEternal(item))
+            else if (wantEternal && CanItemBeEternal(item))
             {
                 // Check if specific joker is restricted from Eternal
                 bool isRestrictedJoker =
@@ -3222,16 +3235,14 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             }
 
             // Rental can combine with Eternal but not Perishable
-            if (StickerRental && !StickerPerishable && item.Stickers is not { Count: > 0 })
+            if (wantRental && !wantPerishable)
             {
                 stickers.Add("rental");
             }
 
-            if (stickers.Any())
-            {
-                config.Stickers = stickers;
-                item.Stickers = config.Stickers; // CRITICAL: Update item to trigger sticker image bindings
-            }
+            // null when none, so a card whose own stickers were all invalid is cleaned up too.
+            config.Stickers = stickers.Any() ? stickers : null;
+            item.Stickers = config.Stickers; // CRITICAL: Update item to trigger sticker image bindings
 
             // Apply Seal (for StandardCards only); the card's own seal wins, as above.
             if (item.Type == "StandardCard")
