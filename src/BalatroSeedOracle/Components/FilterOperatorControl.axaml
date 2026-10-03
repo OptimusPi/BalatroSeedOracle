@@ -141,24 +141,23 @@
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <!-- The full card, edition/sticker/soul/banned overlays included,
-                                     the same way the tray draws it. -->
-                                <Grid Width="71" Height="95" Margin="3">
-                                    <Viewbox Stretch="Uniform" StretchDirection="DownOnly">
-                                        <components:FilterItemCard DataContext="{Binding}"/>
-                                    </Viewbox>
+                                <!-- The full card at its own size (71 wide, artwork plus name
+                                     label), edition/sticker/soul/banned overlays included. -->
+                                <Grid Width="71" Margin="3">
+                                    <components:FilterItemCard DataContext="{Binding}"/>
                                 </Grid>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
 
-                    <!-- 5+ cards: fanned Canvas layout -->
+                    <!-- 5+ cards: fanned Canvas layout. A Canvas takes no size from its
+                         children, so MinHeight holds room for a full card (artwork + label). -->
                     <Canvas Name="FannedCardsCanvas"
                             IsVisible="{Binding Children.Count, Converter={x:Static converters:GreaterThanFourConverter.Instance}}"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
                             MinWidth="120"
-                            MinHeight="100"
+                            MinHeight="135"
                             ClipToBounds="False">
                         <ItemsControl ItemsSource="{Binding Children}">
                             <ItemsControl.ItemsPanel>
@@ -173,7 +172,7 @@
                                          their rotate/translate transforms. -->
                                     <Border Background="Transparent"
                                             Tag="fannedCard"
-                                            Width="71" Height="95"
+                                            Width="71"
                                             RenderTransformOrigin="0.5,1.0"
                                             ToolTip.Tip="{Binding DisplayName}"
                                             Cursor="Hand">
@@ -184,11 +183,7 @@
                                             </TransformGroup>
                                         </Border.RenderTransform>
 
-                                        <Grid Width="71" Height="95">
-                                            <Viewbox Stretch="Uniform" StretchDirection="DownOnly">
-                                                <components:FilterItemCard DataContext="{Binding}"/>
-                                            </Viewbox>
-                                        </Grid>
+                                        <components:FilterItemCard DataContext="{Binding}"/>
                                     </Border>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
