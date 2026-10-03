@@ -682,6 +682,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                         .Concat(AllTarots)
                         .Concat(AllPlanets)
                         .Concat(AllSpectrals)
+                        .Concat(AllBosses)
+                        .Concat(AllWildcards)
                         .Concat(AllStandardCards);
                     var favoriteItems = allItemsForFavorites.Where(j => j.IsFavorite == true).ToList();
                     AddGroup("Favorite Items", favoriteItems);
