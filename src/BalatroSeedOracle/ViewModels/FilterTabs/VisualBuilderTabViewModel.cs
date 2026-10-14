@@ -1673,9 +1673,9 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             if (_isLoadingFilter)
                 return;
 
-            if (_parentViewModel?.JamlEditorTab is JamlEditorTabViewModel jamlVm)
+            if (_parentViewModel?.YAMLEditorTab is YAMLEditorTabViewModel yamlVm)
             {
-                jamlVm.AutoGenerateFromVisual();
+                yamlVm.AutoGenerateFromVisual();
             }
         }
 

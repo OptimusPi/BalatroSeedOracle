@@ -5,9 +5,9 @@ using BalatroSeedOracle.ViewModels.FilterTabs;
 
 namespace BalatroSeedOracle.Components.FilterTabs
 {
-    public partial class JamlErrorPanel : UserControl
+    public partial class YAMLErrorPanel : UserControl
     {
-        public JamlErrorPanel()
+        public YAMLErrorPanel()
         {
             InitializeComponent();
         }
@@ -22,7 +22,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
             if (sender is Border border && border.DataContext is ValidationErrorItem error)
             {
                 // Notify parent to jump to error location
-                if (DataContext is JamlEditorTabViewModel viewModel)
+                if (DataContext is YAMLEditorTabViewModel viewModel)
                 {
                     viewModel.RequestJumpToError(error.LineNumber, error.Column);
                 }

@@ -1,5 +1,5 @@
 name: Erratic/White probe
-description: Throwaway JAML the analyzer.mjs uses to set deck=Erratic / stake=White context.
+description: Throwaway YAML the analyzer.mjs uses to set deck=Erratic / stake=White context.
 deck: Erratic
 stake: White
 must:

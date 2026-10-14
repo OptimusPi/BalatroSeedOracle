@@ -40,7 +40,7 @@ public partial class App : Application
         };
 
         // All data lives in the run directory, same convention as Motely.CLI.
-        Directory.CreateDirectory("JamlFilters");
+        Directory.CreateDirectory("YAMLFilters");
         Directory.CreateDirectory("SearchResults");
         Directory.CreateDirectory("WordLists");
         Directory.CreateDirectory("VisualizerPresets");

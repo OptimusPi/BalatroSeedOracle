@@ -65,8 +65,8 @@ avalonia.license.local
 
 /external/Balatro
 /WordLists
-/external/JamlGenie
-/JamlFilters/JsonItemFilters
+/external/YAMLGenie
+/YAMLFilters/JsonItemFilters
 /external
 *.log
 docs/BLUEPRINT_GITHUB_PAGES_FIX.md

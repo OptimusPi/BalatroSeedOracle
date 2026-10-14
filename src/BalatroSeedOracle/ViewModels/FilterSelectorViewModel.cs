@@ -16,7 +16,7 @@ using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Motely.Filters.Jaml;
+using Motely.Filters.YAML;
 
 namespace BalatroSeedOracle.ViewModels
 {
@@ -105,7 +105,7 @@ namespace BalatroSeedOracle.ViewModels
         }
 
         /// <summary>
-        /// Loads all available filter files from JamlFilters/
+        /// Loads all available filter files from YAMLFilters/
         /// </summary>
         public Task LoadAvailableFiltersAsync()
         {
@@ -158,7 +158,7 @@ namespace BalatroSeedOracle.ViewModels
         /// <summary>
         /// Creates a PanelItem from a loaded filter config
         /// </summary>
-        private PanelItem? CreateFilterPanelItem(string filePath, JamlConfig? config)
+        private PanelItem? CreateFilterPanelItem(string filePath, YAMLConfig? config)
         {
             if (config is null || string.IsNullOrEmpty(config.Name))
             {
@@ -188,7 +188,7 @@ namespace BalatroSeedOracle.ViewModels
         /// <summary>
         /// Creates a fanned preview image showing multiple cards from the filter config
         /// </summary>
-        private IImage? CreateFannedPreviewImageFromConfig(Motely.Filters.Jaml.JamlConfig config)
+        private IImage? CreateFannedPreviewImageFromConfig(Motely.Filters.YAML.YAMLConfig config)
         {
             try
             {
@@ -321,7 +321,7 @@ namespace BalatroSeedOracle.ViewModels
         /// <summary>
         /// Gets a fallback single image preview from the filter config
         /// </summary>
-        private IImage? GetFilterPreviewImageFromConfig(Motely.Filters.Jaml.JamlConfig config)
+        private IImage? GetFilterPreviewImageFromConfig(Motely.Filters.YAML.YAMLConfig config)
         {
             try
             {

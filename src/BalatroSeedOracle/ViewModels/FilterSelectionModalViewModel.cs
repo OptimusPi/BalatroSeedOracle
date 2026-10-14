@@ -367,7 +367,7 @@ namespace BalatroSeedOracle.ViewModels
 
         /// <summary>
         /// Called by View after the user enters a new name. Updates the filter's display
-        /// name (JamlConfig.Name) in place and refreshes the list. Issue #15.
+        /// name (YAMLConfig.Name) in place and refreshes the list. Issue #15.
         /// </summary>
         public async Task ConfirmRenameAsync(string newName)
         {
@@ -380,7 +380,7 @@ namespace BalatroSeedOracle.ViewModels
 
             var path = System.IO.Path.Combine(
                 Services.FilterFiles.Dir,
-                $"{SelectedFilter.FilterId}.jaml"
+                $"{SelectedFilter.FilterId}.yaml"
             );
 
             try
@@ -437,7 +437,7 @@ namespace BalatroSeedOracle.ViewModels
             );
 
             Services.FilterFiles.Delete(
-                System.IO.Path.Combine(Services.FilterFiles.Dir, $"{filterIdToDelete}.jaml")
+                System.IO.Path.Combine(Services.FilterFiles.Dir, $"{filterIdToDelete}.yaml")
             );
 
             // CRITICAL: Clear the selected filter FIRST to avoid showing stale data

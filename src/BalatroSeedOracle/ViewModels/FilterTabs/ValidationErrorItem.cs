@@ -3,7 +3,7 @@ using Avalonia.Media;
 namespace BalatroSeedOracle.ViewModels.FilterTabs
 {
     /// <summary>
-    /// Represents a validation error or warning in the JAML editor
+    /// Represents a validation error or warning in the YAML editor
     /// </summary>
     public class ValidationErrorItem
     {

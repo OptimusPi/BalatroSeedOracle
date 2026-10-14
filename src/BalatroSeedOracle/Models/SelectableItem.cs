@@ -345,10 +345,10 @@ namespace BalatroSeedOracle.Models
         public bool IncludeShopStream { get; set; }
         public bool IncludeSkipTags { get; set; }
 
-        // JAML sources array - according to schema: "shop", "pack", "tag", "voucher"
+        // YAML sources array - according to schema: "shop", "pack", "tag", "voucher"
         public string[]? Sources { get; set; }
 
-        // JAML nested conditions for complex logic
+        // YAML nested conditions for complex logic
         public FilterItem[]? AndConditions { get; set; }
         public FilterItem[]? OrConditions { get; set; }
 

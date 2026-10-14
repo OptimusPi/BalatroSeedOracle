@@ -20,7 +20,7 @@
             <controls:BalatroTabControl.Items>
                 <TabItem Header="Build Filter"/>
                 <TabItem Header="Deck/Stake"/>
-                <TabItem Header="JAML Editor"/>
+                <TabItem Header="YAML Editor"/>
                 <TabItem Header="Validate Filter"/>
             </controls:BalatroTabControl.Items>
         </controls:BalatroTabControl>

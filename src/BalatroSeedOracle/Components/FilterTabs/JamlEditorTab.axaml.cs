@@ -14,30 +14,30 @@ using AvaloniaEdit.Highlighting;
 using AvaloniaEdit.Highlighting.Xshd;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.ViewModels.FilterTabs;
-using Motely.Filters.Jaml;
+using Motely.Filters.YAML;
 
 namespace BalatroSeedOracle.Components.FilterTabs
 {
     /// <summary>
-    /// JAML Editor Tab for filter editing.
-    /// JAML (Joker Ante Markup Language) is a YAML-based format for Balatro filters.
+    /// YAML Editor Tab for filter editing.
+    /// YAML (Joker Ante Markup Language) is a YAML-based format for Balatro filters.
     /// Uses direct x:Name field access (no FindControl anti-pattern).
     /// </summary>
-    public partial class JamlEditorTab : UserControl
+    public partial class YAMLEditorTab : UserControl
     {
         private FoldingManager? _foldingManager;
         private readonly BraceFoldingStrategy _foldingStrategy = new();
-        private JamlErrorMarkerService? _errorMarkerService;
-        private JamlHoverTooltipService? _hoverTooltipService;
-        private JamlCodeSnippetService? _snippetService;
+        private YAMLErrorMarkerService? _errorMarkerService;
+        private YAMLHoverTooltipService? _hoverTooltipService;
+        private YAMLCodeSnippetService? _snippetService;
 
         // Tracked separately from ViewModel/DataContext so a reassignment unsubscribes the
         // actual previous ViewModel instead of leaking a subscription to it.
-        private JamlEditorTabViewModel? _subscribedViewModel;
+        private YAMLEditorTabViewModel? _subscribedViewModel;
 
-        public JamlEditorTabViewModel? ViewModel => DataContext as JamlEditorTabViewModel;
+        public YAMLEditorTabViewModel? ViewModel => DataContext as YAMLEditorTabViewModel;
 
-        public JamlEditorTab()
+        public YAMLEditorTab()
         {
             InitializeComponent();
             SetupEditor();
@@ -46,8 +46,8 @@ namespace BalatroSeedOracle.Components.FilterTabs
         private void SetupEditor()
         {
             // Direct x:Name field access - no FindControl!
-            // Load custom dark mode syntax highlighting (JAML uses YAML syntax)
-            LoadCustomJamlSyntaxHighlighting();
+            // Load custom dark mode syntax highlighting (YAML uses YAML syntax)
+            LoadCustomYAMLSyntaxHighlighting();
 
             // Install code folding
             InstallCodeFolding();
@@ -64,7 +64,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
                 if (ViewModel != null)
                 {
-                    JamlEditor.Text = ViewModel.JamlContent;
+                    YAMLEditor.Text = ViewModel.YAMLContent;
 
                     // Subscribe to ViewModel property changes
                     ViewModel.PropertyChanged += OnViewModelPropertyChanged;
@@ -77,11 +77,11 @@ namespace BalatroSeedOracle.Components.FilterTabs
             };
 
             // When editor text changes, update ViewModel
-            JamlEditor.TextChanged += (s, e) =>
+            YAMLEditor.TextChanged += (s, e) =>
             {
                 if (ViewModel != null)
                 {
-                    ViewModel.JamlContent = JamlEditor.Text ?? "";
+                    ViewModel.YAMLContent = YAMLEditor.Text ?? "";
 
                     // Update code folding when document changes
                     UpdateCodeFolding();
@@ -97,28 +97,28 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
         private void InstallEditorEnhancements()
         {
-            if (JamlEditor?.TextArea == null)
+            if (YAMLEditor?.TextArea == null)
                 return;
 
             // Configure editor options
-            JamlEditor.Options.IndentationSize = 2;
-            JamlEditor.Options.ConvertTabsToSpaces = true;
+            YAMLEditor.Options.IndentationSize = 2;
+            YAMLEditor.Options.ConvertTabsToSpaces = true;
             // Note: HighlightCurrentLine and EnableBracketMatching may not be available in this version of AvaloniaEdit
             // These features are handled by the TextArea.TextView rendering
 
             // Install error marker service
-            _errorMarkerService = new JamlErrorMarkerService(JamlEditor);
-            JamlEditor.TextArea.TextView.BackgroundRenderers.Add(_errorMarkerService);
+            _errorMarkerService = new YAMLErrorMarkerService(YAMLEditor);
+            YAMLEditor.TextArea.TextView.BackgroundRenderers.Add(_errorMarkerService);
 
             // Install hover tooltips
-            _hoverTooltipService = new JamlHoverTooltipService(JamlEditor);
+            _hoverTooltipService = new YAMLHoverTooltipService(YAMLEditor);
             _hoverTooltipService.Install();
 
             // Install code snippets
-            _snippetService = new JamlCodeSnippetService(JamlEditor);
+            _snippetService = new YAMLCodeSnippetService(YAMLEditor);
 
             // Handle Tab for snippet expansion
-            JamlEditor.TextArea.KeyDown += (s, e) =>
+            YAMLEditor.TextArea.KeyDown += (s, e) =>
             {
                 if (e.Key == Key.Tab && !e.KeyModifiers.HasFlag(KeyModifiers.Shift))
                 {
@@ -130,35 +130,35 @@ namespace BalatroSeedOracle.Components.FilterTabs
             };
 
             // Handle Ctrl+Click for go-to-definition
-            JamlEditor.TextArea.TextView.PointerPressed += OnMouseDown;
+            YAMLEditor.TextArea.TextView.PointerPressed += OnMouseDown;
 
             // Subscribe to text changes for validation
-            JamlEditor.TextChanged += OnEditorTextChanged;
+            YAMLEditor.TextChanged += OnEditorTextChanged;
         }
 
         private void OnMouseDown(object? sender, Avalonia.Input.PointerPressedEventArgs e)
         {
-            if (JamlEditor?.TextArea?.Caret == null || JamlEditor.Document == null)
+            if (YAMLEditor?.TextArea?.Caret == null || YAMLEditor.Document == null)
                 return;
 
-            var point = e.GetCurrentPoint(JamlEditor);
+            var point = e.GetCurrentPoint(YAMLEditor);
             if (
                 point.Properties.IsLeftButtonPressed && e.KeyModifiers.HasFlag(KeyModifiers.Control)
             )
             {
                 // Use caret position instead of mouse position for simplicity
-                var offset = JamlEditor.CaretOffset;
+                var offset = YAMLEditor.CaretOffset;
                 GoToDefinition(offset);
             }
         }
 
         private void GoToDefinition(int offset)
         {
-            if (JamlEditor?.Document == null)
+            if (YAMLEditor?.Document == null)
                 return;
 
-            var line = JamlEditor.Document.GetLineByOffset(offset);
-            var lineText = JamlEditor.Document.GetText(line.Offset, line.Length);
+            var line = YAMLEditor.Document.GetLineByOffset(offset);
+            var lineText = YAMLEditor.Document.GetText(line.Offset, line.Length);
             var column = offset - line.Offset;
 
             // Check if we're on an anchor reference (*anchor_name)
@@ -179,26 +179,26 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
         private void FindAnchorDefinition(string anchorName)
         {
-            if (JamlEditor?.Document == null)
+            if (YAMLEditor?.Document == null)
                 return;
 
-            var text = JamlEditor.Document.Text;
+            var text = YAMLEditor.Document.Text;
             var pattern = $@"(\w+)\s*:\s*&{Regex.Escape(anchorName)}\s+";
             var match = Regex.Match(text, pattern, RegexOptions.Multiline);
 
             if (match.Success)
             {
-                var lineNumber = JamlEditor.Document.GetLineByOffset(match.Index).LineNumber;
-                var line = JamlEditor.Document.GetLineByNumber(lineNumber);
-                JamlEditor.CaretOffset = line.Offset;
-                JamlEditor.TextArea.Caret.BringCaretToView();
+                var lineNumber = YAMLEditor.Document.GetLineByOffset(match.Index).LineNumber;
+                var line = YAMLEditor.Document.GetLineByNumber(lineNumber);
+                YAMLEditor.CaretOffset = line.Offset;
+                YAMLEditor.TextArea.Caret.BringCaretToView();
             }
         }
 
         private void OnEditorTextChanged(object? sender, EventArgs e)
         {
             // Validate and mark errors
-            if (JamlEditor?.Document != null && ViewModel != null)
+            if (YAMLEditor?.Document != null && ViewModel != null)
             {
                 ValidateAndMarkErrors();
             }
@@ -206,17 +206,17 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
         private void ValidateAndMarkErrors()
         {
-            if (_errorMarkerService is null || JamlEditor?.Document is null || ViewModel is null)
+            if (_errorMarkerService is null || YAMLEditor?.Document is null || ViewModel is null)
                 return;
 
             _errorMarkerService.ClearErrors();
 
-            var jamlContent = JamlEditor.Document.Text;
-            if (string.IsNullOrWhiteSpace(jamlContent))
+            var yamlContent = YAMLEditor.Document.Text;
+            if (string.IsNullOrWhiteSpace(yamlContent))
                 return;
 
-            // JAML validation via the engine's own loader (one grammar, no YAML)
-            if (!JamlConfigLoader.TryLoad(jamlContent, out _, out var error) && error is not null)
+            // YAML validation via the engine's own loader (one grammar, no YAML)
+            if (!YAMLConfigLoader.TryLoad(yamlContent, out _, out var error) && error is not null)
             {
                 var lineMatch = Regex.Match(error, @"line (\d+)");
                 var lineNumber =
@@ -228,13 +228,13 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     0,
                     50,
                     error,
-                    JamlErrorMarkerService.ErrorSeverity.Error
+                    YAMLErrorMarkerService.ErrorSeverity.Error
                 );
             }
             else
             {
                 // Check for undefined anchor references
-                CheckAnchorReferences(jamlContent);
+                CheckAnchorReferences(yamlContent);
             }
 
             _errorMarkerService.UpdateErrors();
@@ -242,7 +242,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
         private void CheckAnchorReferences(string yamlContent)
         {
-            if (_errorMarkerService is null || JamlEditor?.Document is null)
+            if (_errorMarkerService is null || YAMLEditor?.Document is null)
                 return;
 
             // Find all anchor references
@@ -262,15 +262,15 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 var anchorName = match.Groups[1].Value;
                 if (!definedAnchors.Contains(anchorName))
                 {
-                    var lineNumber = JamlEditor.Document.GetLineByOffset(match.Index).LineNumber;
+                    var lineNumber = YAMLEditor.Document.GetLineByOffset(match.Index).LineNumber;
                     var column =
-                        match.Index - JamlEditor.Document.GetLineByNumber(lineNumber).Offset;
+                        match.Index - YAMLEditor.Document.GetLineByNumber(lineNumber).Offset;
                     _errorMarkerService.AddError(
                         lineNumber,
                         column,
                         column + anchorName.Length + 1,
                         $"Anchor '{anchorName}' is not defined",
-                        JamlErrorMarkerService.ErrorSeverity.Warning
+                        YAMLErrorMarkerService.ErrorSeverity.Warning
                     );
                 }
             }
@@ -278,14 +278,14 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
         private void InstallAutocomplete()
         {
-            if (JamlEditor?.TextArea == null)
+            if (YAMLEditor?.TextArea == null)
                 return;
 
             // Handle Ctrl+Space for autocomplete
-            JamlEditor.TextArea.KeyDown += OnKeyDown;
+            YAMLEditor.TextArea.KeyDown += OnKeyDown;
 
             // Handle text input for auto-trigger
-            JamlEditor.TextArea.TextEntered += OnTextEntered;
+            YAMLEditor.TextArea.TextEntered += OnTextEntered;
         }
 
         private void OnKeyDown(object? sender, KeyEventArgs e)
@@ -293,50 +293,50 @@ namespace BalatroSeedOracle.Components.FilterTabs
             // Ctrl+Space triggers autocomplete
             if (e.Key == Key.Space && e.KeyModifiers.HasFlag(KeyModifiers.Control))
             {
-                ShowJamlCompletions();
+                ShowYAMLCompletions();
                 e.Handled = true;
             }
         }
 
         private void OnTextEntered(object? sender, TextInputEventArgs e)
         {
-            if (JamlEditor?.TextArea == null)
+            if (YAMLEditor?.TextArea == null)
                 return;
 
             // Show autocomplete on colon, dash (for lists), or asterisk (for anchor references)
             if (e.Text == ":" || e.Text == "-" || e.Text == "*")
             {
-                ShowJamlCompletions();
+                ShowYAMLCompletions();
             }
         }
 
-        private void ShowJamlCompletions()
+        private void ShowYAMLCompletions()
         {
-            if (JamlEditor?.TextArea == null)
+            if (YAMLEditor?.TextArea == null)
                 return;
 
             // Get text before cursor for context-aware completions
-            var offset = JamlEditor.CaretOffset;
-            var textBeforeCursor = JamlEditor.Text.Substring(
+            var offset = YAMLEditor.CaretOffset;
+            var textBeforeCursor = YAMLEditor.Text.Substring(
                 0,
-                Math.Min(offset, JamlEditor.Text.Length)
+                Math.Min(offset, YAMLEditor.Text.Length)
             );
 
             // Get SMART context-aware completions
-            var smartCompletions = JamlAutocompletionHelper.GetCompletionsForContext(
+            var smartCompletions = YAMLAutocompletionHelper.GetCompletionsForContext(
                 textBeforeCursor
             );
 
             if (smartCompletions.Count == 0)
                 return; // No completions available
 
-            var completionWindow = new CompletionWindow(JamlEditor.TextArea);
+            var completionWindow = new CompletionWindow(YAMLEditor.TextArea);
 
             // Find the start of the current word/token being typed
             var wordStart = offset;
             while (wordStart > 0)
             {
-                var ch = JamlEditor.Document.GetCharAt(wordStart - 1);
+                var ch = YAMLEditor.Document.GetCharAt(wordStart - 1);
                 if (!char.IsLetterOrDigit(ch) && ch != '_' && ch != '-' && ch != '*')
                     break;
                 wordStart--;
@@ -358,15 +358,15 @@ namespace BalatroSeedOracle.Components.FilterTabs
             completionWindow.Closed += (o, args) => completionWindow = null;
         }
 
-        private void LoadCustomJamlSyntaxHighlighting()
+        private void LoadCustomYAMLSyntaxHighlighting()
         {
-            if (JamlEditor == null)
+            if (YAMLEditor == null)
                 return;
 
             try
             {
-                // Load custom JAML dark mode syntax highlighting (uses YAML highlighting since JAML is YAML-based)
-                var xshdPath = Path.Combine(AppContext.BaseDirectory, "Resources", "JamlDark.xshd");
+                // Load custom YAML dark mode syntax highlighting (uses YAML highlighting since YAML is YAML-based)
+                var xshdPath = Path.Combine(AppContext.BaseDirectory, "Resources", "YAMLDark.xshd");
 
                 if (!File.Exists(xshdPath))
                 {
@@ -381,25 +381,25 @@ namespace BalatroSeedOracle.Components.FilterTabs
                             reader,
                             HighlightingManager.Instance
                         );
-                        JamlEditor.SyntaxHighlighting = definition;
+                        YAMLEditor.SyntaxHighlighting = definition;
                     }
                     DebugLogger.Log(
-                        "JamlEditorTab",
-                        "Custom JAML dark mode syntax highlighting loaded"
+                        "YAMLEditorTab",
+                        "Custom YAML dark mode syntax highlighting loaded"
                     );
                 }
                 else
                 {
                     DebugLogger.LogError(
-                        "JamlEditorTab",
-                        $"JamlDark.xshd not found at {xshdPath}, using default"
+                        "YAMLEditorTab",
+                        $"YAMLDark.xshd not found at {xshdPath}, using default"
                     );
                 }
             }
             catch (Exception ex)
             {
                 DebugLogger.LogError(
-                    "JamlEditorTab",
+                    "YAMLEditorTab",
                     $"Failed to load custom syntax highlighting: {ex.Message}"
                 );
             }
@@ -407,23 +407,23 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
         private void InstallCodeFolding()
         {
-            if (JamlEditor?.TextArea == null)
+            if (YAMLEditor?.TextArea == null)
                 return;
 
             try
             {
                 // Install folding manager
-                _foldingManager = FoldingManager.Install(JamlEditor.TextArea);
+                _foldingManager = FoldingManager.Install(YAMLEditor.TextArea);
 
                 // Initial folding update
                 UpdateCodeFolding();
 
-                DebugLogger.Log("JamlEditorTab", "Code folding installed successfully");
+                DebugLogger.Log("YAMLEditorTab", "Code folding installed successfully");
             }
             catch (Exception ex)
             {
                 DebugLogger.LogError(
-                    "JamlEditorTab",
+                    "YAMLEditorTab",
                     $"Failed to install code folding: {ex.Message}"
                 );
             }
@@ -431,18 +431,18 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
         private void UpdateCodeFolding()
         {
-            if (_foldingManager == null || JamlEditor?.Document == null)
+            if (_foldingManager == null || YAMLEditor?.Document == null)
                 return;
 
             try
             {
-                // Update foldings using brace folding strategy (handles [] for JAML arrays)
-                _foldingStrategy.UpdateFoldings(_foldingManager, JamlEditor.Document);
+                // Update foldings using brace folding strategy (handles [] for YAML arrays)
+                _foldingStrategy.UpdateFoldings(_foldingManager, YAMLEditor.Document);
             }
             catch (Exception ex)
             {
                 // Silently ignore folding errors to avoid disrupting editing
-                DebugLogger.LogError("JamlEditorTab", $"Error updating foldings: {ex.Message}");
+                DebugLogger.LogError("YAMLEditorTab", $"Error updating foldings: {ex.Message}");
             }
         }
 
@@ -465,30 +465,30 @@ namespace BalatroSeedOracle.Components.FilterTabs
         )
         {
             if (
-                e.PropertyName == nameof(JamlEditorTabViewModel.JamlContent)
-                && JamlEditor != null
+                e.PropertyName == nameof(YAMLEditorTabViewModel.YAMLContent)
+                && YAMLEditor != null
                 && ViewModel != null
             )
             {
                 // Only update if different to avoid infinite loop
-                if (JamlEditor.Text != ViewModel.JamlContent)
+                if (YAMLEditor.Text != ViewModel.YAMLContent)
                 {
-                    JamlEditor.Text = ViewModel.JamlContent;
+                    YAMLEditor.Text = ViewModel.YAMLContent;
                 }
             }
         }
 
         private void OnJumpToError(int lineNumber, int column)
         {
-            if (JamlEditor?.Document == null)
+            if (YAMLEditor?.Document == null)
                 return;
 
             try
             {
-                var line = JamlEditor.Document.GetLineByNumber(lineNumber);
+                var line = YAMLEditor.Document.GetLineByNumber(lineNumber);
                 var offset = line.Offset + Math.Min(column, line.Length);
-                JamlEditor.CaretOffset = offset;
-                JamlEditor.TextArea.Caret.BringCaretToView();
+                YAMLEditor.CaretOffset = offset;
+                YAMLEditor.TextArea.Caret.BringCaretToView();
             }
             catch
             {

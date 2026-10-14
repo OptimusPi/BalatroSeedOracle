@@ -10,7 +10,7 @@ using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Motely.Filters.Jaml;
+using Motely.Filters.YAML;
 
 namespace BalatroSeedOracle.ViewModels.FilterTabs
 {
@@ -62,7 +62,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         public string BannedHeaderText => $"BANNED ({BannedItems.Count} items)";
 
         [ObservableProperty]
-        private string _currentFileName = "_UNSAVED_CREATION.jaml";
+        private string _currentFileName = "_UNSAVED_CREATION.yaml";
 
         [ObservableProperty]
         private string _lastModified = DateTime.Now.ToString("yyyy-MM-dd HH:mm");
@@ -203,8 +203,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 return;
             }
 
-            var jaml = JamlConfigLoader.ToJaml(config);
-            var exportFileName = $"{NormalizeFilterName(config.Name ?? "filter")}.jaml";
+            var yaml = YAMLConfigLoader.ToYAML(config);
+            var exportFileName = $"{NormalizeFilterName(config.Name ?? "filter")}.yaml";
 
             var topLevel = TopLevelHelper.GetTopLevel();
             if (topLevel?.StorageProvider is null || !topLevel.StorageProvider.CanSave)
@@ -220,7 +220,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     SuggestedFileName = exportFileName,
                     FileTypeChoices = new[]
                     {
-                        new FilePickerFileType("JAML") { Patterns = new[] { "*.jaml" } },
+                        new FilePickerFileType("YAML") { Patterns = new[] { "*.yaml" } },
                     },
                 }
             );
@@ -233,7 +233,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
             await using (var stream = await file.OpenWriteAsync())
             {
-                var bytes = Encoding.UTF8.GetBytes(jaml);
+                var bytes = Encoding.UTF8.GetBytes(yaml);
                 await stream.WriteAsync(bytes, 0, bytes.Length);
             }
 
@@ -250,7 +250,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
         #region Helper Methods
 
-        private JamlConfig BuildConfigFromCurrentState()
+        private YAMLConfig BuildConfigFromCurrentState()
         {
             // Use the parent's robust implementation
             var config = _parentViewModel.BuildConfigFromCurrentState();

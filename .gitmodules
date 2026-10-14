@@ -1,4 +1,4 @@
-[submodule "src/MotelyJAML"]
-	path = src/MotelyJAML
-	url = https://github.com/OptimusPi/MotelyJAML.git
+[submodule "src/MotelyYAML"]
+	path = src/MotelyYAML
+	url = https://github.com/OptimusPi/MotelyYAML.git
 	branch = master

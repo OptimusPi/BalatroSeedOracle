@@ -9,7 +9,7 @@ using BalatroSeedOracle.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Motely.Enums;
-using Motely.Filters.Jaml;
+using Motely.Filters.YAML;
 
 namespace BalatroSeedOracle.ViewModels.FilterTabs
 {
@@ -33,8 +33,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         /// </summary>
         public string FilterFileName =>
             !string.IsNullOrWhiteSpace(_parentViewModel?.FilterName)
-                ? $"📄 {_parentViewModel.FilterName}.jaml"
-                : "📄 filter.jaml";
+                ? $"📄 {_parentViewModel.FilterName}.yaml"
+                : "📄 filter.yaml";
 
         public JsonEditorTabViewModel(FiltersModalViewModel? parentViewModel = null)
         {
@@ -67,7 +67,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         #region Command Implementations
 
         /// <summary>
-        /// Auto-generates JAML from Visual Builder without showing status messages (silent mode).
+        /// Auto-generates YAML from Visual Builder without showing status messages (silent mode).
         /// Called automatically when Visual Builder items change.
         /// </summary>
         public void AutoGenerateFromVisual()
@@ -76,7 +76,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 return;
 
             var config = _parentViewModel.BuildConfigFromCurrentState();
-            JsonContent = JamlConfigLoader.ToJaml(config);
+            JsonContent = YAMLConfigLoader.ToYAML(config);
 
             // Silent status update (no user-visible message)
             var totalItems = config.Must.Count + config.Should.Count;
@@ -85,7 +85,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
             DebugLogger.Log(
                 "JsonEditorTab",
-                $"Auto-synced JAML from visual builder: {config.Must.Count} must, {config.Should.Count} should"
+                $"Auto-synced YAML from visual builder: {config.Must.Count} must, {config.Should.Count} should"
             );
         }
 
@@ -100,7 +100,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             }
 
             var config = _parentViewModel.BuildConfigFromCurrentState();
-            JsonContent = JamlConfigLoader.ToJaml(config);
+            JsonContent = YAMLConfigLoader.ToYAML(config);
 
             ValidationStatus =
                 $"✓ Generated from visual ({config.Must.Count + config.Should.Count} items)";
@@ -136,7 +136,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 }
 
                 // Parse the YAML content
-                if (!JamlConfigLoader.TryLoad(JsonContent, out var config, out var loadError))
+                if (!YAMLConfigLoader.TryLoad(JsonContent, out var config, out var loadError))
                 {
                     ValidationStatus = $"Failed to parse YAML: {loadError}";
                     ValidationStatusColor = Brushes.Red;
@@ -229,9 +229,9 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         {
             try
             {
-                if (JamlConfigLoader.TryLoad(JsonContent, out var config, out _) && config is not null)
+                if (YAMLConfigLoader.TryLoad(JsonContent, out var config, out _) && config is not null)
                 {
-                    JsonContent = JamlConfigLoader.ToJaml(config);
+                    JsonContent = YAMLConfigLoader.ToYAML(config);
                     ValidationStatus = "✓ YAML formatted";
                     ValidationStatusColor = Brushes.Green;
                 }
@@ -273,12 +273,12 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         {
             if (string.IsNullOrWhiteSpace(JsonContent))
                 return false;
-            return JamlConfigLoader.TryLoad(JsonContent, out _, out _);
+            return YAMLConfigLoader.TryLoad(JsonContent, out _, out _);
         }
 
         private string GetDefaultJsonContent()
         {
-            return JamlConfigLoader.ToJaml(new JamlConfig
+            return YAMLConfigLoader.ToYAML(new YAMLConfig
             {
                 Id = Guid.NewGuid().ToString("N"),
                 Name = "New Filter",

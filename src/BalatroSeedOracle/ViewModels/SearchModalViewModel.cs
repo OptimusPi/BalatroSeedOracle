@@ -17,7 +17,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Motely;
 using Motely.Filters;
-using Motely.Filters.Jaml;
+using Motely.Filters.YAML;
 using BsoLogger = BalatroSeedOracle.Helpers.DebugLogger;
 
 namespace BalatroSeedOracle.ViewModels
@@ -91,7 +91,7 @@ namespace BalatroSeedOracle.ViewModels
         private bool _isSearching = false;
 
         [ObservableProperty]
-        private Motely.Filters.Jaml.JamlConfig? _loadedConfig;
+        private Motely.Filters.YAML.YAMLConfig? _loadedConfig;
 
         [ObservableProperty]
         private int _selectedTabIndex = 0;
@@ -552,11 +552,11 @@ namespace BalatroSeedOracle.ViewModels
             );
             PanelText = $"Searching with '{LoadedConfig.Name}'...";
 
-            // Direct engine call: JamlConfig → plan (tally metadata) + settings (search).
-            var plan = JamlSearchBuilder.CreatePlan(LoadedConfig, MinScore);
+            // Direct engine call: YAMLConfig → plan (tally metadata) + settings (search).
+            var plan = YAMLSearchBuilder.CreatePlan(LoadedConfig, MinScore);
             _tallyLabels = plan.TallyLabels.ToArray();
 
-            var settings = JamlSearchBuilder.CreateSettings(LoadedConfig, MinScore);
+            var settings = YAMLSearchBuilder.CreateSettings(LoadedConfig, MinScore);
 
             if (
                 !string.IsNullOrEmpty(DeckSelection)
@@ -659,7 +659,7 @@ namespace BalatroSeedOracle.ViewModels
                 });
             }
 
-            // The JAML owns the search identity. A search IS its filter — same filter,
+            // The YAML owns the search identity. A search IS its filter — same filter,
             // same id, same lake, same desktop icon, same resume state, across restarts.
             // (This used to be a fresh Guid per Start, which forked the lake and left
             // orphan desktop icons for what was really one search.)
@@ -1338,7 +1338,7 @@ namespace BalatroSeedOracle.ViewModels
         private bool CanExportResults() => SearchResults.Count > 0;
 
         /// <summary>
-        /// Load configuration from file path. Only .jaml files are filters.
+        /// Load configuration from file path. Only .yaml files are filters.
         /// </summary>
         public async Task LoadConfigFromPathAsync(string configPath)
         {
@@ -1359,14 +1359,14 @@ namespace BalatroSeedOracle.ViewModels
             if (
                 !string.Equals(
                     Path.GetExtension(configPath),
-                    ".jaml",
+                    ".yaml",
                     StringComparison.OrdinalIgnoreCase
                 )
             )
             {
                 BsoLogger.LogError(
                     "SearchModalViewModel",
-                    $"Not a .jaml filter file: {configPath}"
+                    $"Not a .yaml filter file: {configPath}"
                 );
                 return;
             }
@@ -1374,17 +1374,17 @@ namespace BalatroSeedOracle.ViewModels
             var content = await File.ReadAllTextAsync(configPath);
 
             if (
-                !Motely.Filters.Jaml.JamlConfigLoader.TryLoad(
+                !Motely.Filters.YAML.YAMLConfigLoader.TryLoad(
                     content,
                     out var config,
-                    out var jamlError
+                    out var yamlError
                 )
                 || config is null
             )
             {
                 BsoLogger.LogError(
                     "SearchModalViewModel",
-                    $"JAML parse error: {jamlError ?? "Unknown"}"
+                    $"YAML parse error: {yamlError ?? "Unknown"}"
                 );
                 return;
             }

@@ -202,7 +202,7 @@ namespace BalatroSeedOracle.ViewModels
         private bool CanOpenModal() => !IsModalVisible;
 
         /// <summary>
-        /// Resolves the filter config file path for a filter ID (.jaml in JamlFilters/).
+        /// Resolves the filter config file path for a filter ID (.yaml in YAMLFilters/).
         /// MVVM: path resolution and file checks belong in ViewModel, not View.
         /// </summary>
         public string? GetFilterConfigPath(string filterId)

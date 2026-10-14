@@ -10,7 +10,7 @@ using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Motely.Filters.Jaml;
+using Motely.Filters.YAML;
 
 namespace BalatroSeedOracle.ViewModels
 {
@@ -110,10 +110,10 @@ namespace BalatroSeedOracle.ViewModels
 
         private async System.Threading.Tasks.Task<string> CreateTempFilter()
         {
-            var tempPath = Path.Combine("JamlFilters", "_UNSAVED_CREATION.jaml");
+            var tempPath = Path.Combine("YAMLFilters", "_UNSAVED_CREATION.yaml");
 
             // Create basic empty filter structure
-            var emptyFilter = new Motely.Filters.Jaml.JamlConfig
+            var emptyFilter = new Motely.Filters.YAML.YAMLConfig
             {
                 Id = Guid.NewGuid().ToString("N"),
                 Name = "New Filter",
@@ -121,13 +121,13 @@ namespace BalatroSeedOracle.ViewModels
                 Author = _userProfileService?.GetAuthorName() ?? "Unknown",
                 Deck = Motely.Enums.MotelyDeck.Red,
                 Stake = Motely.Enums.MotelyStake.White,
-                Must = new System.Collections.Generic.List<Motely.Filters.Jaml.IJamlClause>(),
-                Should = new System.Collections.Generic.List<Motely.Filters.Jaml.IJamlClause>(),
-                MustNot = new System.Collections.Generic.List<Motely.Filters.Jaml.IJamlClause>(),
+                Must = new System.Collections.Generic.List<Motely.Filters.YAML.IYAMLClause>(),
+                Should = new System.Collections.Generic.List<Motely.Filters.YAML.IYAMLClause>(),
+                MustNot = new System.Collections.Generic.List<Motely.Filters.YAML.IYAMLClause>(),
             };
 
-            var jaml = Motely.Filters.Jaml.JamlConfigLoader.ToJaml(emptyFilter);
-            await File.WriteAllTextAsync(tempPath, jaml);
+            var yaml = Motely.Filters.YAML.YAMLConfigLoader.ToYAML(emptyFilter);
+            await File.WriteAllTextAsync(tempPath, yaml);
 
             return tempPath;
         }
@@ -197,7 +197,7 @@ namespace BalatroSeedOracle.ViewModels
                 {
                     DebugLogger.LogError(
                         "PaginatedFilterBrowserViewModel",
-                        $"Failed to parse JAML {filePath}: {loadError}"
+                        $"Failed to parse YAML {filePath}: {loadError}"
                     );
                     return null;
                 }
@@ -253,7 +253,7 @@ namespace BalatroSeedOracle.ViewModels
         /// Extracts item names from filter clauses and groups them by category
         /// </summary>
         private FilterItemCollections ParseItemCollections(
-            System.Collections.Generic.IList<Motely.Filters.Jaml.IJamlClause> clauses,
+            System.Collections.Generic.IList<Motely.Filters.YAML.IYAMLClause> clauses,
             int? scoreOverride = null
         )
         {
@@ -319,7 +319,7 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         private void AddItemToCollection(
             FilterItemCollections collections,
-            Motely.Filters.Jaml.IJamlClause clause,
+            Motely.Filters.YAML.IYAMLClause clause,
             string itemValue,
             int? scoreOverride = null
         )

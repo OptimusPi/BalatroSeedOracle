@@ -2,7 +2,7 @@ name: Two Black Hole (Immolate throwback)
 deck: Red
 stake: White
 
-# Port of 2blackhole.cl onto JAML.
+# Port of 2blackhole.cl onto YAML.
 #   Ante 1, pack 1 (the guaranteed Buffoon pack) contains Showman, and a
 #   Celestial pack at ante 1 yields at least two Black Hole cards.
 must:

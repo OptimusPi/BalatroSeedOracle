@@ -21,7 +21,7 @@ using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Services;
 using BalatroSeedOracle.ViewModels;
 using BalatroSeedOracle.Views.Modals;
-using Motely.Filters.Jaml;
+using Motely.Filters.YAML;
 
 namespace BalatroSeedOracle.Views
 {
@@ -546,7 +546,7 @@ namespace BalatroSeedOracle.Views
                     HideModalContent();
                 };
 
-                // Load the filter data (.jaml only)
+                // Load the filter data (.yaml only)
                 var filterPath = FilterFiles.Resolve(filterId);
                 filtersModal.ViewModel.CurrentFilterPath = filterPath;
 
@@ -642,25 +642,25 @@ namespace BalatroSeedOracle.Views
 
         /// <summary>
         /// Create a new filter with the given name
-        /// BUSINESS: Filter file creation, JAML generation, file I/O
+        /// BUSINESS: Filter file creation, YAML generation, file I/O
         /// NOTE: This is business logic that could be moved to a service or ViewModel
         /// </summary>
         private async Task<string?> CreateNewFilterWithName(string filterName)
         {
             try
             {
-                var filtersDir = "JamlFilters";
+                var filtersDir = "YAMLFilters";
 
                 System.IO.Directory.CreateDirectory(filtersDir);
 
                 // Generate unique ID
                 var filterId = $"{filterName.Replace(" ", "").ToLower()}_{Guid.NewGuid():N}";
-                var filterPath = System.IO.Path.Combine(filtersDir, filterId + ".jaml");
+                var filterPath = System.IO.Path.Combine(filtersDir, filterId + ".yaml");
 
-                // JAML is the source format — write it literally instead of building a
-                // JamlConfig just to serialize it back out. JamlConfigLoader reads .jaml.
+                // YAML is the source format — write it literally instead of building a
+                // YAMLConfig just to serialize it back out. YAMLConfigLoader reads .yaml.
                 var safeName = filterName.Replace("\"", "\\\"");
-                var jaml =
+                var yaml =
                     $"name: \"{safeName}\"\n"
                     + "description: Created with visual filter builder\n"
                     + "author: pifreak\n"
@@ -671,7 +671,7 @@ namespace BalatroSeedOracle.Views
                     + "should: []\n"
                     + "mustNot: []\n";
 
-                await System.IO.File.WriteAllTextAsync(filterPath, jaml);
+                await System.IO.File.WriteAllTextAsync(filterPath, yaml);
 
                 DebugLogger.Log("BalatroMainMenu", $"✅ Created new filter: {filterId}");
                 return filterId;

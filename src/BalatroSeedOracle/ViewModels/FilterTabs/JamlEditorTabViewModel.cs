@@ -10,20 +10,20 @@ using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Motely.Filters.Jaml;
+using Motely.Filters.YAML;
 
 namespace BalatroSeedOracle.ViewModels.FilterTabs
 {
     /// <summary>
-    /// ViewModel for JAML Editor Tab
-    /// JAML (Joker Ante Markup Language) is a YAML-based format for Balatro filters
+    /// ViewModel for YAML Editor Tab
+    /// YAML (Joker Ante Markup Language) is a YAML-based format for Balatro filters
     /// </summary>
-    public partial class JamlEditorTabViewModel : ObservableObject
+    public partial class YAMLEditorTabViewModel : ObservableObject
     {
         private readonly FiltersModalViewModel? _parentViewModel;
 
         [ObservableProperty]
-        private string _jamlContent = "";
+        private string _yamlContent = "";
 
         [ObservableProperty]
         private string _validationStatus = "Ready";
@@ -62,7 +62,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         private System.Threading.CancellationTokenSource? _validationThrottleCts;
         private Task? _validationThrottleTask;
 
-        partial void OnJamlContentChanged(string value)
+        partial void OnYAMLContentChanged(string value)
         {
             // Throttle validation to avoid lag while typing
             _validationThrottleCts?.Cancel();
@@ -100,7 +100,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             HasErrors = false;
             ErrorCount = 0;
 
-            if (string.IsNullOrWhiteSpace(JamlContent))
+            if (string.IsNullOrWhiteSpace(YAMLContent))
             {
                 ValidationStatus = "Empty";
                 ValidationStatusColor = Brushes.Gray;
@@ -112,7 +112,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
             try
             {
-                if (!JamlConfigLoader.TryLoad(JamlContent, out var config, out var loadError) || config is null)
+                if (!YAMLConfigLoader.TryLoad(YAMLContent, out var config, out var loadError) || config is null)
                 {
                     var lineNumber = ExtractLineNumber(loadError ?? "Unknown error");
                     ValidationErrors.Add(
@@ -120,14 +120,14 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                         {
                             LineNumber = lineNumber,
                             Column = 0,
-                            Message = loadError ?? "Invalid JAML syntax",
+                            Message = loadError ?? "Invalid YAML syntax",
                             Severity = ValidationErrorItem.ErrorSeverity.Error,
                         }
                     );
 
-                    ValidationStatus = "✗ Invalid JAML syntax";
+                    ValidationStatus = "✗ Invalid YAML syntax";
                     ValidationStatusColor = Brushes.Red;
-                    ErrorMessage = loadError ?? "Invalid JAML syntax";
+                    ErrorMessage = loadError ?? "Invalid YAML syntax";
                     HasError = true;
                     HasErrors = true;
                     ErrorCount = ValidationErrors.Count;
@@ -136,11 +136,11 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
                 // Additional validation checks
                 ValidateSchema(config);
-                ValidateAnchors(JamlContent);
+                ValidateAnchors(YAMLContent);
 
                 if (ValidationErrors.Count == 0)
                 {
-                    ValidationStatus = "✓ JAML is valid";
+                    ValidationStatus = "✓ YAML is valid";
                     ValidationStatusColor = Brushes.Green;
                     ErrorMessage = "";
                     HasError = false;
@@ -186,7 +186,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             return 1;
         }
 
-        private void ValidateSchema(JamlConfig config)
+        private void ValidateSchema(YAMLConfig config)
         {
             var deckName = config.Deck.ToString();
             if (!Enum.IsDefined(typeof(Motely.Enums.MotelyDeck), config.Deck))
@@ -280,7 +280,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             return 0;
         }
 
-        private void UpdatePreview(JamlConfig config)
+        private void UpdatePreview(YAMLConfig config)
         {
             PreviewItems.Clear();
             var spriteService = SpriteService.Instance;
@@ -314,7 +314,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         }
 
         private FilterItem CreateFilterItemFromClause(
-            IJamlClause clause,
+            IYAMLClause clause,
             FilterItemStatus status,
             string category,
             SpriteService spriteService
@@ -350,15 +350,15 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         /// </summary>
         public string FilterFileName =>
             !string.IsNullOrWhiteSpace(_parentViewModel?.FilterName)
-                ? $"📄 {_parentViewModel.FilterName}.jaml"
-                : "📄 filter.jaml";
+                ? $"📄 {_parentViewModel.FilterName}.yaml"
+                : "📄 filter.yaml";
 
-        public JamlEditorTabViewModel(FiltersModalViewModel? parentViewModel = null)
+        public YAMLEditorTabViewModel(FiltersModalViewModel? parentViewModel = null)
         {
             _parentViewModel = parentViewModel;
 
-            // Set default JAML content
-            JamlContent = GetDefaultJamlContent();
+            // Set default YAML content
+            YAMLContent = GetDefaultYAMLContent();
 
             // Listen for filter name changes from parent to update display
             if (_parentViewModel is not null)
@@ -386,16 +386,16 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         [RelayCommand]
         private async Task SyncToVisual()
         {
-            if (HasError || string.IsNullOrWhiteSpace(JamlContent) || _parentViewModel is null)
+            if (HasError || string.IsNullOrWhiteSpace(YAMLContent) || _parentViewModel is null)
                 return;
 
             try
             {
-                if (!JamlConfigLoader.TryLoad(JamlContent, out var config, out var loadError) || config is null)
+                if (!YAMLConfigLoader.TryLoad(YAMLContent, out var config, out var loadError) || config is null)
                 {
-                    ValidationStatus = $"✗ Sync failed: {loadError ?? "Invalid JAML"}";
+                    ValidationStatus = $"✗ Sync failed: {loadError ?? "Invalid YAML"}";
                     ValidationStatusColor = Brushes.Red;
-                    ErrorMessage = loadError ?? "Invalid JAML";
+                    ErrorMessage = loadError ?? "Invalid YAML";
                     HasError = true;
                     return;
                 }
@@ -413,8 +413,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 ValidationStatusColor = Brushes.LightGreen;
 
                 DebugLogger.LogImportant(
-                    "JamlEditorTab",
-                    "Successfully synced JAML to Visual Builder"
+                    "YAMLEditorTab",
+                    "Successfully synced YAML to Visual Builder"
                 );
             }
             catch (Exception ex)
@@ -423,27 +423,27 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 ValidationStatusColor = Brushes.Red;
                 ErrorMessage = $"Sync error: {ex.Message}";
                 HasError = true;
-                DebugLogger.LogError("JamlEditorTab", $"Sync error: {ex.Message}");
+                DebugLogger.LogError("YAMLEditorTab", $"Sync error: {ex.Message}");
             }
         }
 
         [RelayCommand]
-        private void FormatJaml()
+        private void FormatYAML()
         {
-            if (string.IsNullOrWhiteSpace(JamlContent))
+            if (string.IsNullOrWhiteSpace(YAMLContent))
                 return;
 
             try
             {
-                if (JamlConfigLoader.TryLoad(JamlContent, out var config, out _) && config is not null)
+                if (YAMLConfigLoader.TryLoad(YAMLContent, out var config, out _) && config is not null)
                 {
-                    JamlContent = JamlConfigLoader.ToJaml(config);
+                    YAMLContent = YAMLConfigLoader.ToYAML(config);
                     ValidationStatus = "✓ Formatted";
                     ValidationStatusColor = Brushes.LightGreen;
                 }
                 else
                 {
-                    ValidationStatus = "✗ Cannot format invalid JAML";
+                    ValidationStatus = "✗ Cannot format invalid YAML";
                     ValidationStatusColor = Brushes.Red;
                 }
             }
@@ -457,9 +457,9 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         }
 
         [RelayCommand]
-        private async Task CopyJaml()
+        private async Task CopyYAML()
         {
-            if (string.IsNullOrWhiteSpace(JamlContent))
+            if (string.IsNullOrWhiteSpace(YAMLContent))
                 return;
 
             try
@@ -471,19 +471,19 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
                 if (topLevel?.Clipboard is not null)
                 {
-                    await topLevel.Clipboard.SetTextAsync(JamlContent);
+                    await topLevel.Clipboard.SetTextAsync(YAMLContent);
                     ValidationStatus = "✓ Copied to clipboard";
                     ValidationStatusColor = Brushes.LightGreen;
                 }
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("JamlEditorTab", $"Failed to copy: {ex.Message}");
+                DebugLogger.LogError("YAMLEditorTab", $"Failed to copy: {ex.Message}");
             }
         }
 
         /// <summary>
-        /// Auto-generates JAML from Visual Builder (called when visual builder changes)
+        /// Auto-generates YAML from Visual Builder (called when visual builder changes)
         /// </summary>
         public void AutoGenerateFromVisual()
         {
@@ -495,20 +495,20 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 // Use the parent's BuildConfigFromCurrentState method - it handles everything properly!
                 var config = _parentViewModel.BuildConfigFromCurrentState();
 
-                // Convert to JAML (uses YAML serialization since JAML is YAML-based)
-                JamlContent = ConvertConfigToJaml(config);
+                // Convert to YAML (uses YAML serialization since YAML is YAML-based)
+                YAMLContent = ConvertConfigToYAML(config);
 
-                // Validate the generated JAML immediately to catch errors
+                // Validate the generated YAML immediately to catch errors
                 ValidateAndPreview();
 
                 // Update status based on validation
                 if (HasError)
                 {
-                    ValidationStatus = $"✗ Invalid JAML: {ErrorMessage}";
+                    ValidationStatus = $"✗ Invalid YAML: {ErrorMessage}";
                     ValidationStatusColor = Brushes.Red;
                     DebugLogger.LogError(
-                        "JamlEditorTab",
-                        $"Generated invalid JAML: {ErrorMessage}"
+                        "YAMLEditorTab",
+                        $"Generated invalid YAML: {ErrorMessage}"
                     );
                 }
                 else
@@ -520,20 +520,20 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     ValidationStatusColor = Brushes.Gray;
 
                     DebugLogger.Log(
-                        "JamlEditorTab",
-                        $"Auto-synced JAML from visual builder: {config.Must?.Count ?? 0} must, {config.Should?.Count ?? 0} should"
+                        "YAMLEditorTab",
+                        $"Auto-synced YAML from visual builder: {config.Must?.Count ?? 0} must, {config.Should?.Count ?? 0} should"
                     );
                 }
             }
             catch (Exception ex)
             {
-                ValidationStatus = $"✗ Error generating JAML: {ex.Message}";
+                ValidationStatus = $"✗ Error generating YAML: {ex.Message}";
                 ValidationStatusColor = Brushes.Red;
                 ErrorMessage = ex.Message;
                 HasError = true;
                 DebugLogger.LogError(
-                    "JamlEditorTab",
-                    $"Error generating JAML: {ex.Message}\n{ex.StackTrace}"
+                    "YAMLEditorTab",
+                    $"Error generating YAML: {ex.Message}\n{ex.StackTrace}"
                 );
             }
         }
@@ -543,27 +543,27 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         #region Helper Methods
 
         /// <summary>
-        /// Convert config to JAML using the engine's canonical YAML serializer.
+        /// Convert config to YAML using the engine's canonical YAML serializer.
         /// </summary>
-        private string ConvertConfigToJaml(JamlConfig config)
+        private string ConvertConfigToYAML(YAMLConfig config)
         {
             try
             {
-                return JamlConfigLoader.ToJaml(config);
+                return YAMLConfigLoader.ToYAML(config);
             }
             catch (Exception ex)
             {
                 DebugLogger.LogError(
-                    "JamlEditorTab",
-                    $"Failed to convert config to JAML: {ex.Message}"
+                    "YAMLEditorTab",
+                    $"Failed to convert config to YAML: {ex.Message}"
                 );
-                return GetDefaultJamlContent();
+                return GetDefaultYAMLContent();
             }
         }
 
-        private string GetDefaultJamlContent()
+        private string GetDefaultYAMLContent()
         {
-            return JamlConfigLoader.ToJaml(new JamlConfig
+            return YAMLConfigLoader.ToYAML(new YAMLConfig
             {
                 Id = Guid.NewGuid().ToString("N"),
                 Name = "New Filter",

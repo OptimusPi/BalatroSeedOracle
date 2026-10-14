@@ -7,7 +7,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Services;
-using Motely.Filters.Jaml;
+using Motely.Filters.YAML;
 
 namespace BalatroSeedOracle.ViewModels
 {
@@ -36,7 +36,7 @@ namespace BalatroSeedOracle.ViewModels
                     AllowMultiple = true,
                     FileTypeFilter = new[]
                     {
-                        new FilePickerFileType("JAML Filters") { Patterns = new[] { "*.jaml" } },
+                        new FilePickerFileType("YAML Filters") { Patterns = new[] { "*.yaml" } },
                     },
                 }
             );
@@ -59,7 +59,7 @@ namespace BalatroSeedOracle.ViewModels
                     text = await reader.ReadToEndAsync().ConfigureAwait(false);
                 }
 
-                if (!JamlConfigLoader.TryLoad(text, out var config, out var parseError) || config == null)
+                if (!YAMLConfigLoader.TryLoad(text, out var config, out var parseError) || config == null)
                 {
                     DebugLogger.LogError("ToolsModalViewModel", $"Failed to parse {storageFile.Name}: {parseError ?? "Unknown error"}");
                     failCount++;
@@ -140,7 +140,7 @@ namespace BalatroSeedOracle.ViewModels
         {
             var confirmed = await ModalHelper.ShowConfirmationAsync(
                 "⚠️ CONFIRM NUKE ⚠️",
-                "This will DELETE ALL:\n\n• All filter files in JamlFilters/\n• All search results in SearchResults/\n\nThis action CANNOT be undone!"
+                "This will DELETE ALL:\n\n• All filter files in YAMLFilters/\n• All search results in SearchResults/\n\nThis action CANNOT be undone!"
             );
 
             if (!confirmed)
@@ -149,9 +149,9 @@ namespace BalatroSeedOracle.ViewModels
             int deletedFilters = 0;
             int deletedResults = 0;
 
-            if (Directory.Exists("JamlFilters"))
+            if (Directory.Exists("YAMLFilters"))
             {
-                foreach (var file in Directory.GetFiles("JamlFilters", "*.jaml"))
+                foreach (var file in Directory.GetFiles("YAMLFilters", "*.yaml"))
                 {
                     File.Delete(file);
                     deletedFilters++;

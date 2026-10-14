@@ -64,7 +64,7 @@ namespace BalatroSeedOracle.ViewModels
         public bool IsEnhancementVisible => _item?.ItemType == "StandardCard";
         public bool IsRankSuitVisible => _item?.ItemType == "StandardCard";
 
-        // Additional JAML item types
+        // Additional YAML item types
         public bool IsTarotCardVisible => _item?.ItemType == "TarotCard";
         public bool IsPlanetCardVisible => _item?.ItemType == "PlanetCard";
         public bool IsSpectralCardVisible => _item?.ItemType == "SpectralCard";
@@ -135,7 +135,7 @@ namespace BalatroSeedOracle.ViewModels
         [ObservableProperty]
         private bool _packPos5Selected = false;
 
-        // Sources checkboxes - according to JAML schema: "shop", "pack", "tag", "voucher"
+        // Sources checkboxes - according to YAML schema: "shop", "pack", "tag", "voucher"
         [ObservableProperty]
         private bool _sourceShop = true;
 
@@ -148,7 +148,7 @@ namespace BalatroSeedOracle.ViewModels
         [ObservableProperty]
         private bool _sourceVoucher = true;
 
-        // Nested logic conditions for JAML and/or groups
+        // Nested logic conditions for YAML and/or groups
         [ObservableProperty]
         private bool _enableAndGroup = false;
 
@@ -221,7 +221,7 @@ namespace BalatroSeedOracle.ViewModels
                 PackPos5Selected = item.PackPositions.Contains(5);
             }
 
-            // Load sources configuration according to JAML schema
+            // Load sources configuration according to YAML schema
             if (item.Sources is not null && item.Sources.Length > 0)
             {
                 SourceShop = item.Sources.Contains("shop");
@@ -493,7 +493,7 @@ namespace BalatroSeedOracle.ViewModels
                 _item.PackPositions = positions.Count > 0 ? positions.ToArray() : null;
             }
 
-            // Save sources configuration according to JAML schema
+            // Save sources configuration according to YAML schema
             var sources = new System.Collections.Generic.List<string>();
             if (SourceShop)
                 sources.Add("shop");
@@ -505,7 +505,7 @@ namespace BalatroSeedOracle.ViewModels
                 sources.Add("voucher");
             _item.Sources = sources.Count > 0 ? sources.ToArray() : null;
 
-            // Save edition, seal, enhancement, rank, suit - validate against JAML schema
+            // Save edition, seal, enhancement, rank, suit - validate against YAML schema
             _item.Edition = ValidateEdition(Edition);
             _item.Seal = ValidateSeal(Seal);
             _item.Enhancement = ValidateEnhancement(Enhancement);
@@ -567,7 +567,7 @@ namespace BalatroSeedOracle.ViewModels
             _onClose?.Invoke();
         }
 
-        // JAML Schema Validation Methods
+        // YAML Schema Validation Methods
         private string? ValidateEdition(string? edition)
         {
             var validEditions = new[] { "Foil", "Holographic", "Polychrome", "Negative" };

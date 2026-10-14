@@ -1,7 +1,7 @@
 id: PerkeoObservatory
 name: Perkeo Observatory
 author: pifreak
-description: JAML translation of PerkeoObservatoryFilterDesc.cs. Telescope ante 1, Observatory ante 2, with Perkeo resolved from a Soul card in ante 1's first booster pack or ante 2's first three booster packs.
+description: YAML translation of PerkeoObservatoryFilterDesc.cs. Telescope ante 1, Observatory ante 2, with Perkeo resolved from a Soul card in ante 1's first booster pack or ante 2's first three booster packs.
 stake: White
 
 must:

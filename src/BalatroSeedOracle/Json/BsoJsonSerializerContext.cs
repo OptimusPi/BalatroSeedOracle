@@ -10,8 +10,8 @@ namespace BalatroSeedOracle.Json;
 /// AOT-compatible JSON serialization context for BalatroSeedOracle app types.
 /// This enables Native AOT compilation by pre-generating serialization code at compile time.
 /// 
-/// NOTE: This is for app-level JSON serialization only. For JAML, use Motely's
-/// JamlConfigLoader directly - no app-side JAML serialization context.
+/// NOTE: This is for app-level JSON serialization only. For YAML, use Motely's
+/// YAMLConfigLoader directly - no app-side YAML serialization context.
 /// </summary>
 [JsonSourceGenerationOptions(
     WriteIndented = true,

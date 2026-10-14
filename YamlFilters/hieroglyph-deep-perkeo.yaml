@@ -1,5 +1,5 @@
 # =============================================================================
-#  hieroglyph-deep-perkeo.jaml — DEEP pack-slot search (the depth proof)
+#  hieroglyph-deep-perkeo.yaml — DEEP pack-slot search (the depth proof)
 # =============================================================================
 #  The booster-pack PRNG stream emits SIX packs at every ante (slots 0-5), but
 #  normal ante-1 gameplay only reaches slot 3. Buying Hieroglyph (or Petroglyph)
@@ -18,7 +18,7 @@ name: Hieroglyph Deep Perkeo
 author: pifreak
 description: >
   Negative Perkeo at ante-1 booster pack slot 5 — only reachable with the
-  Hieroglyph/Petroglyph ante rewind. Proves JAML can search the full pack depth.
+  Hieroglyph/Petroglyph ante rewind. Proves YAML can search the full pack depth.
 deck: Red
 stake: White
 

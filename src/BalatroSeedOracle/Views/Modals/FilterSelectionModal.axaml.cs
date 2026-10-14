@@ -14,7 +14,7 @@ using BalatroSeedOracle.Controls;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Services;
 using BalatroSeedOracle.ViewModels;
-using Motely.Filters.Jaml;
+using Motely.Filters.YAML;
 using MsBox.Avalonia;
 using MsBox.Avalonia.Enums;
 
@@ -77,7 +77,7 @@ namespace BalatroSeedOracle.Views.Modals
                         continue;
 
                     var ext = Path.GetExtension(storageFile.Name).ToLowerInvariant();
-                    if (ext == ".jaml")
+                    if (ext == ".yaml")
                     {
                         await ImportFilterFile(storageFile);
                         imported = true;
@@ -87,7 +87,7 @@ namespace BalatroSeedOracle.Views.Modals
 
                 if (!imported)
                 {
-                    await ShowImportError("No .jaml file in the drop.");
+                    await ShowImportError("No .yaml file in the drop.");
                 }
 
                 e.Handled = true;
@@ -589,7 +589,7 @@ namespace BalatroSeedOracle.Views.Modals
                         {
                             new FilePickerFileType("Filter Files")
                             {
-                                Patterns = new[] { "*.jaml" },
+                                Patterns = new[] { "*.yaml" },
                             },
                         },
                     }
@@ -640,9 +640,9 @@ namespace BalatroSeedOracle.Views.Modals
             try
             {
                 var extension = Path.GetExtension(file.Name).ToLowerInvariant();
-                if (extension != ".jaml")
+                if (extension != ".yaml")
                 {
-                    await ShowImportError($"Invalid file type: {extension}. Expected .jaml");
+                    await ShowImportError($"Invalid file type: {extension}. Expected .yaml");
                     return;
                 }
 
@@ -657,7 +657,7 @@ namespace BalatroSeedOracle.Views.Modals
 
                 DebugLogger.Log("FilterSelectionModal", $"Read {text.Length} chars. Parsing...");
 
-                if (!JamlConfigLoader.TryLoad(text, out var config, out var parseError) || config == null)
+                if (!YAMLConfigLoader.TryLoad(text, out var config, out var parseError) || config == null)
                 {
                     await ShowImportError(
                         $"Failed to parse {file.Name}:\n{parseError ?? "Unknown error"}"

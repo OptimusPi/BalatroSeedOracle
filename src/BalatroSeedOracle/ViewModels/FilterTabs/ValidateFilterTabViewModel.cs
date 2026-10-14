@@ -9,7 +9,7 @@ using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Motely.Filters.Jaml;
+using Motely.Filters.YAML;
 
 namespace BalatroSeedOracle.ViewModels.FilterTabs
 {
@@ -29,7 +29,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         private string _filterDescription = "";
 
         [ObservableProperty]
-        private string _currentFileName = "_UNSAVED_CREATION.jaml";
+        private string _currentFileName = "_UNSAVED_CREATION.yaml";
 
         [ObservableProperty]
         private string _lastModified = DateTime.Now.ToString("yyyy-MM-dd HH:mm");
@@ -125,13 +125,13 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         private void CopyJson()
         {
             var config = BuildConfigFromCurrentState();
-            var jaml = JamlConfigLoader.ToJaml(config);
+            var yaml = YAMLConfigLoader.ToYAML(config);
 
             // Copy to clipboard via event
-            CopyToClipboardRequested?.Invoke(this, jaml);
+            CopyToClipboardRequested?.Invoke(this, yaml);
 
-            UpdateStatus("✅ JAML copied to clipboard", false);
-            DebugLogger.Log("ValidateFilterTab", "Filter JAML copied to clipboard");
+            UpdateStatus("✅ YAML copied to clipboard", false);
+            DebugLogger.Log("ValidateFilterTab", "Filter YAML copied to clipboard");
         }
 
         [RelayCommand(CanExecute = nameof(CanSave))]
@@ -167,8 +167,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 return;
             }
 
-            var jaml = JamlConfigLoader.ToJaml(config);
-            var exportFileName = $"{config.Name}_{DateTime.Now:yyyyMMdd_HHmmss}.jaml";
+            var yaml = YAMLConfigLoader.ToYAML(config);
+            var exportFileName = $"{config.Name}_{DateTime.Now:yyyyMMdd_HHmmss}.yaml";
 
             var topLevel = TopLevelHelper.GetTopLevel();
             if (topLevel?.StorageProvider is null || !topLevel.StorageProvider.CanSave)
@@ -184,7 +184,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     SuggestedFileName = exportFileName,
                     FileTypeChoices = new[]
                     {
-                        new FilePickerFileType("JAML") { Patterns = new[] { "*.jaml" } },
+                        new FilePickerFileType("YAML") { Patterns = new[] { "*.yaml" } },
                     },
                 }
             );
@@ -197,7 +197,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
             await using (var stream = await file.OpenWriteAsync())
             {
-                var bytes = Encoding.UTF8.GetBytes(jaml);
+                var bytes = Encoding.UTF8.GetBytes(yaml);
                 await stream.WriteAsync(bytes, 0, bytes.Length);
             }
 
@@ -214,7 +214,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
         #region Helper Methods
 
-        private JamlConfig BuildConfigFromCurrentState()
+        private YAMLConfig BuildConfigFromCurrentState()
         {
             // MUST run on UI thread to access ObservableCollections
             return Dispatcher.UIThread.Invoke(() =>

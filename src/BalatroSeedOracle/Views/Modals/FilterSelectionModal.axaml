@@ -805,7 +805,7 @@
                                             <StackPanel HorizontalAlignment="Center"
                                                         VerticalAlignment="Center"
                                                         Spacing="10">
-                                                <TextBlock Text="Drag &amp; drop .jaml or .json file here"
+                                                <TextBlock Text="Drag &amp; drop .yaml or .json file here"
                                                            FontFamily="{StaticResource BalatroFont}"
                                                            FontSize="12"
                                                            Foreground="{StaticResource TextInactive}"

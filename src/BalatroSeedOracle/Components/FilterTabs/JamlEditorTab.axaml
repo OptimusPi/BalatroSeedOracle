@@ -5,8 +5,8 @@
              xmlns:components="using:BalatroSeedOracle.Components"
              xmlns:filterTabs="clr-namespace:BalatroSeedOracle.Components.FilterTabs"
              xmlns:models="using:BalatroSeedOracle.Models"
-             x:Class="BalatroSeedOracle.Components.FilterTabs.JamlEditorTab"
-             x:DataType="vm:JamlEditorTabViewModel">
+             x:Class="BalatroSeedOracle.Components.FilterTabs.YAMLEditorTab"
+             x:DataType="vm:YAMLEditorTabViewModel">
     <Border Grid.Row="0"
             Background="{StaticResource EditorDarkBg}"
             BorderThickness="0"
@@ -50,8 +50,8 @@
 
                     <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6">
                         <Button Content="Format"
-                                ToolTip.Tip="Auto-format JAML"
-                                Command="{Binding FormatJamlCommand}"
+                                ToolTip.Tip="Auto-format YAML"
+                                Command="{Binding FormatYAMLCommand}"
                                 Height="24"
                                 Padding="8,4"
                                 FontSize="18"
@@ -70,8 +70,8 @@
                                 BorderThickness="0"
                                 CornerRadius="4"
                                 Foreground="{StaticResource BrightGreenEditor}"/>
-                        <Button ToolTip.Tip="Copy JAML to clipboard"
-                                Command="{Binding CopyJamlCommand}"
+                        <Button ToolTip.Tip="Copy YAML to clipboard"
+                                Command="{Binding CopyYAMLCommand}"
                                 Height="24"
                                 Padding="8,4"
                                 FontSize="18"
@@ -80,7 +80,7 @@
                                 CornerRadius="4">
                             <StackPanel Orientation="Horizontal" Spacing="4">
                                 <PathIcon Data="{StaticResource ContentCopyIconData}" Width="12" Height="12" Foreground="{StaticResource Blue}"/>
-                                <TextBlock Text="Copy JAML" Foreground="{StaticResource Blue}" VerticalAlignment="Center"/>
+                                <TextBlock Text="Copy YAML" Foreground="{StaticResource Blue}" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
                     </StackPanel>
@@ -90,7 +90,7 @@
             <!-- Editor Content -->
             <AvaloniaEdit:TextEditor Grid.Row="1"
                                     Grid.Column="0"
-                                    x:Name="JamlEditor"
+                                    x:Name="YAMLEditor"
                                     SyntaxHighlighting="YAML"
                                     ShowLineNumbers="True"
                                     FontFamily="Cascadia Code,Consolas,Menlo,Courier New,monospace"
@@ -191,7 +191,7 @@
             </Border>
 
             <!-- Error Panel -->
-            <filterTabs:JamlErrorPanel Grid.Row="3"
+            <filterTabs:YAMLErrorPanel Grid.Row="3"
                                        Grid.Column="0"
                                        Grid.ColumnSpan="2"
                                        DataContext="{Binding}"

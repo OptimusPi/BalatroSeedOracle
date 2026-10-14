@@ -73,7 +73,7 @@
                             <NumericUpDown Value="{Binding MinCount}" Minimum="1" Maximum="10" FontSize="18" Height="24"/>
                         </StackPanel>
 
-                        <!-- Edition (Jokers + StandardCards) - JAML schema: ["Foil", "Holographic", "Polychrome", "Negative"] -->
+                        <!-- Edition (Jokers + StandardCards) - YAML schema: ["Foil", "Holographic", "Polychrome", "Negative"] -->
                         <StackPanel Grid.Column="0" Grid.Row="6" Spacing="2" IsVisible="{Binding IsEditionVisible}">
                             <TextBlock Text="Edition" FontFamily="{StaticResource BalatroFont}" FontSize="18" Foreground="{StaticResource Gold}"/>
                             <ComboBox SelectedItem="{Binding Edition}" FontSize="18" Height="24">
@@ -109,7 +109,7 @@
                             </ComboBox>
                         </StackPanel>
 
-                        <!-- Enhancement (StandardCards only) - JAML schema: ["Bonus", "Mult", "Wild", "Glass", "Steel", "Stone", "Lucky", "Gold"] -->
+                        <!-- Enhancement (StandardCards only) - YAML schema: ["Bonus", "Mult", "Wild", "Glass", "Steel", "Stone", "Lucky", "Gold"] -->
                         <StackPanel Grid.Column="2" Grid.Row="2" Spacing="2" IsVisible="{Binding IsEnhancementVisible}">
                             <TextBlock Text="Enhancement" FontFamily="{StaticResource BalatroFont}" FontSize="18" Foreground="{StaticResource Gold}"/>
                             <ComboBox SelectedItem="{Binding Enhancement}" FontSize="18" Height="24">
@@ -146,7 +146,7 @@
                             </ComboBox>
                         </StackPanel>
 
-                        <!-- Special Properties for other JAML item types -->
+                        <!-- Special Properties for other YAML item types -->
                         <StackPanel Grid.Column="0" Grid.Row="8" Spacing="2" IsVisible="{Binding IsTarotCardVisible}">
                             <TextBlock Text="Tarot Special" FontFamily="{StaticResource BalatroFont}" FontSize="18" Foreground="{StaticResource Gold}"/>
                             <TextBox Text="{Binding Label}" PlaceholderText="Tarot card special property" FontSize="18" Height="24"/>
