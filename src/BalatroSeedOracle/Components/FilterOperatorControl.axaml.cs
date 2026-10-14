@@ -172,7 +172,9 @@ namespace BalatroSeedOracle.Components
 
         private void CalculateFannedPositions(FilterOperatorItem operatorItem)
         {
-            if (ChildrenItemsControl == null)
+            // Only the 5+ layout (FannedCardsHost) carries the transforms; the
+            // side-by-side layout for fewer cards needs none.
+            if (FannedCardsHost == null)
                 return;
 
             int count = operatorItem.Children.Count;
@@ -229,12 +231,18 @@ namespace BalatroSeedOracle.Components
                 yArcHeight = 15.0;
             }
 
-            // Center the fan horizontally
+            // Center the fan on the panel's origin, which sits at the host's top centre:
+            // the first card's left edge starts half the fan's width to the left of it.
             double totalWidth = (count - 1) * xOffset + cardWidth;
-            double startX = -totalWidth / 2.0 + cardWidth / 2.0;
+            double startX = -totalWidth / 2.0;
 
-            // Apply transforms to each card container
-            var containers = ChildrenItemsControl.GetVisualDescendants().OfType<Border>().ToList();
+            // Apply transforms to each card container: the tagged top-level Border of each
+            // fanned item (the card inside has Borders of its own).
+            var containers = FannedCardsHost
+                .GetVisualDescendants()
+                .OfType<Border>()
+                .Where(b => (b.Tag as string) == "fannedCard")
+                .ToList();
 
             for (int i = 0; i < Math.Min(count, containers.Count); i++)
             {

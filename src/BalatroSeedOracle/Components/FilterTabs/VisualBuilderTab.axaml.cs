@@ -380,6 +380,23 @@ namespace BalatroSeedOracle.Components.FilterTabs
             }
         }
 
+        /// <summary>
+        /// An operator box in Must/Should drags like a card (same pending-drag arming, same
+        /// drop handling), but has no per-item config, so a right-click does nothing.
+        /// </summary>
+        private void OnDropZoneOperatorPointerPressed(
+            object? sender,
+            Avalonia.Input.PointerPressedEventArgs e
+        )
+        {
+            if (e.GetCurrentPoint(sender as Control).Properties.IsRightButtonPressed)
+            {
+                e.Handled = true;
+                return;
+            }
+            OnDropZoneItemPointerPressed(sender, e);
+        }
+
         private void OnDropZoneItemPointerPressed(
             object? sender,
             Avalonia.Input.PointerPressedEventArgs e
@@ -903,6 +920,21 @@ namespace BalatroSeedOracle.Components.FilterTabs
                         ReturnOverlay.IsVisible = false;
                     }
 
+                    // A Banned Items box only lives in MUST. Refuse the drop here, before anything
+                    // below removes the box from its source zone, or the refusal would lose it.
+                    if (
+                        _draggedItem is Models.FilterOperatorItem { OperatorType: "BannedItems" }
+                        && zoneName == "ShouldDropZone"
+                    )
+                    {
+                        DebugLogger.Log(
+                            "VisualBuilderTab",
+                            "🚫 BLOCKED: BannedItems cannot drop into SHOULD zone!"
+                        );
+                        await AnimateGhostBackToOrigin();
+                        return;
+                    }
+
                     // SPECIAL CASE: ItemGridBorder (return to shelf) - remove from drop zone if dragging from one
                     if (zoneName == "ItemGridBorder")
                     {
@@ -912,17 +944,11 @@ namespace BalatroSeedOracle.Components.FilterTabs
                                 "VisualBuilderTab",
                                 $"↩️ RETURNING {_draggedItem.Name} from {_sourceDropZone} to shelf"
                             );
-                            switch (_sourceDropZone)
-                            {
-                                case "MustDropZone":
-                                    vm.SelectedMust.Remove(_draggedItem);
-                                    vm.IsDragging = false;
-                                    break;
-                                case "ShouldDropZone":
-                                    vm.SelectedShould.Remove(_draggedItem);
-                                    vm.IsDragging = false;
-                                    break;
-                            }
+                            // RemoveItem finds the zone itself and also drops the parent's key and
+                            // config for the item, so a reload from the parent collections does
+                            // not bring it back.
+                            vm.RemoveItem(_draggedItem);
+                            vm.IsDragging = false;
                             // Play trash sound (or card drop)
                             // SoundEffectService.Instance.PlayCardDrop();
                         }
@@ -961,15 +987,8 @@ namespace BalatroSeedOracle.Components.FilterTabs
                                 "VisualBuilderTab",
                                 $"Removing {_draggedItem.Name} from {_sourceDropZone}"
                             );
-                            switch (_sourceDropZone)
-                            {
-                                case "MustDropZone":
-                                    vm.SelectedMust.Remove(_draggedItem);
-                                    break;
-                                case "ShouldDropZone":
-                                    vm.SelectedShould.Remove(_draggedItem);
-                                    break;
-                            }
+                            // Through RemoveItem, so the parent's key and config go with it (see above).
+                            vm.RemoveItem(_draggedItem);
                         }
 
                         // Play card drop sound
@@ -1225,15 +1244,18 @@ namespace BalatroSeedOracle.Components.FilterTabs
                                     IsInBannedItemsTray = _draggedItem.IsInBannedItemsTray,
                                 };
 
-                                // Add the COPY to target zone (allows duplicates from shelf!)
+                                // From the shelf, add the COPY (allows duplicates from shelf!). From
+                                // the other zone, move the card itself: it already belongs to the
+                                // builder, and its antes, score, min count and slots live on it.
+                                var itemToAdd = _sourceDropZone != null ? _draggedItem : itemCopy;
                                 switch (zoneName)
                                 {
                                     case "MustDropZone":
-                                        vm.AddToMustCommand.Execute(itemCopy);
+                                        vm.AddToMustCommand.Execute(itemToAdd);
                                         vm.IsDragging = false;
                                         break;
                                     case "ShouldDropZone":
-                                        vm.AddToShouldCommand.Execute(itemCopy);
+                                        vm.AddToShouldCommand.Execute(itemToAdd);
                                         vm.IsDragging = false;
                                         break;
                                 }

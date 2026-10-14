@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:models="using:BalatroSeedOracle.Models"
     xmlns:converters="using:BalatroSeedOracle.Converters"
+    xmlns:components="using:BalatroSeedOracle.Components"
     x:DataType="models:FilterOperatorItem">
 
     <UserControl.Styles>
@@ -16,6 +17,11 @@
             <Setter Property="Padding" Value="0"/>
             <Setter Property="MinWidth" Value="120"/>
             <Setter Property="MinHeight" Value="100"/>
+        </Style>
+
+        <!-- OR container - GREEN theme, the same green as the tray and the SHOULD zone -->
+        <Style Selector="Border.operator-card-container.or">
+            <Setter Property="BorderBrush" Value="{StaticResource Green}"/>
         </Style>
 
         <!-- BannedItems container - RED theme -->
@@ -51,6 +57,11 @@
             <Setter Property="CornerRadius" Value="6,6,0,0"/>
         </Style>
 
+        <!-- OR header - GREEN background -->
+        <Style Selector="Border.operator-header.or">
+            <Setter Property="Background" Value="{StaticResource Green}"/>
+        </Style>
+
         <!-- BannedItems header - RED background -->
         <Style Selector="Border.operator-header.banned">
             <Setter Property="Background" Value="{StaticResource Red}"/>
@@ -80,6 +91,7 @@
     <Border
         x:Name="OperatorContainer"
         Classes="operator-card-container"
+        Classes.or="{Binding OperatorType, Converter={x:Static converters:IsOrConverter.Instance}}"
         Classes.banned="{Binding OperatorType, Converter={x:Static converters:IsBannedItemsConverter.Instance}}"
         ClipToBounds="False">
         <Border.Transitions>
@@ -96,6 +108,7 @@
                 x:Name="OperatorHeader"
                 Grid.Row="0"
                 Classes="operator-header"
+                Classes.or="{Binding OperatorType, Converter={x:Static converters:IsOrConverter.Instance}}"
                 Classes.banned="{Binding OperatorType, Converter={x:Static converters:IsBannedItemsConverter.Instance}}"
                 Cursor="Hand">
                 <TextBlock
@@ -128,35 +141,30 @@
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <Grid Width="71" Height="95" Margin="3">
-                                    <Image Source="{Binding ItemImage}"
-                                           Width="71"
-                                           Height="95"
-                                           Stretch="Uniform"/>
-                                    <Image Source="{Binding SoulFaceImage}"
-                                           Width="71"
-                                           Height="95"
-                                           Stretch="Uniform"
-                                           IsVisible="{Binding SoulFaceImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
-                                    <Image Source="{Binding DebuffedOverlayImage}"
-                                           Width="71"
-                                           Height="95"
-                                           Stretch="Uniform"
-                                           IsVisible="{Binding IsInBannedItemsTray}"/>
+                                <!-- The full card at its own size (71 wide, artwork plus name
+                                     label), edition/sticker/soul/banned overlays included. -->
+                                <Grid Width="71" Margin="3">
+                                    <components:FilterItemCard DataContext="{Binding}"/>
                                 </Grid>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
 
-                    <!-- 5+ cards: fanned Canvas layout -->
-                    <Canvas Name="FannedCardsCanvas"
-                            IsVisible="{Binding Children.Count, Converter={x:Static converters:GreaterThanFourConverter.Instance}}"
-                            HorizontalAlignment="Center"
-                            VerticalAlignment="Center"
-                            MinWidth="120"
-                            MinHeight="100"
-                            ClipToBounds="False">
-                        <ItemsControl ItemsSource="{Binding Children}">
+                    <!-- 5+ cards: fanned layout. The ItemsControl's Canvas panel takes no size
+                         from its children, so it sits as a point at the host's top centre and
+                         CalculateFannedPositions spreads the cards around that point. The host's
+                         minimum size holds a seven-card fan of full cards after their transforms:
+                         161 wide plus ~41 each side for the ±18° edge cards; ~133 tall plus the
+                         15 arc and the ~11 a rotated card's lower corner drops below its pivot. -->
+                    <Grid Name="FannedCardsHost"
+                          IsVisible="{Binding Children.Count, Converter={x:Static converters:GreaterThanFourConverter.Instance}}"
+                          MinWidth="250"
+                          MinHeight="160"
+                          ClipToBounds="False">
+                        <ItemsControl ItemsSource="{Binding Children}"
+                                      HorizontalAlignment="Center"
+                                      VerticalAlignment="Top"
+                                      ClipToBounds="False">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
                                     <Canvas/>
@@ -165,7 +173,11 @@
 
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
+                                    <!-- Tag: CalculateFannedPositions finds these Borders and sets
+                                         their rotate/translate transforms. -->
                                     <Border Background="Transparent"
+                                            Tag="fannedCard"
+                                            Width="71"
                                             RenderTransformOrigin="0.5,1.0"
                                             ToolTip.Tip="{Binding DisplayName}"
                                             Cursor="Hand">
@@ -176,27 +188,12 @@
                                             </TransformGroup>
                                         </Border.RenderTransform>
 
-                                        <Grid Width="71" Height="95">
-                                            <Image Source="{Binding ItemImage}"
-                                                   Width="71"
-                                                   Height="95"
-                                                   Stretch="Uniform"/>
-                                            <Image Source="{Binding SoulFaceImage}"
-                                                   Width="71"
-                                                   Height="95"
-                                                   Stretch="Uniform"
-                                                   IsVisible="{Binding SoulFaceImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
-                                            <Image Source="{Binding DebuffedOverlayImage}"
-                                                   Width="71"
-                                                   Height="95"
-                                                   Stretch="Uniform"
-                                                   IsVisible="{Binding IsInBannedItemsTray}"/>
-                                        </Grid>
+                                        <components:FilterItemCard DataContext="{Binding}"/>
                                     </Border>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
-                    </Canvas>
+                    </Grid>
                 </Grid>
             </Border>
         </Grid>
