@@ -84,3 +84,5 @@ temp_*.txt
 /.grok/workflows
 .mcp.json
 src/.DS_Store
+/src/BalatroSeedOracle/.local
+/.local
