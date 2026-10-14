@@ -639,7 +639,7 @@ STOPPED
   Batch: 664 / 1,500,625 (0.0442%)
   Resume: --startBatch 664
   Resume: --startSeed 11JZ1111
-PS C:\GitHub\MotelyYAML> dotnet run -c release --project .\Motely.CLI\ -- --yaml JudgementKing.yaml --cutoff 2 --threads 8 --startSeed 22222222 
+PS C:\GitHub\MotelyJAML> dotnet run -c release --project .\Motely.CLI\ -- --yaml JudgementKing.yaml --cutoff 2 --threads 8 --startSeed 22222222 
 Motely: Perkeo Sixth Sense Coupon King Steel Red | Plasma White | threads=8 | batchCharCount=4 (sequential only)
 5IW36222,2,1,0,1,0
 73LS4222,2,1,0,1,0
@@ -732,7 +732,7 @@ STOPPED
   Speed: 3,812,019 seeds/sec
   Resume: --startBatch 44296
   Resume: --startSeed 226M1111
-PS C:\GitHub\MotelyYAML> dotnet run -c release --project .\Motely.CLI\ -- --yaml JudgementKing.yaml --cutoff 2 --threads 8 --startSeed 22222222
+PS C:\GitHub\MotelyJAML> dotnet run -c release --project .\Motely.CLI\ -- --yaml JudgementKing.yaml --cutoff 2 --threads 8 --startSeed 22222222
 Motely: Perkeo Sixth Sense Coupon King Steel Red | Plasma White | threads=8 | batchCharCount=4 (sequential only)
 Progress: 2.9% | 1,500,625 searched | 0 matches | 486.3 K/s | 00:00:03.0
 
@@ -742,9 +742,9 @@ STOPPED
   Speed: 4,170,852 seeds/sec
   Resume: --startBatch 44505
   Resume: --startSeed 22CL1111
-PS C:\GitHub\MotelyYAML> dotnet run -c release --project .\Motely.CLI\ -- --yaml sixtd.yaml --cutoff 2 --threads 8 --startSeed 22222222        
+PS C:\GitHub\MotelyJAML> dotnet run -c release --project .\Motely.CLI\ -- --yaml sixtd.yaml --cutoff 2 --threads 8 --startSeed 22222222        
 Error: File not found: sixtd.yaml
-PS C:\GitHub\MotelyYAML> dotnet run -c release --project .\Motely.CLI\ -- --yaml sixtid.yaml --cutoff 2 --threads 8 --startSeed 22222222
+PS C:\GitHub\MotelyJAML> dotnet run -c release --project .\Motely.CLI\ -- --yaml sixtid.yaml --cutoff 2 --threads 8 --startSeed 22222222
 Motely: Perkeo Sixth Sense Coupon King Steel Red | Plasma White | threads=8 | batchCharCount=4 (sequential only)
 Progress: 2.9% | 4,501,875 searched | 0 matches | 5.33 M/s | 00:00:00.8
 Progress: 3.0% | 921,383,750 searched | 0 matches | 24.24 M/s | ETA 1.01:02:23 | 00:00:38.0
@@ -755,7 +755,7 @@ STOPPED
   Batch: 44,799 / 1,500,625 (2.9854%)
   Resume: --startBatch 44799
   Resume: --startSeed 22KZ1111
-PS C:\GitHub\MotelyYAML> dotnet run -c release --project .\Motely.CLI\ -- --yaml sixtid.yaml --cutoff 0 --threads 8 --startSeed 22222222
+PS C:\GitHub\MotelyJAML> dotnet run -c release --project .\Motely.CLI\ -- --yaml sixtid.yaml --cutoff 0 --threads 8 --startSeed 22222222
 Motely: Perkeo Sixth Sense Coupon King Steel Red | Plasma White | threads=8 | batchCharCount=4 (sequential only)
 Progress: 2.9% | 6,002,500 searched | 0 matches | 7.22 M/s | 00:00:00.8
 
@@ -766,7 +766,7 @@ STOPPED
   Batch: 44,843 / 1,500,625 (2.9883%)
   Resume: --startBatch 44843
   Resume: --startSeed 22M91111
-PS C:\GitHub\MotelyYAML> dotnet run -c release --project .\Motely.CLI\ -- --yaml sixtid.yaml --cutoff 0 --threads 8 --startSeed 22222222
+PS C:\GitHub\MotelyJAML> dotnet run -c release --project .\Motely.CLI\ -- --yaml sixtid.yaml --cutoff 0 --threads 8 --startSeed 22222222
 Motely: Perkeo Sixth Sense Coupon King Steel Red | Plasma White | threads=8 | batchCharCount=4 (sequential only)
 Progress: 2.9% | 3,001,250 searched | 0 matches | 3.61 M/s | 00:00:00.8
 Progress: 3.0% | 1,334,055,625 searched | 0 matches | 24.13 M/s | ETA 1.01:08:43 | 00:00:55.2
@@ -779,7 +779,7 @@ STOPPED
   Batch: 71,424 / 1,500,625 (4.7596%)
   Resume: --startBatch 71424
   Resume: --startSeed 2OBP1111
-PS C:\GitHub\MotelyYAML> dotnet run -c release --project .\Motely.CLI\ -- --yaml sixtid.yaml --cutoff 0 --threads 8 --startSeed 22222222
+PS C:\GitHub\MotelyJAML> dotnet run -c release --project .\Motely.CLI\ -- --yaml sixtid.yaml --cutoff 0 --threads 8 --startSeed 22222222
 Motely: Perkeo Sixth Sense Coupon King Steel Red | Plasma White | threads=8 | batchCharCount=4 (sequential only)
 Progress: 2.9% | 10,504,375 searched | 0 matches | 12.89 M/s | 00:00:00.8
 Progress: 3.0% | 1,338,557,500 searched | 0 matches | 24.64 M/s | ETA 1.00:37:21 | 00:00:54.3
@@ -833,7 +833,7 @@ STOPPED
   Batch: 79,698 / 1,500,625 (5.3110%)
   Resume: --startBatch 79698
   Resume: --startSeed 2V341111
-PS C:\GitHub\MotelyYAML> dotnet run -c release --project .\Motely.CLI\ -- --yaml sixtid.yaml --cutoff 0 --threads 8                 
+PS C:\GitHub\MotelyJAML> dotnet run -c release --project .\Motely.CLI\ -- --yaml sixtid.yaml --cutoff 0 --threads 8                 
 Motely: Perkeo Sixth Sense Coupon King Steel Red | Plasma White | threads=8 | batchCharCount=4 (sequential only)
 Progress: 0.0% | 12,005,000 searched | 0 matches | 14.01 M/s | 00:00:00.8
 QP3MJ111,0,0,0,0,0,0,0,0,0,0,0
@@ -997,7 +997,7 @@ STOPPED
   Batch: 119,129 / 1,500,625 (7.9386%)
   Resume: --startBatch 119129
   Resume: --startSeed 3S9P1111
-PS C:\GitHub\MotelyYAML> dotnet run -c release --project .\Motely.CLI\ -- --yaml sixtid.yaml --cutoff 0 --threads 8
+PS C:\GitHub\MotelyJAML> dotnet run -c release --project .\Motely.CLI\ -- --yaml sixtid.yaml --cutoff 0 --threads 8
 Motely: Perkeo Sixth Sense Coupon King Steel Red | Plasma White | threads=8 | batchCharCount=4 (sequential only)
 Progress: 0.0% | 12,005,000 searched | 0 matches | 14.21 M/s | 00:00:00.8
 QP3MJ111,0,0,0,0,0,0,0,0,0,0,0
