@@ -21,7 +21,6 @@ using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Services;
 using BalatroSeedOracle.ViewModels;
 using BalatroSeedOracle.Views.Modals;
-using Motely.Filters.YAML;
 
 namespace BalatroSeedOracle.Views
 {
@@ -264,7 +263,7 @@ namespace BalatroSeedOracle.Views
                                 if (configPath != null)
                                 {
                                     HideModalContent();
-                                    this.ShowSearchModal(configPath);
+                                    await ShowSearchModalWithFilterAsync(configPath);
                                 }
                             }
                             catch (Exception ex)

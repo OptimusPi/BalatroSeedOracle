@@ -10,7 +10,6 @@ using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Motely.Filters.YAML;
 
 namespace BalatroSeedOracle.ViewModels.FilterTabs
 {
@@ -18,7 +17,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
     /// ViewModel for YAML Editor Tab
     /// YAML (Joker Ante Markup Language) is a YAML-based format for Balatro filters
     /// </summary>
-    public partial class YAMLEditorTabViewModel : ObservableObject
+    public partial class JamlEditorTabViewModel : ObservableObject
     {
         private readonly FiltersModalViewModel? _parentViewModel;
 
@@ -62,7 +61,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         private System.Threading.CancellationTokenSource? _validationThrottleCts;
         private Task? _validationThrottleTask;
 
-        partial void OnYAMLContentChanged(string value)
+        partial void OnYamlContentChanged(string value)
         {
             // Throttle validation to avoid lag while typing
             _validationThrottleCts?.Cancel();
@@ -100,7 +99,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             HasErrors = false;
             ErrorCount = 0;
 
-            if (string.IsNullOrWhiteSpace(YAMLContent))
+            if (string.IsNullOrWhiteSpace(YamlContent))
             {
                 ValidationStatus = "Empty";
                 ValidationStatusColor = Brushes.Gray;
@@ -112,7 +111,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
             try
             {
-                if (!YAMLConfigLoader.TryLoad(YAMLContent, out var config, out var loadError) || config is null)
+                if (!JamlConfigLoader.TryLoad(YamlContent, out var config, out var loadError) || config is null)
                 {
                     var lineNumber = ExtractLineNumber(loadError ?? "Unknown error");
                     ValidationErrors.Add(
@@ -136,7 +135,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
                 // Additional validation checks
                 ValidateSchema(config);
-                ValidateAnchors(YAMLContent);
+                ValidateAnchors(YamlContent);
 
                 if (ValidationErrors.Count == 0)
                 {
@@ -186,7 +185,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             return 1;
         }
 
-        private void ValidateSchema(YAMLConfig config)
+        private void ValidateSchema(JamlConfig config)
         {
             var deckName = config.Deck.ToString();
             if (!Enum.IsDefined(typeof(Motely.Enums.MotelyDeck), config.Deck))
@@ -280,7 +279,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             return 0;
         }
 
-        private void UpdatePreview(YAMLConfig config)
+        private void UpdatePreview(JamlConfig config)
         {
             PreviewItems.Clear();
             var spriteService = SpriteService.Instance;
@@ -314,7 +313,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         }
 
         private FilterItem CreateFilterItemFromClause(
-            IYAMLClause clause,
+            IMotelyClause clause,
             FilterItemStatus status,
             string category,
             SpriteService spriteService
@@ -353,12 +352,12 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 ? $"📄 {_parentViewModel.FilterName}.yaml"
                 : "📄 filter.yaml";
 
-        public YAMLEditorTabViewModel(FiltersModalViewModel? parentViewModel = null)
+        public JamlEditorTabViewModel(FiltersModalViewModel? parentViewModel = null)
         {
             _parentViewModel = parentViewModel;
 
             // Set default YAML content
-            YAMLContent = GetDefaultYAMLContent();
+            YamlContent = GetDefaultYamlContent();
 
             // Listen for filter name changes from parent to update display
             if (_parentViewModel is not null)
@@ -386,12 +385,12 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         [RelayCommand]
         private async Task SyncToVisual()
         {
-            if (HasError || string.IsNullOrWhiteSpace(YAMLContent) || _parentViewModel is null)
+            if (HasError || string.IsNullOrWhiteSpace(YamlContent) || _parentViewModel is null)
                 return;
 
             try
             {
-                if (!YAMLConfigLoader.TryLoad(YAMLContent, out var config, out var loadError) || config is null)
+                if (!JamlConfigLoader.TryLoad(YamlContent, out var config, out var loadError) || config is null)
                 {
                     ValidationStatus = $"✗ Sync failed: {loadError ?? "Invalid YAML"}";
                     ValidationStatusColor = Brushes.Red;
@@ -430,14 +429,14 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         [RelayCommand]
         private void FormatYAML()
         {
-            if (string.IsNullOrWhiteSpace(YAMLContent))
+            if (string.IsNullOrWhiteSpace(YamlContent))
                 return;
 
             try
             {
-                if (YAMLConfigLoader.TryLoad(YAMLContent, out var config, out _) && config is not null)
+                if (JamlConfigLoader.TryLoad(YamlContent, out var config, out _) && config is not null)
                 {
-                    YAMLContent = YAMLConfigLoader.ToYAML(config);
+                    YamlContent = JamlConfigText.ToJaml(config);
                     ValidationStatus = "✓ Formatted";
                     ValidationStatusColor = Brushes.LightGreen;
                 }
@@ -459,7 +458,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         [RelayCommand]
         private async Task CopyYAML()
         {
-            if (string.IsNullOrWhiteSpace(YAMLContent))
+            if (string.IsNullOrWhiteSpace(YamlContent))
                 return;
 
             try
@@ -471,7 +470,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
                 if (topLevel?.Clipboard is not null)
                 {
-                    await topLevel.Clipboard.SetTextAsync(YAMLContent);
+                    await topLevel.Clipboard.SetTextAsync(YamlContent);
                     ValidationStatus = "✓ Copied to clipboard";
                     ValidationStatusColor = Brushes.LightGreen;
                 }
@@ -496,7 +495,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 var config = _parentViewModel.BuildConfigFromCurrentState();
 
                 // Convert to YAML (uses YAML serialization since YAML is YAML-based)
-                YAMLContent = ConvertConfigToYAML(config);
+                YamlContent = ConvertConfigToYAML(config);
 
                 // Validate the generated YAML immediately to catch errors
                 ValidateAndPreview();
@@ -545,11 +544,11 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         /// <summary>
         /// Convert config to YAML using the engine's canonical YAML serializer.
         /// </summary>
-        private string ConvertConfigToYAML(YAMLConfig config)
+        private string ConvertConfigToYAML(JamlConfig config)
         {
             try
             {
-                return YAMLConfigLoader.ToYAML(config);
+                return JamlConfigText.ToJaml(config);
             }
             catch (Exception ex)
             {
@@ -557,13 +556,13 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     "YAMLEditorTab",
                     $"Failed to convert config to YAML: {ex.Message}"
                 );
-                return GetDefaultYAMLContent();
+                return GetDefaultYamlContent();
             }
         }
 
-        private string GetDefaultYAMLContent()
+        private string GetDefaultYamlContent()
         {
-            return YAMLConfigLoader.ToYAML(new YAMLConfig
+            return JamlConfigText.ToJaml(new JamlConfig
             {
                 Id = Guid.NewGuid().ToString("N"),
                 Name = "New Filter",

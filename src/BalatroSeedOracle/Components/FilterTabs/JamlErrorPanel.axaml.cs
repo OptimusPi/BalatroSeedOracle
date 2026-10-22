@@ -22,7 +22,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
             if (sender is Border border && border.DataContext is ValidationErrorItem error)
             {
                 // Notify parent to jump to error location
-                if (DataContext is YAMLEditorTabViewModel viewModel)
+                if (DataContext is JamlEditorTabViewModel viewModel)
                 {
                     viewModel.RequestJumpToError(error.LineNumber, error.Column);
                 }

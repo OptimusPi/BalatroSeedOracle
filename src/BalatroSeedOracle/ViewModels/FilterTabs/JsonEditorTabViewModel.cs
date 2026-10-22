@@ -9,7 +9,6 @@ using BalatroSeedOracle.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Motely.Enums;
-using Motely.Filters.YAML;
 
 namespace BalatroSeedOracle.ViewModels.FilterTabs
 {
@@ -76,7 +75,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 return;
 
             var config = _parentViewModel.BuildConfigFromCurrentState();
-            JsonContent = YAMLConfigLoader.ToYAML(config);
+            JsonContent = JamlConfigText.ToJaml(config);
 
             // Silent status update (no user-visible message)
             var totalItems = config.Must.Count + config.Should.Count;
@@ -100,7 +99,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             }
 
             var config = _parentViewModel.BuildConfigFromCurrentState();
-            JsonContent = YAMLConfigLoader.ToYAML(config);
+            JsonContent = JamlConfigText.ToJaml(config);
 
             ValidationStatus =
                 $"✓ Generated from visual ({config.Must.Count + config.Should.Count} items)";
@@ -136,7 +135,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 }
 
                 // Parse the YAML content
-                if (!YAMLConfigLoader.TryLoad(JsonContent, out var config, out var loadError))
+                if (!JamlConfigLoader.TryLoad(JsonContent, out var config, out var loadError))
                 {
                     ValidationStatus = $"Failed to parse YAML: {loadError}";
                     ValidationStatusColor = Brushes.Red;
@@ -229,9 +228,9 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         {
             try
             {
-                if (YAMLConfigLoader.TryLoad(JsonContent, out var config, out _) && config is not null)
+                if (JamlConfigLoader.TryLoad(JsonContent, out var config, out _) && config is not null)
                 {
-                    JsonContent = YAMLConfigLoader.ToYAML(config);
+                    JsonContent = JamlConfigText.ToJaml(config);
                     ValidationStatus = "✓ YAML formatted";
                     ValidationStatusColor = Brushes.Green;
                 }
@@ -273,12 +272,12 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         {
             if (string.IsNullOrWhiteSpace(JsonContent))
                 return false;
-            return YAMLConfigLoader.TryLoad(JsonContent, out _, out _);
+            return JamlConfigLoader.TryLoad(JsonContent, out _, out _);
         }
 
         private string GetDefaultJsonContent()
         {
-            return YAMLConfigLoader.ToYAML(new YAMLConfig
+            return JamlConfigText.ToJaml(new JamlConfig
             {
                 Id = Guid.NewGuid().ToString("N"),
                 Name = "New Filter",

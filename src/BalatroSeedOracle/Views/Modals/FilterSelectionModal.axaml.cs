@@ -14,7 +14,6 @@ using BalatroSeedOracle.Controls;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Services;
 using BalatroSeedOracle.ViewModels;
-using Motely.Filters.YAML;
 using MsBox.Avalonia;
 using MsBox.Avalonia.Enums;
 
@@ -657,7 +656,7 @@ namespace BalatroSeedOracle.Views.Modals
 
                 DebugLogger.Log("FilterSelectionModal", $"Read {text.Length} chars. Parsing...");
 
-                if (!YAMLConfigLoader.TryLoad(text, out var config, out var parseError) || config == null)
+                if (!JamlConfigLoader.TryLoad(text, out var config, out var parseError) || config == null)
                 {
                     await ShowImportError(
                         $"Failed to parse {file.Name}:\n{parseError ?? "Unknown error"}"

@@ -20,7 +20,6 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Motely;
 using Motely.Filters;
-using Motely.Filters.YAML;
 using BsoLogger = BalatroSeedOracle.Helpers.DebugLogger;
 
 namespace BalatroSeedOracle.ViewModels
@@ -55,7 +54,7 @@ namespace BalatroSeedOracle.ViewModels
         private string? _currentFilterPath;
 
         [ObservableProperty]
-        private YAMLConfig? _loadedConfig;
+        private JamlConfig? _loadedConfig;
 
         // Track original metadata to preserve on save (prevent overwriting author)
         private string? _originalAuthor;
@@ -263,7 +262,7 @@ namespace BalatroSeedOracle.ViewModels
         partial void OnSelectedDeckChanged(Motely.Enums.MotelyDeck value)
         {
             BsoLogger.Log("FiltersModalViewModel", $"Deck changed to: {value}");
-            if (YAMLEditorTab is FilterTabs.YAMLEditorTabViewModel yamlVm)
+            if (YAMLEditorTab is FilterTabs.JamlEditorTabViewModel yamlVm)
             {
                 yamlVm.AutoGenerateFromVisual();
             }
@@ -272,7 +271,7 @@ namespace BalatroSeedOracle.ViewModels
         partial void OnSelectedStakeChanged(Motely.Enums.MotelyStake value)
         {
             BsoLogger.Log("FiltersModalViewModel", $"Stake changed to: {value}");
-            if (YAMLEditorTab is FilterTabs.YAMLEditorTabViewModel yamlVm)
+            if (YAMLEditorTab is FilterTabs.JamlEditorTabViewModel yamlVm)
             {
                 yamlVm.AutoGenerateFromVisual();
             }
@@ -339,7 +338,7 @@ namespace BalatroSeedOracle.ViewModels
         /// Loads a specific filter config for editing (called from other modals)
         /// </summary>
         /// <param name="config">The filter config to load</param>
-        public async Task LoadFilterForEditing(YAMLConfig config)
+        public async Task LoadFilterForEditing(JamlConfig config)
         {
             try
             {
@@ -454,7 +453,7 @@ namespace BalatroSeedOracle.ViewModels
             }
         }
 
-        private void PopulateFilterTabs(Motely.Filters.YAML.YAMLConfig config)
+        private void PopulateFilterTabs(JamlConfig config)
         {
             MustHaveItems.Items.Clear();
             ShouldHaveItems.Items.Clear();
@@ -529,7 +528,7 @@ namespace BalatroSeedOracle.ViewModels
             LoadedConfig = config;
 
             // Update YAML editor with loaded content
-            if (YAMLEditorTab is FilterTabs.YAMLEditorTabViewModel yamlVm)
+            if (YAMLEditorTab is FilterTabs.JamlEditorTabViewModel yamlVm)
             {
                 yamlVm.AutoGenerateFromVisual();
             }
@@ -642,7 +641,7 @@ namespace BalatroSeedOracle.ViewModels
             switch (_previousTabIndex)
             {
                 case 2: // Leaving YAML Editor - parse YAML and update state
-                    if (YAMLEditorTab is FilterTabs.YAMLEditorTabViewModel yamlVm)
+                    if (YAMLEditorTab is FilterTabs.JamlEditorTabViewModel yamlVm)
                     {
                         SaveYAMLEditorToState(yamlVm);
                     }
@@ -668,7 +667,7 @@ namespace BalatroSeedOracle.ViewModels
                     }
                     break;
                 case 2: // Entering YAML Editor - regenerate from state
-                    if (YAMLEditorTab is FilterTabs.YAMLEditorTabViewModel yamlVm)
+                    if (YAMLEditorTab is FilterTabs.JamlEditorTabViewModel yamlVm)
                     {
                         yamlVm.AutoGenerateFromVisual();
                     }
@@ -683,11 +682,11 @@ namespace BalatroSeedOracle.ViewModels
         /// Parse YAML from YAML Editor and update parent ViewModel's state
         /// YAML (Joker Ante Markup Language) is a YAML-based format
         /// </summary>
-        private void SaveYAMLEditorToState(FilterTabs.YAMLEditorTabViewModel yamlVm)
+        private void SaveYAMLEditorToState(FilterTabs.JamlEditorTabViewModel yamlVm)
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(yamlVm.YAMLContent))
+                if (string.IsNullOrWhiteSpace(yamlVm.YamlContent))
                 {
                     BsoLogger.Log(
                         "FiltersModalViewModel",
@@ -697,7 +696,7 @@ namespace BalatroSeedOracle.ViewModels
                 }
 
                 if (
-                    !YAMLConfigLoader.TryLoad(yamlVm.YAMLContent, out var config, out var loadError)
+                    !JamlConfigLoader.TryLoad(yamlVm.YamlContent, out var config, out var loadError)
                     || config is null
                 )
                 {
@@ -758,14 +757,14 @@ namespace BalatroSeedOracle.ViewModels
         }
 
         /// <summary>
-        /// Builds YAMLConfig from current ViewModel state
+        /// Builds JamlConfig from current ViewModel state
         /// Called by code-behind and ViewModel methods
         /// </summary>
-        public Motely.Filters.YAML.YAMLConfig BuildConfigFromCurrentState()
+        public JamlConfig BuildConfigFromCurrentState()
         {
             var author = _userProfileService?.GetAuthorName() ?? "Unknown";
 
-            var config = new Motely.Filters.YAML.YAMLConfig
+            var config = new JamlConfig
             {
                 Id = Guid.NewGuid().ToString("N"),
                 Name = string.IsNullOrWhiteSpace(FilterName) ? "Untitled Filter" : FilterName,
@@ -773,9 +772,9 @@ namespace BalatroSeedOracle.ViewModels
                 Author = _originalAuthor ?? author,
                 Deck = SelectedDeck,
                 Stake = SelectedStake,
-                Must = new List<IYAMLClause>(),
-                Should = new List<IYAMLClause>(),
-                MustNot = new List<IYAMLClause>(),
+                Must = new List<IMotelyClause>(),
+                Should = new List<IMotelyClause>(),
+                MustNot = new List<IMotelyClause>(),
             };
 
             var visualBuilder = VisualBuilderTab as FilterTabs.VisualBuilderTabViewModel;
@@ -804,7 +803,7 @@ namespace BalatroSeedOracle.ViewModels
         // so they're skipped here and surfaced via AppendBannedItemsAsMustNot.
         private void AppendVisualClauses(
             IEnumerable<Models.FilterItem> source,
-            List<IYAMLClause> target
+            List<IMotelyClause> target
         )
         {
             foreach (var filterItem in source)
@@ -837,7 +836,7 @@ namespace BalatroSeedOracle.ViewModels
         // unwrap their children into MustNot to match the JSON config schema.
         private void AppendBannedItemsAsMustNot(
             IEnumerable<Models.FilterItem> source,
-            List<IYAMLClause> mustNot
+            List<IMotelyClause> mustNot
         )
         {
             foreach (var item in source)
@@ -854,7 +853,7 @@ namespace BalatroSeedOracle.ViewModels
             }
         }
 
-        private IYAMLClause? ConvertFilterItemToClause(Models.FilterItem filterItem)
+        private IMotelyClause? ConvertFilterItemToClause(Models.FilterItem filterItem)
         {
             // Handle FilterOperatorItem (OR/AND clauses)
             if (filterItem is Models.FilterOperatorItem operatorItem)
@@ -864,7 +863,7 @@ namespace BalatroSeedOracle.ViewModels
 
                 var isOr = operatorItem.OperatorType.Equals("Or", StringComparison.OrdinalIgnoreCase);
                 var logic = isOr ? (LogicClause)new OrClause() : new AndClause();
-                var children = new List<IYAMLClause>();
+                var children = new List<IMotelyClause>();
                 foreach (var child in operatorItem.Children)
                 {
                     var childClause = ConvertFilterItemToClause(child);
@@ -914,7 +913,7 @@ namespace BalatroSeedOracle.ViewModels
             return clause;
         }
 
-        public void LoadConfigIntoState(Motely.Filters.YAML.YAMLConfig config)
+        public void LoadConfigIntoState(JamlConfig config)
         {
             // Clear current state
             ClearAllSelections();
@@ -951,7 +950,7 @@ namespace BalatroSeedOracle.ViewModels
         // Each clause is registered in ItemConfigs under a freshly generated key,
         // and the key is appended to the appropriate selection collection.
         private void LoadClausesIntoSelection(
-            IEnumerable<IYAMLClause>? clauses,
+            IEnumerable<IMotelyClause>? clauses,
             ObservableCollection<string> selection
         )
         {
@@ -967,7 +966,7 @@ namespace BalatroSeedOracle.ViewModels
         }
 
         private ItemConfig ConvertClauseToItemConfig(
-            IYAMLClause clause,
+            IMotelyClause clause,
             string itemKey
         )
         {
@@ -1090,7 +1089,7 @@ namespace BalatroSeedOracle.ViewModels
             TabItems.Add(new TabItemViewModel("DECK/STAKE", deckStakeTab));
 
             // YAML Editor tab (YAML = Joker Ante Markup Language, a YAML-based format)
-            var yamlEditorViewModel = new FilterTabs.YAMLEditorTabViewModel(this);
+            var yamlEditorViewModel = new FilterTabs.JamlEditorTabViewModel(this);
             var yamlEditorTab = new Components.FilterTabs.YAMLEditorTab
             {
                 DataContext = yamlEditorViewModel,
@@ -1135,7 +1134,7 @@ namespace BalatroSeedOracle.ViewModels
                     BsoLogger.Log("FiltersModalViewModel", $"Editing filter from: {filterPath}");
 
                     var yaml = await File.ReadAllTextAsync(filterPath);
-                    if (!YAMLConfigLoader.TryLoad(yaml, out var config, out var loadError) || config is null)
+                    if (!JamlConfigLoader.TryLoad(yaml, out var config, out var loadError) || config is null)
                     {
                         BsoLogger.LogError(
                             "FiltersModalViewModel",
@@ -1192,11 +1191,11 @@ namespace BalatroSeedOracle.ViewModels
                         counter++;
                     }
 
-                    YAMLConfig? config = null;
+                    JamlConfig? config = null;
                     try
                     {
                         var yaml = await File.ReadAllTextAsync(originalPath);
-                        if (YAMLConfigLoader.TryLoad(yaml, out var loadedConfig, out _))
+                        if (JamlConfigLoader.TryLoad(yaml, out var loadedConfig, out _))
                             config = loadedConfig;
                     }
                     catch
@@ -1209,7 +1208,7 @@ namespace BalatroSeedOracle.ViewModels
                         config.Name = string.IsNullOrWhiteSpace(config.Name)
                             ? candidateName
                             : $"{config.Name} (copy)";
-                        await File.WriteAllTextAsync(newPath, YAMLConfigLoader.ToYAML(config));
+                        await File.WriteAllTextAsync(newPath, JamlConfigText.ToJaml(config));
                     }
                     else
                     {
@@ -1222,7 +1221,7 @@ namespace BalatroSeedOracle.ViewModels
                     try
                     {
                         var newYAML = await File.ReadAllTextAsync(newPath);
-                        var newConfig = YAMLConfigLoader.TryLoad(newYAML, out var loadedConfig, out _)
+                        var newConfig = JamlConfigLoader.TryLoad(newYAML, out var loadedConfig, out _)
                             ? loadedConfig
                             : null;
                         if (newConfig is not null)

@@ -6,7 +6,7 @@
              xmlns:filterTabs="clr-namespace:BalatroSeedOracle.Components.FilterTabs"
              xmlns:models="using:BalatroSeedOracle.Models"
              x:Class="BalatroSeedOracle.Components.FilterTabs.YAMLEditorTab"
-             x:DataType="vm:YAMLEditorTabViewModel">
+             x:DataType="vm:JamlEditorTabViewModel">
     <Border Grid.Row="0"
             Background="{StaticResource EditorDarkBg}"
             BorderThickness="0"

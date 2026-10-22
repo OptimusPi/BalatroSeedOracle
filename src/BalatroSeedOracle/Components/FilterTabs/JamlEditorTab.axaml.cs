@@ -14,7 +14,6 @@ using AvaloniaEdit.Highlighting;
 using AvaloniaEdit.Highlighting.Xshd;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.ViewModels.FilterTabs;
-using Motely.Filters.YAML;
 
 namespace BalatroSeedOracle.Components.FilterTabs
 {
@@ -33,9 +32,9 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
         // Tracked separately from ViewModel/DataContext so a reassignment unsubscribes the
         // actual previous ViewModel instead of leaking a subscription to it.
-        private YAMLEditorTabViewModel? _subscribedViewModel;
+        private JamlEditorTabViewModel? _subscribedViewModel;
 
-        public YAMLEditorTabViewModel? ViewModel => DataContext as YAMLEditorTabViewModel;
+        public JamlEditorTabViewModel? ViewModel => DataContext as JamlEditorTabViewModel;
 
         public YAMLEditorTab()
         {
@@ -64,7 +63,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
                 if (ViewModel != null)
                 {
-                    YAMLEditor.Text = ViewModel.YAMLContent;
+                    YAMLEditor.Text = ViewModel.YamlContent;
 
                     // Subscribe to ViewModel property changes
                     ViewModel.PropertyChanged += OnViewModelPropertyChanged;
@@ -81,7 +80,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
             {
                 if (ViewModel != null)
                 {
-                    ViewModel.YAMLContent = YAMLEditor.Text ?? "";
+                    ViewModel.YamlContent = YAMLEditor.Text ?? "";
 
                     // Update code folding when document changes
                     UpdateCodeFolding();
@@ -216,7 +215,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 return;
 
             // YAML validation via the engine's own loader (one grammar, no YAML)
-            if (!YAMLConfigLoader.TryLoad(yamlContent, out _, out var error) && error is not null)
+            if (!JamlConfigLoader.TryLoad(yamlContent, out _, out var error) && error is not null)
             {
                 var lineMatch = Regex.Match(error, @"line (\d+)");
                 var lineNumber =
@@ -465,15 +464,15 @@ namespace BalatroSeedOracle.Components.FilterTabs
         )
         {
             if (
-                e.PropertyName == nameof(YAMLEditorTabViewModel.YAMLContent)
+                e.PropertyName == nameof(JamlEditorTabViewModel.YamlContent)
                 && YAMLEditor != null
                 && ViewModel != null
             )
             {
                 // Only update if different to avoid infinite loop
-                if (YAMLEditor.Text != ViewModel.YAMLContent)
+                if (YAMLEditor.Text != ViewModel.YamlContent)
                 {
-                    YAMLEditor.Text = ViewModel.YAMLContent;
+                    YAMLEditor.Text = ViewModel.YamlContent;
                 }
             }
         }

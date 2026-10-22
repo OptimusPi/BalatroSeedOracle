@@ -10,7 +10,6 @@ using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Motely.Filters.YAML;
 
 namespace BalatroSeedOracle.ViewModels.FilterTabs
 {
@@ -203,7 +202,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 return;
             }
 
-            var yaml = YAMLConfigLoader.ToYAML(config);
+            var yaml = JamlConfigText.ToJaml(config);
             var exportFileName = $"{NormalizeFilterName(config.Name ?? "filter")}.yaml";
 
             var topLevel = TopLevelHelper.GetTopLevel();
@@ -250,7 +249,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
         #region Helper Methods
 
-        private YAMLConfig BuildConfigFromCurrentState()
+        private JamlConfig BuildConfigFromCurrentState()
         {
             // Use the parent's robust implementation
             var config = _parentViewModel.BuildConfigFromCurrentState();

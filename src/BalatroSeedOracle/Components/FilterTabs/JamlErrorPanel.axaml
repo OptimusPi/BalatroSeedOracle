@@ -2,7 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:BalatroSeedOracle.ViewModels.FilterTabs"
              x:Class="BalatroSeedOracle.Components.FilterTabs.YAMLErrorPanel"
-             x:DataType="vm:YAMLEditorTabViewModel">
+             x:DataType="vm:JamlEditorTabViewModel">
     <Border Background="{StaticResource EditorDarkBg}"
             BorderBrush="{StaticResource EditorLineNumbers}"
             BorderThickness="0,1,0,0">

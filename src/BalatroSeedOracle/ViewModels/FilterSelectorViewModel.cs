@@ -16,7 +16,6 @@ using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Motely.Filters.YAML;
 
 namespace BalatroSeedOracle.ViewModels
 {
@@ -158,7 +157,7 @@ namespace BalatroSeedOracle.ViewModels
         /// <summary>
         /// Creates a PanelItem from a loaded filter config
         /// </summary>
-        private PanelItem? CreateFilterPanelItem(string filePath, YAMLConfig? config)
+        private PanelItem? CreateFilterPanelItem(string filePath, JamlConfig? config)
         {
             if (config is null || string.IsNullOrEmpty(config.Name))
             {
@@ -188,7 +187,7 @@ namespace BalatroSeedOracle.ViewModels
         /// <summary>
         /// Creates a fanned preview image showing multiple cards from the filter config
         /// </summary>
-        private IImage? CreateFannedPreviewImageFromConfig(Motely.Filters.YAML.YAMLConfig config)
+        private IImage? CreateFannedPreviewImageFromConfig(JamlConfig config)
         {
             try
             {
@@ -321,7 +320,7 @@ namespace BalatroSeedOracle.ViewModels
         /// <summary>
         /// Gets a fallback single image preview from the filter config
         /// </summary>
-        private IImage? GetFilterPreviewImageFromConfig(Motely.Filters.YAML.YAMLConfig config)
+        private IImage? GetFilterPreviewImageFromConfig(JamlConfig config)
         {
             try
             {

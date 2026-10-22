@@ -7,7 +7,6 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Services;
-using Motely.Filters.YAML;
 
 namespace BalatroSeedOracle.ViewModels
 {
@@ -59,7 +58,7 @@ namespace BalatroSeedOracle.ViewModels
                     text = await reader.ReadToEndAsync().ConfigureAwait(false);
                 }
 
-                if (!YAMLConfigLoader.TryLoad(text, out var config, out var parseError) || config == null)
+                if (!JamlConfigLoader.TryLoad(text, out var config, out var parseError) || config == null)
                 {
                     DebugLogger.LogError("ToolsModalViewModel", $"Failed to parse {storageFile.Name}: {parseError ?? "Unknown error"}");
                     failCount++;

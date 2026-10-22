@@ -17,7 +17,6 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Motely;
 using Motely.Filters;
-using Motely.Filters.YAML;
 using BsoLogger = BalatroSeedOracle.Helpers.DebugLogger;
 
 namespace BalatroSeedOracle.ViewModels
@@ -91,7 +90,7 @@ namespace BalatroSeedOracle.ViewModels
         private bool _isSearching = false;
 
         [ObservableProperty]
-        private Motely.Filters.YAML.YAMLConfig? _loadedConfig;
+        private JamlConfig? _loadedConfig;
 
         [ObservableProperty]
         private int _selectedTabIndex = 0;
@@ -355,7 +354,7 @@ namespace BalatroSeedOracle.ViewModels
             var analyzeVm = CreateAnalyzeModalViewModel();
             var analyzeModal = new AnalyzeModal(analyzeVm);
             analyzeModal.SetSeedAndAnalyze(seed);
-            MainMenu.ShowModal("SEED ANALYZER", analyzeModal);
+            MainMenu.ShowModal(analyzeModal, "SEED ANALYZER");
         }
 
         /// <summary>
@@ -552,11 +551,11 @@ namespace BalatroSeedOracle.ViewModels
             );
             PanelText = $"Searching with '{LoadedConfig.Name}'...";
 
-            // Direct engine call: YAMLConfig → plan (tally metadata) + settings (search).
-            var plan = YAMLSearchBuilder.CreatePlan(LoadedConfig, MinScore);
+            // Direct engine call: JamlConfig → plan (tally metadata) + settings (search).
+            var plan = MotelySearchBuilder.CreatePlan(LoadedConfig, MinScore);
             _tallyLabels = plan.TallyLabels.ToArray();
 
-            var settings = YAMLSearchBuilder.CreateSettings(LoadedConfig, MinScore);
+            var settings = MotelySearchBuilder.CreateSettings(LoadedConfig, MinScore);
 
             if (
                 !string.IsNullOrEmpty(DeckSelection)
@@ -1374,7 +1373,7 @@ namespace BalatroSeedOracle.ViewModels
             var content = await File.ReadAllTextAsync(configPath);
 
             if (
-                !Motely.Filters.YAML.YAMLConfigLoader.TryLoad(
+                !Motely.Filters.JamlConfigLoader.TryLoad(
                     content,
                     out var config,
                     out var yamlError
