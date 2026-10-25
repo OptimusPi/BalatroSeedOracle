@@ -149,6 +149,19 @@ public partial class MainWindow : Window
             {
                 DebugLogger.LogError("MainWindow", $"Error disposing main menu: {ex.Message}");
             }
+
+            // Stop the music and close the audio device (Environment.Exit below skips the
+            // lifetime's Exit event).
+            try
+            {
+                if (BalatroSeedOracle.Services.MusicService.IsInstanceCreated)
+                    BalatroSeedOracle.Services.MusicService.Instance.Dispose();
+                BalatroSeedOracle.Services.SoundEffectService.DisposeShared();
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("MainWindow", $"Error stopping audio: {ex.Message}");
+            }
         }
         catch (Exception ex)
         {

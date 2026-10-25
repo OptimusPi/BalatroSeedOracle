@@ -29,6 +29,10 @@ public enum SoundEffect
 /// long-lived WinMM output (<see cref="WaveOutEvent"/> + <see cref="MixingSampleProvider"/>),
 /// so overlapping effects never block each other or the UI thread.
 /// <para>
+/// The background music (<see cref="MusicService"/>) is another input of the same mixer
+/// (<see cref="AddInput"/>): one output device per process.
+/// </para>
+/// <para>
 /// Volume follows the main-menu volume control: the live <see cref="UserProfileService"/>
 /// profile's <c>MusicVolume</c>, and nothing plays while <c>IsMusicMuted</c> is set.
 /// Playback is Windows-only (WinMM); elsewhere, or when no output device exists, every call
@@ -45,6 +49,13 @@ public sealed class SoundEffectService : IDisposable
     );
 
     public static SoundEffectService Instance => LazyInstance.Value;
+
+    /// <summary>Dispose the shared instance (closing the output device) if it was ever created.</summary>
+    public static void DisposeShared()
+    {
+        if (LazyInstance.IsValueCreated)
+            LazyInstance.Value.Dispose();
+    }
 
     private readonly Func<string, Stream> _openAsset;
     private readonly Func<float> _volume;
@@ -137,6 +148,35 @@ public sealed class SoundEffectService : IDisposable
             DebugLogger.LogError(nameof(SoundEffectService), $"Play {effect} failed: {ex.Message}");
             return false;
         }
+    }
+
+    /// <summary>
+    /// Add a long-lived input (the background music) to the same mixer and output device the
+    /// effects use, opening the device if it is not open yet. There is one device and one mixer
+    /// per process. Returns false when the service is disposed.
+    /// </summary>
+    public bool AddInput(ISampleProvider input)
+    {
+        ArgumentNullException.ThrowIfNull(input);
+        if (!input.WaveFormat.Equals(MixFormat))
+            throw new ArgumentException($"Input must be {MixFormat}, got {input.WaveFormat}", nameof(input));
+        lock (_sync)
+        {
+            if (_disposed)
+                return false;
+            EnsureMixerUnsafe();
+            if (_mixer is null)
+                return false;
+            _mixer.AddMixerInput(input);
+            return true;
+        }
+    }
+
+    /// <summary>Remove an input added with <see cref="AddInput"/>.</summary>
+    public void RemoveInput(ISampleProvider input)
+    {
+        lock (_sync)
+            _mixer?.RemoveMixerInput(input);
     }
 
     /// <summary>File name of an effect inside Assets/Audio/SFX.</summary>
@@ -245,7 +285,7 @@ public sealed class SoundEffectService : IDisposable
         );
 
     /// <summary>Main-menu volume (profile MusicVolume), or 0 when muted.</summary>
-    private static float ReadProfileVolume()
+    internal static float ReadProfileVolume()
     {
         var profile = App.GetService<UserProfileService>()?.GetProfile();
         if (profile is null)
