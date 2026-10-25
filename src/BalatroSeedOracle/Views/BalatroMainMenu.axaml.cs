@@ -656,14 +656,14 @@ namespace BalatroSeedOracle.Views
                 var filterId = $"{filterName.Replace(" ", "").ToLower()}_{Guid.NewGuid():N}";
                 var filterPath = System.IO.Path.Combine(filtersDir, filterId + ".yaml");
 
-                // YAML is the source format — write it literally instead of building a
-                // YAMLConfig just to serialize it back out. YAMLConfigLoader reads .yaml.
+                // JAML is the source format — write it literally instead of building a
+                // JamlConfig just to serialize it back out. JamlConfig has no created date;
+                // the filter browser takes it from the file's timestamp.
                 var safeName = filterName.Replace("\"", "\\\"");
                 var yaml =
                     $"name: \"{safeName}\"\n"
                     + "description: Created with visual filter builder\n"
                     + "author: pifreak\n"
-                    + $"dateCreated: \"{DateTime.UtcNow:o}\"\n"
                     + "deck: Red\n"
                     + "stake: White\n"
                     + "must: []\n"

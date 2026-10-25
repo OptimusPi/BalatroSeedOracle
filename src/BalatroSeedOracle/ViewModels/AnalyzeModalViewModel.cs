@@ -185,12 +185,12 @@ namespace BalatroSeedOracle.ViewModels
                         {
                             var packModel = new BoosterPackModel
                             {
-                                PackType = (MotelyBoosterPackType)pack.Type,
+                                PackType = pack.Type.GetPackType(),
                             };
 
                             foreach (var item in pack.Items)
                             {
-                                packModel.Items.Add(item.ToString());
+                                packModel.Items.Add(FormatUtils.FormatItem(item.Item));
                             }
 
                             anteModel.BoosterPacks.Add(packModel);

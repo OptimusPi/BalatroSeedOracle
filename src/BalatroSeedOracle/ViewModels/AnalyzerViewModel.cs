@@ -508,7 +508,7 @@ public partial class AnalyzerViewModel : ObservableObject
 
                 foreach (var packItem in pack.Items)
                 {
-                    packModel.Items.Add(packItem.ToString());
+                    packModel.Items.Add(FormatUtils.FormatItem(packItem.Item));
                 }
 
                 anteModel.BoosterPacks.Add(packModel);
