@@ -25,10 +25,11 @@ namespace BalatroSeedOracle.Components.FilterTabs
     public partial class YAMLEditorTab : UserControl
     {
         private FoldingManager? _foldingManager;
-        private readonly BraceFoldingStrategy _foldingStrategy = new();
-        private YAMLErrorMarkerService? _errorMarkerService;
-        private YAMLHoverTooltipService? _hoverTooltipService;
-        private YAMLCodeSnippetService? _snippetService;
+        private readonly JamlFoldingStrategy _foldingStrategy = new();
+        private JamlErrorMarkerService? _errorMarkerService;
+        private JamlHoverTooltipService? _hoverTooltipService;
+        private JamlCodeSnippetService? _snippetService;
+        private CompletionWindow? _completionWindow;
 
         // Tracked separately from ViewModel/DataContext so a reassignment unsubscribes the
         // actual previous ViewModel instead of leaking a subscription to it.
@@ -106,15 +107,15 @@ namespace BalatroSeedOracle.Components.FilterTabs
             // These features are handled by the TextArea.TextView rendering
 
             // Install error marker service
-            _errorMarkerService = new YAMLErrorMarkerService(YAMLEditor);
+            _errorMarkerService = new JamlErrorMarkerService(YAMLEditor);
             YAMLEditor.TextArea.TextView.BackgroundRenderers.Add(_errorMarkerService);
 
             // Install hover tooltips
-            _hoverTooltipService = new YAMLHoverTooltipService(YAMLEditor);
+            _hoverTooltipService = new JamlHoverTooltipService(YAMLEditor);
             _hoverTooltipService.Install();
 
             // Install code snippets
-            _snippetService = new YAMLCodeSnippetService(YAMLEditor);
+            _snippetService = new JamlCodeSnippetService(YAMLEditor);
 
             // Handle Tab for snippet expansion
             YAMLEditor.TextArea.KeyDown += (s, e) =>
@@ -227,7 +228,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     0,
                     50,
                     error,
-                    YAMLErrorMarkerService.ErrorSeverity.Error
+                    JamlErrorMarkerService.ErrorSeverity.Error
                 );
             }
             else
@@ -269,7 +270,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                         column,
                         column + anchorName.Length + 1,
                         $"Anchor '{anchorName}' is not defined",
-                        YAMLErrorMarkerService.ErrorSeverity.Warning
+                        JamlErrorMarkerService.ErrorSeverity.Warning
                     );
                 }
             }
@@ -302,10 +303,13 @@ namespace BalatroSeedOracle.Components.FilterTabs
             if (YAMLEditor?.TextArea == null)
                 return;
 
-            // Show autocomplete on colon, dash (for lists), or asterisk (for anchor references)
-            if (e.Text == ":" || e.Text == "-" || e.Text == "*")
+            // Open completion after "- " / "key: " / "[" / ", ", and on the first letter of a word
+            if (_completionWindow is null)
             {
-                ShowYAMLCompletions();
+                var offset = YAMLEditor.CaretOffset;
+                var before = YAMLEditor.Document.GetText(0, offset);
+                if (JamlLanguage.ShouldAutoTrigger(before, e.Text ?? ""))
+                    ShowYAMLCompletions();
             }
         }
 
@@ -322,7 +326,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
             );
 
             // Get SMART context-aware completions
-            var smartCompletions = YAMLAutocompletionHelper.GetCompletionsForContext(
+            var smartCompletions = JamlAutocompletionHelper.GetCompletionsForContext(
                 textBeforeCursor
             );
 
@@ -331,17 +335,8 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
             var completionWindow = new CompletionWindow(YAMLEditor.TextArea);
 
-            // Find the start of the current word/token being typed
-            var wordStart = offset;
-            while (wordStart > 0)
-            {
-                var ch = YAMLEditor.Document.GetCharAt(wordStart - 1);
-                if (!char.IsLetterOrDigit(ch) && ch != '_' && ch != '-' && ch != '*')
-                    break;
-                wordStart--;
-            }
-
-            // Set the completion segment to replace from wordStart to current position
+            // The completion replaces the identifier being typed (not a list "-" or a key's ":")
+            var wordStart = JamlLanguage.TokenStart(textBeforeCursor, offset);
             completionWindow.StartOffset = wordStart;
             completionWindow.EndOffset = offset;
 
@@ -353,8 +348,9 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 data.Add(completion);
             }
 
+            _completionWindow = completionWindow;
+            completionWindow.Closed += (o, args) => _completionWindow = null;
             completionWindow.Show();
-            completionWindow.Closed += (o, args) => completionWindow = null;
         }
 
         private void LoadCustomYAMLSyntaxHighlighting()

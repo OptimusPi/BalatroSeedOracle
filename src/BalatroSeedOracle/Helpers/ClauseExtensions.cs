@@ -1,72 +1,64 @@
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Motely.Filters;
+using Motely.Schema;
 
 namespace BalatroSeedOracle.Helpers;
 
 /// <summary>
-/// Display helpers over engine filter clauses: what an item is called, which item(s) it
-/// names, and the edition/seal/enhancement/sticker decorations it carries.
-/// TIER0-STUB: replace in Tier 1 with a proper clause-type → display-metadata mapping
-/// (reflection-based here so every current and future clause type keeps working).
+/// Read-side helpers over engine filter clauses for the visual builder and filter previews: the
+/// builder item type a clause maps to, the item name(s) it names, and its decorations. Names are
+/// the engine's raw enum names (<c>LuckyCat</c>, <c>TheEye</c>) — what the sprite lookups and
+/// <see cref="JamlClauseExtensions.CreateClauseForDiscriminator"/> take — never display strings.
+/// The value a clause names is read through the engine's own discriminator property
+/// (<see cref="FilterVocabulary.ValuePropertyFor"/>), so every clause type is covered.
 /// </summary>
 public static class ClauseExtensions
 {
-    /// <summary>Display name of the clause's item list (e.g. "Joker4, Joker10"), or null when none.</summary>
+    /// <summary>
+    /// The item name(s) the clause names (<c>LuckyCat</c>; several as <c>"LuckyCat, Blueprint"</c>),
+    /// <c>"Any"</c> for a category wildcard (<c>joker:</c> with no name), or null when the clause
+    /// names no items (and/or, event rolls).
+    /// </summary>
     public static string? GetValueName(this IMotelyClause clause)
     {
-        foreach (var prop in clause.GetType().GetProperties())
+        var key = JamlConfigText.ClauseKeyFor(clause.GetType());
+        if (key is null || FilterVocabulary.ValueEnumType(key) is null)
+            return null;
+        var value = FilterVocabulary.ValuePropertyFor(key)?.GetValue(clause);
+        switch (value)
         {
-            if (!prop.CanRead || prop.GetIndexParameters().Length != 0)
-                continue;
-            if (prop.PropertyType == typeof(JamlEventRolls))
-                continue;
-            var value = prop.GetValue(clause);
-            if (value is System.Collections.IEnumerable enumerable and not string)
-            {
-                var names = Names(enumerable).ToList();
-                if (names.Count > 0)
-                    return string.Join(", ", names);
-            }
-            else if (value is System.Enum single)
-            {
-                var name = DisplayName(single);
-                if (name is not null)
-                    return name;
-            }
+            case Enum single:
+                return RawName(single);
+            case IEnumerable items and not string:
+                var names = Names(items).ToList();
+                return names.Count == 0 ? "Any" : string.Join(", ", names);
+            default:
+                return null;
         }
-        return null;
     }
 
-    /// <summary>Short category name for the clause ("Joker", "Legendary Joker", "Boss", …).</summary>
-    public static string? GetTypeName(this IMotelyClause clause)
-    {
-        var name = clause.GetType().Name;
-        return name.EndsWith("Clause", System.StringComparison.Ordinal)
-            ? SplitPascal(name[..^"Clause".Length])
-            : name;
-    }
+    /// <summary>The visual-builder item type ("Joker", "SoulJoker", "Tarot", "Boss", "Or", …).</summary>
+    public static string? GetTypeName(this IMotelyClause clause) => JamlClauseExtensions.BuilderTypeFor(clause);
 
-    /// <summary>Edition decoration ("Foil", …) or null when the clause has/none carries one.</summary>
-    public static string? GetEditionString(this IMotelyClause clause) =>
-        EnumProperty(clause, "Edition");
+    /// <summary>Edition decoration ("Foil", …) or null when the clause carries none.</summary>
+    public static string? GetEditionString(this IMotelyClause clause) => EnumProperty(clause, "Edition");
 
     /// <summary>Seal decoration ("Red", …) or null when none.</summary>
-    public static string? GetSealString(this IMotelyClause clause) =>
-        EnumProperty(clause, "Seal");
+    public static string? GetSealString(this IMotelyClause clause) => EnumProperty(clause, "Seal");
 
     /// <summary>Enhancement decoration ("Gold", …) or null when none.</summary>
-    public static string? GetEnhancementString(this IMotelyClause clause) =>
-        EnumProperty(clause, "Enhancement");
+    public static string? GetEnhancementString(this IMotelyClause clause) => EnumProperty(clause, "Enhancement");
 
-    /// <summary>Sticker names (rental/eternal/perishable), or null when the clause carries none.</summary>
+    /// <summary>Sticker names (Eternal, Perishable, Rental), or null when the clause carries none.</summary>
     public static string[]? GetStickerStrings(this IMotelyClause clause)
     {
-        var stickers = clause.GetType().GetProperty("Stickers")?.GetValue(clause);
-        if (stickers is not System.Collections.IEnumerable enumerable || stickers is string)
+        if (clause.GetType().GetProperty("Stickers")?.GetValue(clause) is not IEnumerable stickers || stickers is string)
             return null;
-        var names = Names(enumerable).ToList();
-        return names.Count == 0 ? null : names.ToArray();
+        var names = Names(stickers).ToArray();
+        return names.Length == 0 ? null : names;
     }
 
     /// <summary>Child clauses of an and/or clause, or null for leaf clauses.</summary>
@@ -82,31 +74,20 @@ public static class ClauseExtensions
             _ => [],
         };
 
-    private static string? EnumProperty(IMotelyClause clause, string propertyName)
-    {
-        var value = clause.GetType().GetProperty(propertyName)?.GetValue(clause);
-        return value is System.Enum e ? DisplayName(e) : null;
-    }
+    private static string? EnumProperty(IMotelyClause clause, string propertyName) =>
+        clause.GetType().GetProperty(propertyName)?.GetValue(clause) is Enum e ? RawName(e) : null;
 
-    private static IEnumerable<string> Names(System.Collections.IEnumerable values)
+    private static IEnumerable<string> Names(IEnumerable values)
     {
         foreach (var value in values)
-        {
-            if (value is System.Enum e)
-            {
-                var name = DisplayName(e);
-                if (name is not null)
-                    yield return name;
-            }
-        }
+            if (value is Enum e && RawName(e) is { } name)
+                yield return name;
     }
 
-    private static string? DisplayName(System.Enum value)
+    /// <summary>The enum's own name; null for a "None" placeholder or an undefined value.</summary>
+    private static string? RawName(Enum value)
     {
-        var name = System.Enum.GetName(value.GetType(), value);
-        return name is null or "None" ? null : SplitPascal(name);
+        var name = Enum.GetName(value.GetType(), value);
+        return name is null or "None" ? null : name;
     }
-
-    private static string SplitPascal(string name) =>
-        string.Concat(name.Select((c, i) => i > 0 && char.IsUpper(c) ? " " + c : c.ToString()));
 }

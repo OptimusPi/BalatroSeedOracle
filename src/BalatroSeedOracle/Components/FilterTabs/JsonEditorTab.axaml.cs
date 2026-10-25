@@ -27,7 +27,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
     {
         private TextEditor? _jsonEditor;
         private FoldingManager? _foldingManager;
-        private readonly BraceFoldingStrategy _foldingStrategy = new();
+        private readonly JamlFoldingStrategy _foldingStrategy = new();
 
         // Tracked separately from ViewModel/DataContext so a reassignment unsubscribes the
         // actual previous ViewModel instead of leaking a subscription to it.
