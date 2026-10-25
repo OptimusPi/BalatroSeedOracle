@@ -7,7 +7,7 @@ namespace BalatroSeedOracle.Helpers;
 
 /// <summary>
 /// Loads <see cref="ShaderParameters"/> by preset name ("normal", "search-complete", …).
-/// TIER0-STUB: replace in Tier 1. Named presets resolve through <see cref="PresetHelper"/>;
+/// Named presets resolve through <see cref="PresetHelper"/> (user presets win);
 /// anything unknown falls back to the default Balatro parameters.
 /// </summary>
 public static class ShaderPresetHelper

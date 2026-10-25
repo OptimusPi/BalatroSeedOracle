@@ -4,8 +4,8 @@ namespace BalatroSeedOracle.Models;
 
 /// <summary>
 /// One day's Daylatro high-score entry.
-/// TIER0-STUB: replace in Tier 1. Shape mirrors the persisted daylatro_scores.json; no
-/// in-app consumer reads these beyond (de)serialization yet.
+/// Shape mirrors the persisted daylatro_scores.json and is registered with
+/// BsoJsonSerializerContext; (de)serialization is the only consumer today.
 /// </summary>
 public class DaylatroHighScore
 {

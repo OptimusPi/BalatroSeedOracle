@@ -5,7 +5,11 @@ namespace BalatroSeedOracle.Helpers;
 
 /// <summary>
 /// Static service locator bridging view code to the hand-wired registry in <see cref="App"/>.
-/// TIER0-STUB: replace in Tier 1 with constructor injection once a real container exists.
+/// <para>
+/// There is deliberately no fallback for <see cref="UserProfileService"/>: a second instance
+/// would be a second writer to userprofile.json holding a stale copy of the profile, and
+/// could overwrite settings the live (App-registered) instance just saved.
+/// </para>
 /// </summary>
 public static class ServiceHelper
 {
@@ -25,7 +29,5 @@ public static class ServiceHelper
 
     private static object? Fallback<T>()
         where T : class =>
-        typeof(T) == typeof(SpriteService) ? SpriteService.Instance
-        : typeof(T) == typeof(UserProfileService) ? new UserProfileService()
-        : null;
+        typeof(T) == typeof(SpriteService) ? SpriteService.Instance : null;
 }

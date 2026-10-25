@@ -950,7 +950,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                             vm.RemoveItem(_draggedItem);
                             vm.IsDragging = false;
                             // Play trash sound (or card drop)
-                            // SoundEffectService.Instance.PlayCardDrop();
+                            SoundEffectService.Instance.PlayCardDrop();
                         }
                         else
                         {
@@ -992,7 +992,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                         }
 
                         // Play card drop sound
-                        // SoundEffectService.Instance.PlayCardDrop();
+                        SoundEffectService.Instance.PlayCardDrop();
 
                         // Check if dropping onto an operator (nested drop zone)
                         // DISABLED: Operators in drop zones are READ-ONLY

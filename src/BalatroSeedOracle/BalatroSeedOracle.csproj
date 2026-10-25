@@ -47,6 +47,10 @@
     <PackageReference Include="Avalonia.Skia" />
     <PackageReference Include="System.IO.Packaging" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
+    <!-- UI sound effects (SoundEffectService): WinMM output + Ogg Vorbis decoding. -->
+    <PackageReference Include="NAudio" />
+    <PackageReference Include="NAudio.Vorbis" />
+    <PackageReference Include="NVorbis" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MotelyJAML\Motely\Motely.csproj" />

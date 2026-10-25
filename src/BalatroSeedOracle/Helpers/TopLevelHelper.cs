@@ -6,7 +6,7 @@ namespace BalatroSeedOracle.Helpers;
 
 /// <summary>
 /// Resolves the application's <see cref="TopLevel"/> (main window) for pickers/clipboard.
-/// TIER0-STUB: replace in Tier 1 once modal host abstraction lands.
+/// The app is desktop-only (classic desktop lifetime), so the main window is the TopLevel.
 /// </summary>
 public static class TopLevelHelper
 {

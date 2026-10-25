@@ -7,9 +7,9 @@ using Motely.Filters;
 namespace BalatroSeedOracle.Services;
 
 /// <summary>
-/// Filter file locations and load/save: everything under YAMLFilters/, one .yaml per filter.
-/// TIER0-STUB: replace in Tier 1 if the directory layout moves; the Resolve/Load/Save/List/
-/// Delete surface mirrors how every caller already uses it.
+/// Filter file locations and load/save: everything under YAMLFilters/ in the run directory
+/// (created at startup by App, same convention as Motely.CLI), one .yaml per filter.
+/// Saves are atomic (temp file + move) so a crash mid-save never leaves a truncated filter.
 /// </summary>
 public static class FilterFiles
 {
@@ -52,7 +52,7 @@ public static class FilterFiles
             var directory = Path.GetDirectoryName(filePath);
             if (!string.IsNullOrEmpty(directory))
                 Directory.CreateDirectory(directory);
-            File.WriteAllText(filePath, Helpers.JamlConfigText.ToJaml(config));
+            Helpers.JsonFileStore.WriteAllTextAtomic(filePath, Helpers.JamlConfigText.ToJaml(config));
             return true;
         }
         catch (Exception ex)

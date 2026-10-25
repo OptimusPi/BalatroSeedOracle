@@ -9,7 +9,8 @@ namespace BalatroSeedOracle.Helpers;
 
 /// <summary>
 /// Visualizer preset persistence: one JSON file per preset in VisualizerPresets/.
-/// TIER0-STUB: replace in Tier 1 if the preset format gains versioning/migration.
+/// The format is the plain <see cref="VisualizerPreset"/> JSON (no versioning needed today);
+/// unreadable files are skipped and logged, and saves are atomic.
 /// </summary>
 public static class PresetHelper
 {
@@ -61,7 +62,7 @@ public static class PresetHelper
             if (safe.Length == 0)
                 safe = "preset";
             var json = JsonSerializer.Serialize(preset, BsoJsonSerializerContext.Default.VisualizerPreset);
-            File.WriteAllText(Path.Combine(PresetDir, $"{safe}.json"), json);
+            JsonFileStore.WriteAllTextAtomic(Path.Combine(PresetDir, $"{safe}.json"), json);
             return true;
         }
         catch (Exception ex)
