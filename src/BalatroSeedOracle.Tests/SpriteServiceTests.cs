@@ -123,6 +123,8 @@ public class SpriteServiceTests(HeadlessAvaloniaFixture avalonia) : IClassFixtur
     [InlineData("Gold Stake", "Stake")]
     [InlineData("Ace of Spades", "StandardCard")]
     [InlineData("Joker", "joker")]
+    [InlineData("Any", "Joker")]
+    [InlineData("*", "Tag")]
     // (type, name) order, as JamlEditorTabViewModel passes it
     [InlineData("Joker", "Blueprint")]
     [InlineData("Tag", "Charm Tag")]

@@ -89,9 +89,10 @@ public class SpriteService
             type = Normalize(typeHint);
         }
 
-        if (IsPlaceholder(itemName))
+        if (IsNone(itemName))
             return TransparentPixel();
 
+        // "Any" / "*" with a category goes to that category's wildcard sprite (anyjoker, anytag...).
         switch (type)
         {
             case "joker" or "jokers" or "souljoker" or "legendaryjoker" or "wildcardjoker":
@@ -128,7 +129,11 @@ public class SpriteService
                     : GetPlayingCardImage("Spades", "Ace");
         }
 
-        // No (usable) hint: search every category, quietly, then report one miss.
+        // No (usable) hint. "Any" / "*" alone names no category: blank placeholder.
+        if (IsPlaceholder(itemName))
+            return TransparentPixel();
+
+        // Search every category, quietly, then report one miss.
         var c = EnsureLoaded();
         var n = Normalize(itemName);
         var found =
