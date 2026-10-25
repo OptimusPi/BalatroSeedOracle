@@ -60,6 +60,12 @@ public class AnteAnalysisModel
 
     public IList<BoosterPackModel> BoosterPacks { get; } = new List<BoosterPackModel>();
 
+    public bool HasShopItems => ShopItems.Count > 0;
+
+    public bool HasBoosterPacks => BoosterPacks.Count > 0;
+
+    public string ShopItemsCountText => ShopItems.Count == 1 ? "1 shop item" : $"{ShopItems.Count} shop items";
+
     private static string SplitPascal(string name) =>
         string.Concat(name.Select((c, i) => i > 0 && char.IsUpper(c) ? " " + c : c.ToString()));
 }
