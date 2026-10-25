@@ -104,8 +104,25 @@ public class ShopItemModel
 
     public string EditionName => HasEdition ? Edition.ToString() : string.Empty;
 
-    /// <summary>TIER0-STUB: fixed accent brush until edition colors are themed.</summary>
-    public IBrush EditionColor => Brushes.Gold;
+    /// <summary>
+    /// Text color for the edition label, from the app palette (App.axaml): Foil = blue (chips),
+    /// Holographic = red (mult), Polychrome = purple, Negative = bright silver (readable on the dark item boxes). Fixed brushes, not
+    /// resource lookups, because this model is built off the visual tree.
+    /// </summary>
+    public IBrush EditionColor =>
+        Edition switch
+        {
+            MotelyItemEdition.Foil => FoilBrush,
+            MotelyItemEdition.Holographic => HolographicBrush,
+            MotelyItemEdition.Polychrome => PolychromeBrush,
+            MotelyItemEdition.Negative => NegativeBrush,
+            _ => Brushes.White,
+        };
+
+    private static readonly IBrush FoilBrush = new SolidColorBrush(Color.Parse("#0093ff")).ToImmutable();
+    private static readonly IBrush HolographicBrush = new SolidColorBrush(Color.Parse("#ff4c40")).ToImmutable();
+    private static readonly IBrush PolychromeBrush = new SolidColorBrush(Color.Parse("#7d60e0")).ToImmutable();
+    private static readonly IBrush NegativeBrush = new SolidColorBrush(Color.Parse("#b9c2d2")).ToImmutable();
 }
 
 /// <summary>UI model for one booster pack of an ante.</summary>

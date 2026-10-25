@@ -196,48 +196,6 @@
         }
     },
     {
-        "name": "standard",
-        "pos": {
-            "x": 1,
-            "y": 5
-        }
-    },
-    {
-        "name": "standardpack",
-        "pos": {
-            "x": 1,
-            "y": 5
-        }
-    },
-    {
-        "name": "standardpack1",
-        "pos": {
-            "x": 1,
-            "y": 5
-        }
-    },
-    {
-        "name": "buffoon",
-        "pos": {
-            "x": 2,
-            "y": 5
-        }
-    },
-    {
-        "name": "buffoonpack",
-        "pos": {
-            "x": 2,
-            "y": 5
-        }
-    },
-    {
-        "name": "buffoonpack1",
-        "pos": {
-            "x": 2,
-            "y": 5
-        }
-    },
-    {
         "name": "arcana",
         "pos": {
             "x": 0,
@@ -298,6 +256,160 @@
         "pos": {
             "x": 3,
             "y": 4
+        }
+    },
+    {
+        "name": "standard",
+        "pos": {
+            "x": 0,
+            "y": 6
+        }
+    },
+    {
+        "name": "standardpack",
+        "pos": {
+            "x": 0,
+            "y": 6
+        }
+    },
+    {
+        "name": "standardpack1",
+        "pos": {
+            "x": 0,
+            "y": 6
+        }
+    },
+    {
+        "name": "standardpack2",
+        "pos": {
+            "x": 1,
+            "y": 6
+        }
+    },
+    {
+        "name": "standardpack3",
+        "pos": {
+            "x": 2,
+            "y": 6
+        }
+    },
+    {
+        "name": "standardpack4",
+        "pos": {
+            "x": 3,
+            "y": 6
+        }
+    },
+    {
+        "name": "jumbostandard",
+        "pos": {
+            "x": 0,
+            "y": 7
+        }
+    },
+    {
+        "name": "jumbostandardpack",
+        "pos": {
+            "x": 0,
+            "y": 7
+        }
+    },
+    {
+        "name": "jumbostandardpack1",
+        "pos": {
+            "x": 0,
+            "y": 7
+        }
+    },
+    {
+        "name": "jumbostandardpack2",
+        "pos": {
+            "x": 1,
+            "y": 7
+        }
+    },
+    {
+        "name": "megastandard",
+        "pos": {
+            "x": 2,
+            "y": 7
+        }
+    },
+    {
+        "name": "megastandardpack",
+        "pos": {
+            "x": 2,
+            "y": 7
+        }
+    },
+    {
+        "name": "megastandardpack1",
+        "pos": {
+            "x": 2,
+            "y": 7
+        }
+    },
+    {
+        "name": "megastandardpack2",
+        "pos": {
+            "x": 3,
+            "y": 7
+        }
+    },
+    {
+        "name": "buffoon",
+        "pos": {
+            "x": 0,
+            "y": 8
+        }
+    },
+    {
+        "name": "buffoonpack",
+        "pos": {
+            "x": 0,
+            "y": 8
+        }
+    },
+    {
+        "name": "buffoonpack1",
+        "pos": {
+            "x": 0,
+            "y": 8
+        }
+    },
+    {
+        "name": "buffoonpack2",
+        "pos": {
+            "x": 1,
+            "y": 8
+        }
+    },
+    {
+        "name": "jumbobuffoon",
+        "pos": {
+            "x": 2,
+            "y": 8
+        }
+    },
+    {
+        "name": "jumbobuffoonpack",
+        "pos": {
+            "x": 2,
+            "y": 8
+        }
+    },
+    {
+        "name": "megabuffoon",
+        "pos": {
+            "x": 3,
+            "y": 8
+        }
+    },
+    {
+        "name": "megabuffoonpack",
+        "pos": {
+            "x": 3,
+            "y": 8
         }
     }
 ]
