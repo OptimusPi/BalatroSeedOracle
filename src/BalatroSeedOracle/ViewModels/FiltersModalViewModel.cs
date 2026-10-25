@@ -885,7 +885,7 @@ namespace BalatroSeedOracle.ViewModels
                     clauseValue = filterItem.Name.Replace("Wildcard_Joker", "any", StringComparison.OrdinalIgnoreCase).ToLowerInvariant();
             }
 
-            var clause = YAMLClauseExtensions.CreateClauseForDiscriminator(filterItem.Type, clauseValue);
+            var clause = JamlClauseExtensions.CreateClauseForDiscriminator(filterItem.Type, clauseValue);
 
             if (filterItem.Antes?.Any() == true)
                 clause.SetAntes(filterItem.Antes.ToArray());

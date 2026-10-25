@@ -5,83 +5,57 @@ using System.Linq;
 using System.Reflection;
 using System.Text.Json.Nodes;
 using Motely.Filters;
+using Motely.Schema;
 
 namespace BalatroSeedOracle.Helpers;
 
 /// <summary>
-/// Serializes a <see cref="JamlConfig"/> to JAML text.
-/// TIER0-STUB: replace in Tier 1. The engine exposes JamlConfigLoader (text → config) and
-/// text↔text conversion, but no config → text serializer, so this helper walks the config
-/// graph into a JSON tree and lets the engine's own JamlConfigLoader.ToYaml render it.
-/// Output is designed to round-trip through JamlConfigLoader.TryLoad; clause discriminator
-/// keys mirror the engine's JamlClauseBinding.ClauseTypeByKey.
+/// Serializes a <see cref="JamlConfig"/> to JAML text. The engine reads JAML
+/// (<see cref="JamlConfigLoader"/>) and converts JSON → YAML text, but has no config → text
+/// writer, so this walks the config into a JSON tree in the engine's own clause shape and lets
+/// <see cref="JamlConfigLoader.ToYaml"/> render it.
+/// <para>
+/// Clause shape is the one every engine filter uses: a flat mapping whose discriminator key holds
+/// the clause's names (<c>- boss: TheEye</c> then <c>antes: [3]</c> as a sibling); and/or carry
+/// their children in a <c>clauses:</c> payload. Keys and their spelling come from
+/// <see cref="FilterVocabulary"/> (the loader's binding table), and properties still at their
+/// default are left out, so the text reads like a hand-written filter and loads back to the same
+/// config.
+/// </para>
 /// </summary>
 public static class JamlConfigText
 {
-    /// <summary>Clause type → its JAML discriminator key (canonical singular forms).</summary>
-    private static readonly IReadOnlyDictionary<Type, string> KeyByClauseType =
-        new Dictionary<Type, string>
-        {
-            [typeof(JokerClause)] = "joker",
-            [typeof(CommonJokerClause)] = "commonJoker",
-            [typeof(UncommonJokerClause)] = "uncommonJoker",
-            [typeof(RareJokerClause)] = "rareJoker",
-            [typeof(LegendaryJokerClause)] = "legendaryJoker",
-            [typeof(PlanetCardClause)] = "planetCard",
-            [typeof(SpectralCardClause)] = "spectralCard",
-            [typeof(TarotCardClause)] = "tarotCard",
-            [typeof(StandardCardClause)] = "standardCard",
-            [typeof(ErraticRankClause)] = "erraticRank",
-            [typeof(ErraticSuitClause)] = "erraticSuit",
-            [typeof(VoucherClause)] = "voucher",
-            [typeof(TagClause)] = "tag",
-            [typeof(SmallBlindTagClause)] = "smallBlindTag",
-            [typeof(BigBlindTagClause)] = "bigBlindTag",
-            [typeof(BossClause)] = "boss",
-            [typeof(BoosterPackClause)] = "boosterPack",
-            [typeof(PokerHandClause)] = "pokerHand",
-            [typeof(StartingDrawClause)] = "startingDraw",
-            [typeof(LuckyMoneyClause)] = "luckyMoney",
-            [typeof(LuckyMultClause)] = "luckyMult",
-            [typeof(MisprintMultClause)] = "misprintMult",
-            [typeof(WheelOfFortuneClause)] = "wheelOfFortune",
-            [typeof(WheelStaysFlippedClause)] = "wheelStaysFlipped",
-            [typeof(GlassDestroyClause)] = "glassDestroy",
-            [typeof(CavendishExtinctClause)] = "cavendishExtinct",
-            [typeof(GrosMichelExtinctClause)] = "grosMichelExtinct",
-            [typeof(SpaceLevelupClause)] = "spaceLevelup",
-            [typeof(BusinessPayoutClause)] = "businessPayout",
-            [typeof(ParkingPayoutClause)] = "parkingPayout",
-            [typeof(BloodstoneTriggerClause)] = "bloodstoneTrigger",
-            [typeof(AndClause)] = "and",
-            [typeof(OrClause)] = "or",
-            [typeof(LegendarySoulOrderClause)] = "soulOrder",
-        };
+    /// <summary>Clause type → its canonical discriminator key (the first, singular spelling in the engine table).</summary>
+    private static readonly IReadOnlyDictionary<Type, string> KeyByClauseType = FilterVocabulary
+        .DiscriminatorTable.GroupBy(d => d.ClauseType)
+        .ToDictionary(g => g.Key, g => g.First().Key);
+
+    /// <summary>The canonical JAML key for a clause type (<c>joker</c>, <c>boss</c>, <c>or</c>, …), or null.</summary>
+    public static string? ClauseKeyFor(Type clauseType) => KeyByClauseType.GetValueOrDefault(clauseType);
 
     /// <summary>The filter as JAML text, loadable again through <see cref="JamlConfigLoader.TryLoad"/>.</summary>
     public static string ToJaml(JamlConfig config)
     {
         ArgumentNullException.ThrowIfNull(config);
 
-        var root = new JsonObject
-        {
-            ["id"] = config.Id,
-            ["deck"] = config.Deck.ToString(),
-            ["stake"] = config.Stake.ToString(),
-            ["must"] = ClauseArray(config.Must),
-            ["should"] = ClauseArray(config.Should),
-            ["mustNot"] = ClauseArray(config.MustNot),
-        };
+        var root = new JsonObject();
+        if (config.Id is not null)
+            root["id"] = config.Id;
         if (config.Name is not null)
             root["name"] = config.Name;
         if (config.Description is not null)
             root["description"] = config.Description;
         if (config.Author is not null)
             root["author"] = config.Author;
+        root["deck"] = config.Deck.ToString();
+        root["stake"] = config.Stake.ToString();
         if (config.Seeds.Count > 0)
             root["seeds"] = new JsonArray(config.Seeds.Select(seed => (JsonNode)seed).ToArray());
         if (config.Cutoff is { } cutoff)
             root["cutoff"] = cutoff;
+        root["must"] = ClauseArray(config.Must);
+        root["should"] = ClauseArray(config.Should);
+        root["mustNot"] = ClauseArray(config.MustNot);
 
         // The engine's own JSON → YAML conversion guarantees the loader reads the result
         // back exactly as it reads the original document.
@@ -91,67 +65,94 @@ public static class JamlConfigText
     private static JsonArray ClauseArray(IEnumerable<IMotelyClause> clauses) =>
         new(clauses.Select(clause => (JsonNode)ClauseNode(clause)).ToArray());
 
-    /// <summary>One clause item: a single-entry mapping from its discriminator key to its payload.</summary>
+    /// <summary>One clause item in the engine's shape (see the class remarks).</summary>
     private static JsonObject ClauseNode(IMotelyClause clause)
     {
         var type = clause.GetType();
-        if (!KeyByClauseType.TryGetValue(type, out var key))
-            throw new InvalidOperationException(
-                $"JamlConfigText: no JAML discriminator key registered for clause type {type.Name}."
+        var key = ClauseKeyFor(type)
+            ?? throw new InvalidOperationException(
+                $"JamlConfigText: the engine has no JAML key for clause type {type.Name}."
             );
-        return new JsonObject { [key] = ClausePayload(clause) };
-    }
 
-    private static JsonNode ClausePayload(IMotelyClause clause)
-    {
-        // Logic clauses carry their children in a payload mapping the engine's And/Or
-        // converters read (sequence or { mode, clauses, … }); defaults stay implicit.
         if (clause is LogicClause logic)
-        {
-            var payload = new JsonObject { ["clauses"] = ClauseArray(logic.Clauses) };
-            if (logic.Mode != LogicScoreMode.Sum)
-                payload["mode"] = logic.Mode.ToString();
-            if (logic.Min != 1)
-                payload["min"] = logic.Min;
-            if (logic.Max is { } max)
-                payload["max"] = max;
-            if (logic.Score != 1)
-                payload["score"] = logic.Score;
-            if (logic.Label is { } label)
-                payload["label"] = label;
-            return payload;
-        }
+            return new JsonObject { [key] = LogicPayload(logic) };
 
-        return WalkObject(clause);
+        var node = new JsonObject();
+        var valueProperty = FilterVocabulary.ValuePropertyFor(key);
+        var value = valueProperty?.GetValue(clause);
+        node[key] = value switch
+        {
+            // Event clauses: the key holds the roll list (which is also the plain rolls property).
+            JamlEventRolls rolls => new JsonArray(rolls.Rolls.Select(r => (JsonNode)r).ToArray()),
+            // Names: one reads as a scalar; none (or a write-only slot key) is the category "any".
+            null or IList { Count: 0 } => "any",
+            IList { Count: 1 } single when single[0] is Enum e => EnumName(e),
+            _ => WalkValue(value),
+        };
+
+        var seen = new HashSet<object>(ReferenceEqualityComparer.Instance);
+        if (value is IList { Count: > 0 })
+            seen.Add(value);
+        AddProperties(node, clause, seen, property =>
+            property != valueProperty
+            && !FilterVocabulary.IsDiscriminator(Camel(property.Name))
+            && property.PropertyType != typeof(JamlEventRolls)
+            && !(value is JamlEventRolls && property.Name == "Rolls"));
+        return node;
     }
 
     /// <summary>
-    /// Public readable properties of a clause/payload object as a JSON mapping. Reference-equal
-    /// duplicates are skipped, which drops the engine's plural alias properties (Joker/Jokers,
-    /// Voucher/Vouchers, …) that share one backing array. JamlEventRolls aliases are skipped:
-    /// their data is carried by the plain <c>rolls</c> property the clause also exposes.
+    /// Add the bindable properties of <paramref name="instance"/> to <paramref name="map"/>,
+    /// leaving out nulls, values equal to a fresh instance's (defaults), and a non-empty list
+    /// already written under another name (the engine's alias properties share one array).
     /// </summary>
+    private static void AddProperties(JsonObject map, object instance, HashSet<object> seen, Func<PropertyInfo, bool> include)
+    {
+        var type = instance.GetType();
+        var defaults = type.GetConstructor(Type.EmptyTypes) is not null ? Activator.CreateInstance(type) : null;
+        foreach (var property in FilterVocabulary.ClauseProperties(type))
+        {
+            if (!property.CanRead || !include(property))
+                continue;
+            var propertyValue = property.GetValue(instance);
+            if (propertyValue is null)
+                continue;
+            if (propertyValue is IList { Count: > 0 } && !seen.Add(propertyValue))
+                continue;
+            var walked = WalkValue(propertyValue);
+            if (defaults is not null && IsDefault(property, defaults, walked))
+                continue;
+            map[Camel(property.Name)] = walked;
+        }
+    }
+
+    private static JsonObject LogicPayload(LogicClause logic)
+    {
+        var payload = new JsonObject { ["clauses"] = ClauseArray(logic.Clauses) };
+        if (logic.Mode != LogicScoreMode.Sum)
+            payload["mode"] = logic.Mode.ToString();
+        if (logic.Min != 1)
+            payload["min"] = logic.Min;
+        if (logic.Max is { } max)
+            payload["max"] = max;
+        if (logic.Score != 1)
+            payload["score"] = logic.Score;
+        if (logic.Label is { } label)
+            payload["label"] = label;
+        return payload;
+    }
+
+    private static bool IsDefault(PropertyInfo property, object defaults, JsonNode walked)
+    {
+        var defaultValue = property.GetValue(defaults);
+        return defaultValue is not null && WalkValue(defaultValue).ToJsonString() == walked.ToJsonString();
+    }
+
+    /// <summary>Public readable properties of a nested block (sources, soul-order entry, …) as a mapping.</summary>
     private static JsonObject WalkObject(object instance)
     {
         var map = new JsonObject();
-        var seen = new HashSet<object>(ReferenceEqualityComparer.Instance);
-        foreach (
-            var prop in instance
-                .GetType()
-                .GetProperties(BindingFlags.Public | BindingFlags.Instance)
-        )
-        {
-            if (!prop.CanRead || prop.GetIndexParameters().Length != 0)
-                continue;
-            if (prop.PropertyType == typeof(JamlEventRolls))
-                continue;
-            var value = prop.GetValue(instance);
-            if (value is null)
-                continue;
-            if (value is not ValueType && !seen.Add(value))
-                continue;
-            map[Camel(prop.Name)] = WalkValue(value);
-        }
+        AddProperties(map, instance, new HashSet<object>(ReferenceEqualityComparer.Instance), _ => true);
         return map;
     }
 
@@ -159,22 +160,21 @@ public static class JamlConfigText
         value switch
         {
             IMotelyClause clause => ClauseNode(clause),
-            Enum e => Enum.GetName(e.GetType(), e) ?? e.ToString(),
+            Enum e => EnumName(e),
             string s => s,
             bool b => b,
             int i => i,
             long l => l,
             double d => d,
+            JamlEventRolls rolls => new JsonArray(rolls.Rolls.Select(r => (JsonNode)r).ToArray()),
             IEnumerable items => new JsonArray(items.Cast<object?>().Select(WalkItem).ToArray()),
             _ => WalkObject(value),
         };
 
     private static JsonNode? WalkItem(object? item) => item is null ? null : WalkValue(item);
 
+    private static string EnumName(Enum value) => Enum.GetName(value.GetType(), value) ?? value.ToString();
+
     private static string Camel(string name) =>
-        string.Create(name.Length, name, static (span, source) =>
-        {
-            source.AsSpan().CopyTo(span);
-            span[0] = char.ToLowerInvariant(span[0]);
-        });
+        name.Length == 0 ? name : char.ToLowerInvariant(name[0]) + name[1..];
 }
