@@ -476,7 +476,7 @@
                                 <TextBlock Text="Found" Classes="strip-label-text"/>
                             </Border>
                             <Border Grid.Column="1" Classes="strip-value green">
-                                <TextBlock Text="{Binding ResultsCount, StringFormat='{}{0:N0}'}"
+                                <TextBlock Text="{Binding FoundCount, StringFormat='{}{0:N0}'}"
                                            Classes="strip-value-text green"/>
                             </Border>
                         </Grid>

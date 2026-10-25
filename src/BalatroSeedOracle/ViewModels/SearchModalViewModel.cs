@@ -96,6 +96,7 @@ namespace BalatroSeedOracle.ViewModels
         private int _selectedTabIndex = 0;
 
         [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(FoundCount))]
         private MotelyProgress? _latestProgress;
 
         /// <summary>
@@ -255,7 +256,21 @@ namespace BalatroSeedOracle.ViewModels
 
         // Console
         [ObservableProperty]
-        private string _consoleText = "> Motely Search Console\n> Ready to search...\n";
+        private string _consoleText = ConsoleHeader;
+
+        private const string ConsoleHeader = "> Motely Search Console\n> Ready to search...\n";
+
+        /// <summary>Lines the console TextBox shows. Re-shaping its text is the UI thread's
+        /// cost per update, so the text is the last <see cref="MaxConsoleLines"/> lines, not
+        /// everything since launch: an unbounded string froze the app within seconds of a
+        /// search on a loose filter.</summary>
+        private const int MaxConsoleLines = 200;
+
+        private readonly Queue<string> _consoleLines = new();
+
+        private DateTime _lastConsoleFlush;
+
+        private bool _consoleFlushScheduled;
 
         [ObservableProperty]
         private string _jsonValidationStatus = "JSON: Valid ✓";
@@ -479,6 +494,10 @@ namespace BalatroSeedOracle.ViewModels
         public double SearchProgress => LatestProgress?.PercentComplete ?? 0.0;
         public string ProgressText => LatestProgress?.ToString() ?? "No search active";
         public int ResultsCount => SearchResults.Count;
+
+        /// <summary>Every match the running search has found. The live grid keeps only the
+        /// newest <see cref="MaxLiveResults"/>, so its count stops there; the engine's doesn't.</summary>
+        public long FoundCount => Math.Max(LatestProgress?.MatchingSeeds ?? 0, SearchResults.Count);
 
         public string CurrentSearchId => _currentSearchId;
 
@@ -729,6 +748,7 @@ namespace BalatroSeedOracle.ViewModels
 
             ActiveSearchTransition = null;
             OnPropertyChanged(nameof(ResultsCount));
+            OnPropertyChanged(nameof(FoundCount));
             BsoLogger.Log(
                 "SearchModalViewModel",
                 $"Search {(stopped ? "stopped" : "completed")} with {SearchResults.Count} results"
@@ -856,6 +876,7 @@ namespace BalatroSeedOracle.ViewModels
                     SearchResults.Add(new Models.SearchResult { Seed = seed });
 
                 OnPropertyChanged(nameof(ResultsCount));
+                OnPropertyChanged(nameof(FoundCount));
                 PanelText = $"Reconnected — {total:N0} seeds in lake";
                 AddConsoleMessage($"Reconnected to search. {total:N0} seeds saved to lake.");
             }
@@ -1119,7 +1140,8 @@ namespace BalatroSeedOracle.ViewModels
         [RelayCommand]
         private void ClearConsole()
         {
-            ConsoleText = "> Motely Search Console\n> Ready to search...\n";
+            _consoleLines.Clear();
+            ConsoleText = ConsoleHeader;
             ConsoleOutput.Clear();
             BsoLogger.Log("SearchModalViewModel", "Console cleared");
         }
@@ -1240,6 +1262,39 @@ namespace BalatroSeedOracle.ViewModels
             AddSeedFoundMessage(seed, score);
             PanelText = $"Found {SearchResults.Count} seeds so far...";
             OnPropertyChanged(nameof(ResultsCount));
+            OnPropertyChanged(nameof(FoundCount));
+        }
+
+        /// <summary>
+        /// Adds a line to the console text, keeping only the newest lines, and pushes the text
+        /// to the binding at most ten times a second (a search can find thousands of seeds a
+        /// second; each push re-lays-out the TextBox).
+        /// </summary>
+        private void AppendConsoleLine(string line)
+        {
+            _consoleLines.Enqueue(line);
+            while (_consoleLines.Count > MaxConsoleLines)
+                _consoleLines.Dequeue();
+
+            var sinceFlush = DateTime.UtcNow - _lastConsoleFlush;
+            if (sinceFlush >= ConsoleFlushInterval)
+            {
+                FlushConsole();
+            }
+            else if (!_consoleFlushScheduled)
+            {
+                _consoleFlushScheduled = true;
+                Avalonia.Threading.DispatcherTimer.RunOnce(FlushConsole, ConsoleFlushInterval - sinceFlush);
+            }
+        }
+
+        private static readonly TimeSpan ConsoleFlushInterval = TimeSpan.FromMilliseconds(100);
+
+        private void FlushConsole()
+        {
+            _consoleFlushScheduled = false;
+            _lastConsoleFlush = DateTime.UtcNow;
+            ConsoleText = ConsoleHeader + string.Join("\n", _consoleLines) + "\n";
         }
 
         private void AddConsoleMessage(string message)
@@ -1254,8 +1309,7 @@ namespace BalatroSeedOracle.ViewModels
             };
             ConsoleOutput.Add(consoleMessage);
 
-            // Update the ConsoleText binding
-            ConsoleText += formattedMessage + "\n";
+            AppendConsoleLine(formattedMessage);
 
             // Keep console output manageable
             while (ConsoleOutput.Count > 1000)
@@ -1284,8 +1338,7 @@ namespace BalatroSeedOracle.ViewModels
             };
             ConsoleOutput.Add(consoleMessage);
 
-            // Update the ConsoleText binding
-            ConsoleText += formattedMessage + "\n";
+            AppendConsoleLine(formattedMessage);
 
             // Keep console output manageable
             while (ConsoleOutput.Count > 1000)
@@ -1575,6 +1628,7 @@ namespace BalatroSeedOracle.ViewModels
             OnPropertyChanged(nameof(SearchProgress));
             OnPropertyChanged(nameof(ProgressText));
             OnPropertyChanged(nameof(ResultsCount));
+            OnPropertyChanged(nameof(FoundCount));
             PanelText = $"{e.MatchingSeeds} seeds | {e.PercentComplete:0}%";
 
             // If results increased since last update, log the new seeds found
