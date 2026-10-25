@@ -1095,7 +1095,7 @@ namespace BalatroSeedOracle.ViewModels
                 DataContext = yamlEditorViewModel,
             };
             YAMLEditorTab = yamlEditorViewModel; // Store reference
-            TabItems.Add(new TabItemViewModel("YAML EDITOR", yamlEditorTab));
+            TabItems.Add(new TabItemViewModel("JAML EDITOR", yamlEditorTab));
 
             // Validate Filter tab
             var validateFilterViewModel =

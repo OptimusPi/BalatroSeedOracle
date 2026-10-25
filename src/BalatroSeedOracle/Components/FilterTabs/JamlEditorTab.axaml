@@ -50,7 +50,7 @@
 
                     <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6">
                         <Button Content="Format"
-                                ToolTip.Tip="Auto-format YAML"
+                                ToolTip.Tip="Auto-format JAML"
                                 Command="{Binding FormatYAMLCommand}"
                                 Height="24"
                                 Padding="8,4"
@@ -70,7 +70,7 @@
                                 BorderThickness="0"
                                 CornerRadius="4"
                                 Foreground="{StaticResource BrightGreenEditor}"/>
-                        <Button ToolTip.Tip="Copy YAML to clipboard"
+                        <Button ToolTip.Tip="Copy JAML to clipboard"
                                 Command="{Binding CopyYAMLCommand}"
                                 Height="24"
                                 Padding="8,4"
@@ -80,7 +80,7 @@
                                 CornerRadius="4">
                             <StackPanel Orientation="Horizontal" Spacing="4">
                                 <PathIcon Data="{StaticResource ContentCopyIconData}" Width="12" Height="12" Foreground="{StaticResource Blue}"/>
-                                <TextBlock Text="Copy YAML" Foreground="{StaticResource Blue}" VerticalAlignment="Center"/>
+                                <TextBlock Text="Copy JAML" Foreground="{StaticResource Blue}" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
                     </StackPanel>

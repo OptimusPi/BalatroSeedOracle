@@ -137,7 +137,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 // Parse the YAML content
                 if (!JamlConfigLoader.TryLoad(JsonContent, out var config, out var loadError))
                 {
-                    ValidationStatus = $"Failed to parse YAML: {loadError}";
+                    ValidationStatus = $"Failed to parse JAML: {loadError}";
                     ValidationStatusColor = Brushes.Red;
                     return;
                 }

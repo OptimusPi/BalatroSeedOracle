@@ -119,14 +119,14 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                         {
                             LineNumber = lineNumber,
                             Column = 0,
-                            Message = loadError ?? "Invalid YAML syntax",
+                            Message = loadError ?? "Invalid JAML syntax",
                             Severity = ValidationErrorItem.ErrorSeverity.Error,
                         }
                     );
 
-                    ValidationStatus = "✗ Invalid YAML syntax";
+                    ValidationStatus = "✗ Invalid JAML syntax";
                     ValidationStatusColor = Brushes.Red;
-                    ErrorMessage = loadError ?? "Invalid YAML syntax";
+                    ErrorMessage = loadError ?? "Invalid JAML syntax";
                     HasError = true;
                     HasErrors = true;
                     ErrorCount = ValidationErrors.Count;
@@ -139,7 +139,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
                 if (ValidationErrors.Count == 0)
                 {
-                    ValidationStatus = "✓ YAML is valid";
+                    ValidationStatus = "✓ JAML is valid";
                     ValidationStatusColor = Brushes.Green;
                     ErrorMessage = "";
                     HasError = false;
@@ -392,9 +392,9 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             {
                 if (!JamlConfigLoader.TryLoad(YamlContent, out var config, out var loadError) || config is null)
                 {
-                    ValidationStatus = $"✗ Sync failed: {loadError ?? "Invalid YAML"}";
+                    ValidationStatus = $"✗ Sync failed: {loadError ?? "Invalid JAML"}";
                     ValidationStatusColor = Brushes.Red;
-                    ErrorMessage = loadError ?? "Invalid YAML";
+                    ErrorMessage = loadError ?? "Invalid JAML";
                     HasError = true;
                     return;
                 }
@@ -442,7 +442,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 }
                 else
                 {
-                    ValidationStatus = "✗ Cannot format invalid YAML";
+                    ValidationStatus = "✗ Cannot format invalid JAML";
                     ValidationStatusColor = Brushes.Red;
                 }
             }
@@ -503,7 +503,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 // Update status based on validation
                 if (HasError)
                 {
-                    ValidationStatus = $"✗ Invalid YAML: {ErrorMessage}";
+                    ValidationStatus = $"✗ Invalid JAML: {ErrorMessage}";
                     ValidationStatusColor = Brushes.Red;
                     DebugLogger.LogError(
                         "YAMLEditorTab",
@@ -526,7 +526,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             }
             catch (Exception ex)
             {
-                ValidationStatus = $"✗ Error generating YAML: {ex.Message}";
+                ValidationStatus = $"✗ Error generating JAML: {ex.Message}";
                 ValidationStatusColor = Brushes.Red;
                 ErrorMessage = ex.Message;
                 HasError = true;
