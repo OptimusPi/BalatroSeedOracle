@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Avalonia.Media;
-using Avalonia.Threading;
 using AvaloniaEdit.CodeCompletion;
 using AvaloniaEdit.Document;
 using AvaloniaEdit.Editing;
@@ -53,27 +52,9 @@ public sealed class JamlCompletionData : ICompletionData
         if (start > 0 && document.GetCharAt(start - 1) is ':' or '-' or ',')
             insert = " " + insert;
 
+        // A picked key leaves the caret at "key: "; the first letter typed there opens the
+        // key's values (boss names after "boss: "), via the editor's auto-trigger.
         document.Replace(start, end - start, insert);
-
-        // A picked key leaves the caret at "key: " — go straight on to its values (boss names
-        // after "boss: "), once this window has closed.
-        if (insert.EndsWith(": ", StringComparison.Ordinal))
-            Dispatcher.UIThread.Post(() => ShowFollowUp(textArea), DispatcherPriority.Background);
-    }
-
-    private static void ShowFollowUp(TextArea textArea)
-    {
-        var document = textArea.Document;
-        if (document is null)
-            return;
-        var caret = textArea.Caret.Offset;
-        var items = JamlAutocompletionHelper.GetCompletionsForContext(document.GetText(0, caret));
-        if (items.Count == 0)
-            return;
-        var window = new CompletionWindow(textArea) { StartOffset = caret, EndOffset = caret };
-        foreach (var item in items)
-            window.CompletionList.CompletionData.Add(item);
-        window.Show();
     }
 }
 
