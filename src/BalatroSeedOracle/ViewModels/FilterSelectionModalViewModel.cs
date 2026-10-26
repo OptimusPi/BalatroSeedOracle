@@ -447,8 +447,11 @@ namespace BalatroSeedOracle.ViewModels
                 $"Deleting filter: {SelectedFilter.Name} ({filterIdToDelete})"
             );
 
+            // The file the list loaded it from: a filter may be .yml or .jaml, not only .yaml.
             Services.FilterFiles.Delete(
-                System.IO.Path.Combine(Services.FilterFiles.Dir, $"{filterIdToDelete}.yaml")
+                string.IsNullOrEmpty(SelectedFilter.FilePath)
+                    ? Services.FilterFiles.Resolve(filterIdToDelete)
+                    : SelectedFilter.FilePath
             );
 
             // CRITICAL: Clear the selected filter FIRST to avoid showing stale data

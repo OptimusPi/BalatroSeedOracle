@@ -219,7 +219,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     SuggestedFileName = exportFileName,
                     FileTypeChoices = new[]
                     {
-                        new FilePickerFileType("YAML") { Patterns = new[] { "*.yaml" } },
+                        new FilePickerFileType("JAML") { Patterns = Services.FilterFiles.PickerPatterns },
                     },
                 }
             );

@@ -75,8 +75,7 @@ namespace BalatroSeedOracle.Views.Modals
                     if (file is not IStorageFile storageFile)
                         continue;
 
-                    var ext = Path.GetExtension(storageFile.Name).ToLowerInvariant();
-                    if (ext == ".yaml")
+                    if (Services.FilterFiles.IsFilterFile(storageFile.Name))
                     {
                         await ImportFilterFile(storageFile);
                         imported = true;
@@ -588,7 +587,7 @@ namespace BalatroSeedOracle.Views.Modals
                         {
                             new FilePickerFileType("Filter Files")
                             {
-                                Patterns = new[] { "*.yaml" },
+                                Patterns = Services.FilterFiles.PickerPatterns,
                             },
                         },
                     }
@@ -639,9 +638,9 @@ namespace BalatroSeedOracle.Views.Modals
             try
             {
                 var extension = Path.GetExtension(file.Name).ToLowerInvariant();
-                if (extension != ".yaml")
+                if (!Services.FilterFiles.IsFilterFile(file.Name))
                 {
-                    await ShowImportError($"Invalid file type: {extension}. Expected .yaml");
+                    await ShowImportError($"Invalid file type: {extension}. Expected .yaml, .yml or .jaml");
                     return;
                 }
 

@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Platform.Storage;
@@ -35,7 +36,7 @@ namespace BalatroSeedOracle.ViewModels
                     AllowMultiple = true,
                     FileTypeFilter = new[]
                     {
-                        new FilePickerFileType("YAML Filters") { Patterns = new[] { "*.yaml" } },
+                        new FilePickerFileType("JAML Filters") { Patterns = Services.FilterFiles.PickerPatterns },
                     },
                 }
             );
@@ -150,7 +151,7 @@ namespace BalatroSeedOracle.ViewModels
 
             if (Directory.Exists("YAMLFilters"))
             {
-                foreach (var file in Directory.GetFiles("YAMLFilters", "*.yaml"))
+                foreach (var file in Directory.GetFiles("YAMLFilters").Where(Services.FilterFiles.IsFilterFile))
                 {
                     File.Delete(file);
                     deletedFilters++;

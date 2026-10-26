@@ -8,7 +8,8 @@ namespace BalatroSeedOracle.Services;
 
 /// <summary>
 /// Filter file locations and load/save: everything under YAMLFilters/ in the run directory
-/// (created at startup by App, same convention as Motely.CLI), one .yaml per filter.
+/// (created at startup by App, same convention as Motely.CLI), one file per filter. A JAML
+/// filter is .yaml, .yml or .jaml, as the engine reads them; new filters are written .yaml.
 /// Saves are atomic (temp file + move) so a crash mid-save never leaves a truncated filter.
 /// </summary>
 public static class FilterFiles
@@ -16,7 +17,20 @@ public static class FilterFiles
     /// <summary>The run-directory filter folder (created at startup by App).</summary>
     public static string Dir => "YAMLFilters";
 
-    /// <summary>Resolve a filter name or id to its .yaml path inside <see cref="Dir"/>.</summary>
+    /// <summary>The extensions a JAML filter is written in; the first is the one new filters get.</summary>
+    public static readonly string[] Extensions = [".yaml", ".yml", ".jaml"];
+
+    /// <summary>File-picker patterns for <see cref="Extensions"/>.</summary>
+    public static readonly string[] PickerPatterns = [.. Extensions.Select(e => "*" + e)];
+
+    /// <summary>True when the path has a filter extension.</summary>
+    public static bool IsFilterFile(string path) =>
+        Extensions.Contains(Path.GetExtension(path), StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// Resolve a filter name or id to its path inside <see cref="Dir"/>: the existing file
+    /// whatever its extension (.yaml, .yml, .jaml), else the .yaml path a new filter would get.
+    /// </summary>
     public static string Resolve(string filterName)
     {
         var safe = string.Concat(
@@ -24,9 +38,15 @@ public static class FilterFiles
         ).Trim();
         if (safe.Length == 0)
             safe = "filter";
-        if (!safe.EndsWith(".yaml", StringComparison.OrdinalIgnoreCase))
-            safe += ".yaml";
-        return Path.Combine(Dir, safe);
+        if (IsFilterFile(safe))
+            return Path.Combine(Dir, safe);
+        foreach (var extension in Extensions)
+        {
+            var existing = Path.Combine(Dir, safe + extension);
+            if (File.Exists(existing))
+                return existing;
+        }
+        return Path.Combine(Dir, safe + Extensions[0]);
     }
 
     /// <summary>Load and parse a filter file; null + message when it cannot be read.</summary>
@@ -68,7 +88,7 @@ public static class FilterFiles
         try
         {
             return Directory.Exists(Dir)
-                ? Directory.EnumerateFiles(Dir, "*.yaml").OrderBy(path => path, StringComparer.OrdinalIgnoreCase).ToList()
+                ? Directory.EnumerateFiles(Dir).Where(IsFilterFile).OrderBy(path => path, StringComparer.OrdinalIgnoreCase).ToList()
                 : [];
         }
         catch (Exception ex)
