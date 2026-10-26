@@ -3324,42 +3324,9 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 $"🔄 Loading from parent collections - Must: {_parentViewModel.SelectedMust.Count}, Should: {_parentViewModel.SelectedShould.Count}"
             );
 
-            // Clear current visual builder state
-            SelectedMust.Clear();
-            SelectedShould.Clear();
-
-            // Load MUST items
-            foreach (var itemKey in _parentViewModel.SelectedMust)
-            {
-                if (_parentViewModel.ItemConfigs.TryGetValue(itemKey, out var config))
-                {
-                    var filterItem = CreateFilterItemFromConfig(config);
-                    if (filterItem is not null)
-                    {
-                        SelectedMust.Add(filterItem);
-                        DebugLogger.Log("VisualBuilderTab", $"Loaded MUST item: {filterItem.Name}");
-                    }
-                }
-            }
-
-            // Load SHOULD items
-            foreach (var itemKey in _parentViewModel.SelectedShould)
-            {
-                if (_parentViewModel.ItemConfigs.TryGetValue(itemKey, out var config))
-                {
-                    var filterItem = CreateFilterItemFromConfig(config);
-                    if (filterItem is not null)
-                    {
-                        SelectedShould.Add(filterItem);
-                        DebugLogger.Log(
-                            "VisualBuilderTab",
-                            $"Loaded SHOULD item: {filterItem.Name}"
-                        );
-                    }
-                }
-            }
-
-            // MUST-NOT removed - items with IsInvertedFilter=true in Must collection are treated as MUST-NOT
+            // The parent builds the items (the same ones a filter load shows), each carrying the
+            // clause it was loaded from, and MustNot as the Banned Items tray.
+            _parentViewModel.FillVisualBuilder(this);
 
             DebugLogger.Log(
                 "VisualBuilderTab",
@@ -3374,79 +3341,6 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             // Also refresh expanded state to ensure drop zones are visible
             OnPropertyChanged(nameof(IsMustExpanded));
             OnPropertyChanged(nameof(IsShouldExpanded));
-        }
-
-        private FilterItem? CreateFilterItemFromConfig(ItemConfig config)
-        {
-            var ss = SpriteService.Instance;
-
-            // FIX: Use effective type that checks IsSoulJoker flag
-            var effectiveType = config.IsSoulJoker ? "SoulJoker" : config.ItemType;
-
-            // Determine category from effective type (not raw ItemType)
-            string category = effectiveType switch
-            {
-                "SoulJoker" => "SoulJokers",
-                "Joker" => "Joker",
-                "Tarot" or "TarotCard" => "Consumable",
-                "Spectral" or "SpectralCard" => "Consumable",
-                "Planet" or "PlanetCard" => "Consumable",
-                "Voucher" => "Voucher",
-                "SmallBlindTag" or "BigBlindTag" or "Tag" => "Tag",
-                "Boss" or "BossBlind" => "Boss",
-                "PlayingCard" or "StandardCard" => "StandardCard",
-                _ => effectiveType,
-            };
-
-            var filterItem = new FilterItem
-            {
-                Name = config.ItemName,
-                DisplayName = config.ItemName,
-                Type = effectiveType, // FIX: Use effective type that respects IsSoulJoker
-                Category = category,
-                ItemKey = config.ItemKey,
-                Edition = config.Edition,
-                Stickers = config.Stickers,
-                Antes = config.Antes?.ToArray(),
-            };
-
-            // Get sprite image (use effectiveType for consistent handling)
-            if (effectiveType == "Joker" || effectiveType == "SoulJoker")
-            {
-                filterItem.ItemImage = ss.GetJokerImage(config.ItemName);
-            }
-            else if (effectiveType == "Voucher")
-            {
-                filterItem.ItemImage = ss.GetVoucherImage(config.ItemName);
-            }
-            else if (effectiveType.Contains("Tarot"))
-            {
-                filterItem.ItemImage = ss.GetTarotImage(config.ItemName);
-            }
-            else if (effectiveType.Contains("Spectral"))
-            {
-                filterItem.ItemImage = ss.GetSpectralImage(config.ItemName);
-            }
-            else if (effectiveType.Contains("Planet"))
-            {
-                filterItem.ItemImage = ss.GetPlanetCardImage(config.ItemName);
-            }
-            else if (effectiveType.Contains("Tag"))
-            {
-                filterItem.ItemImage = ss.GetTagImage(config.ItemName);
-            }
-            else if (effectiveType == "Boss")
-            {
-                filterItem.ItemImage = ss.GetBossImage(config.ItemName);
-            }
-            else if (effectiveType == "PlayingCard" || effectiveType == "StandardCard")
-            {
-                var suit = string.IsNullOrWhiteSpace(config.Suit) ? "Spades" : config.Suit;
-                var rank = string.IsNullOrWhiteSpace(config.Rank) ? "10" : config.Rank;
-                filterItem.ItemImage = ss.GetPlayingCardImage(suit, rank, config.Enhancement);
-            }
-
-            return filterItem;
         }
 
         #endregion

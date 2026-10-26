@@ -19,7 +19,18 @@ public class SpriteTestApp : Application
             .UseHeadless(new AvaloniaHeadlessPlatformOptions { UseHeadlessDrawing = false });
 }
 
-/// <summary>One headless Avalonia session (AssetLoader + Skia bitmaps) shared by the sprite tests.</summary>
+/// <summary>
+/// The one headless Avalonia session for the whole test run. Avalonia allows a single
+/// application per process, so every class that needs it joins this collection (one fixture
+/// instance, and its tests never run in parallel with each other's).
+/// </summary>
+[CollectionDefinition(Name)]
+public sealed class HeadlessAvaloniaCollection : ICollectionFixture<HeadlessAvaloniaFixture>
+{
+    public const string Name = "Headless Avalonia";
+}
+
+/// <summary>One headless Avalonia session (AssetLoader + Skia bitmaps) shared by the sprite and designer tests.</summary>
 public sealed class HeadlessAvaloniaFixture : IDisposable
 {
     private readonly HeadlessUnitTestSession _session = HeadlessUnitTestSession.StartNew(typeof(SpriteTestApp));
@@ -34,7 +45,8 @@ public sealed class HeadlessAvaloniaFixture : IDisposable
 /// Every engine enum value (the names the analyzer and filters pass) and every picker entry
 /// (BalatroData display names) must resolve to a real, in-bounds sprite.
 /// </summary>
-public class SpriteServiceTests(HeadlessAvaloniaFixture avalonia) : IClassFixture<HeadlessAvaloniaFixture>
+[Collection(HeadlessAvaloniaCollection.Name)]
+public class SpriteServiceTests(HeadlessAvaloniaFixture avalonia)
 {
     private static SpriteService Sprites => SpriteService.Instance;
 
