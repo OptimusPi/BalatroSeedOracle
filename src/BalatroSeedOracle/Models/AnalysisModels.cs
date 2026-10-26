@@ -14,7 +14,6 @@ public enum AnalyzeModalTab
 
 /// <summary>
 /// UI model for one analyzed seed: header info plus per-ante breakdowns.
-/// TIER0-STUB: replace in Tier 1. Display-name/color derivations are minimal but stable.
 /// </summary>
 public class SeedAnalysisModel
 {
@@ -32,7 +31,7 @@ public class SeedAnalysisModel
     /// </summary>
     public IList<AnteAnalysisModel> Antes { get; set; } = new List<AnteAnalysisModel>();
 
-    public string DeckStakeText => $"{Deck} Deck — Stake {Stake}";
+    public string DeckStakeText => $"{Deck} Deck — {Stake} Stake";
 }
 
 /// <summary>UI model for one ante of an analyzed seed.</summary>

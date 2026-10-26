@@ -86,3 +86,7 @@ temp_*.txt
 src/.DS_Store
 /src/BalatroSeedOracle/.local
 /.local
+
+# Local agent worktrees and app runs started from the repo root
+.claude/worktrees/
+UserData/
