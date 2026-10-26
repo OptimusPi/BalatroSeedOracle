@@ -172,23 +172,12 @@ public static class JamlLanguage
     }
 
     /// <summary>
-    /// Clause keys as authors write them: the engine accepts plural aliases (<c>jokers</c>,
-    /// <c>bosses</c>) too, but offering both doubles the list, so a plural that only repeats a
-    /// singular of the same clause type is left out.
+    /// Clause keys as authors write them: one per clause type. The engine also accepts plural
+    /// aliases (<c>jokers</c>, <c>bosses</c>) and older spellings (<c>soulJoker</c>), but
+    /// offering them repeats the list; the table lists each type's own key first.
     /// </summary>
-    public static IReadOnlyList<string> SingularDiscriminators()
-    {
-        var table = FilterVocabulary.DiscriminatorTable;
-        return
-        [
-            .. table
-                .Where(info => !table.Any(other =>
-                    other.ClauseType == info.ClauseType
-                    && (info.Key.Equals(other.Key + "s", StringComparison.OrdinalIgnoreCase)
-                        || info.Key.Equals(other.Key + "es", StringComparison.OrdinalIgnoreCase))))
-                .Select(info => info.Key),
-        ];
-    }
+    public static IReadOnlyList<string> SingularDiscriminators() =>
+        [.. FilterVocabulary.DiscriminatorTable.GroupBy(info => info.ClauseType).Select(group => group.First().Key)];
 
     private static IReadOnlyList<JamlCompletion> Filter(
         IEnumerable<string> names,
@@ -415,6 +404,12 @@ public static class JamlLanguage
             && FindToken(lines, lineIndex, name, keyOnly: false) is { } nameSpan)
             return Error(nameSpan.Line, nameSpan.Start, nameSpan.Start + name.Length);
 
+        // The loader's own wording: "'antez' is not a key of a `joker` clause; …" or
+        // "'TheEyez' is not a boss name; …" — the quoted word leads the message.
+        if (LeadingQuoted(located.Message) is { } word
+            && FindToken(lines, lineIndex, word, keyOnly: located.Message.Contains("is not a key", StringComparison.Ordinal)) is { } wordSpan)
+            return Error(wordSpan.Line, wordSpan.Start, wordSpan.Start + word.Length);
+
         // Otherwise: the region the scanner was inside, from the mark to the end of its line.
         var raw = lines[lineIndex];
         var start = Math.Clamp(located.Column, 0, raw.Length);
@@ -511,6 +506,13 @@ public static class JamlLanguage
             at = line.IndexOf(word, at + 1, StringComparison.Ordinal);
         }
         return -1;
+    }
+
+    /// <summary>The word in quotes that opens the message after its "JAML line N: " prefix.</summary>
+    private static string? LeadingQuoted(string message)
+    {
+        var body = message.IndexOf(": '", StringComparison.Ordinal) is var colon and >= 0 ? message[(colon + 2)..] : message;
+        return body.StartsWith('\'') ? Quoted(body, "'") : null;
     }
 
     private static string? Quoted(string message, string marker)
