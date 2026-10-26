@@ -18,11 +18,31 @@ public sealed class AnalyzeFindTests : IDisposable
 
     public void Dispose() => Directory.Delete(_dir, recursive: true);
 
+    [Theory]
+    // The stake picker's positions, White to Gold. MotelyStake has no value 5, so position 5 is
+    // Purple (6), 6 Orange (7), 7 Gold (8): a cast of the position read Gold as Orange.
+    [InlineData(0, MotelyStake.White)]
+    [InlineData(1, MotelyStake.Red)]
+    [InlineData(2, MotelyStake.Green)]
+    [InlineData(3, MotelyStake.Black)]
+    [InlineData(4, MotelyStake.Blue)]
+    [InlineData(5, MotelyStake.Purple)]
+    [InlineData(6, MotelyStake.Orange)]
+    [InlineData(7, MotelyStake.Gold)]
+    public void Stake_picker_position_is_the_stake_it_shows(int position, MotelyStake stake)
+    {
+        var vm = new AnalyzeModalViewModel(SpriteService.Instance, new UserProfileService(Path.Combine(_dir, "userprofile.json")))
+        {
+            StakeIndex = position,
+        };
+        Assert.Equal(stake, vm.SelectedStake);
+    }
+
     private AnalyzeModalViewModel GhostSeed(string find, int minAnte, int maxAnte) =>
         new(SpriteService.Instance, new UserProfileService(Path.Combine(_dir, "userprofile.json")))
         {
             DeckIndex = (int)MotelyDeck.Ghost,
-            StakeIndex = (int)MotelyStake.White,
+            StakeIndex = 0, // the picker's first position, White
             SeedInput = "9KOCZ9YO",
             FindInput = find,
             FindMinAnte = minAnte,

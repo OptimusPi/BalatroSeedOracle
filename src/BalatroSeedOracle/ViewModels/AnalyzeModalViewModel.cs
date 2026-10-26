@@ -94,8 +94,14 @@ namespace BalatroSeedOracle.ViewModels
         public bool AnalyzerTabVisible => ActiveTab == AnalyzeModalTab.Analyzer;
         public int TriangleColumn => ActiveTab == AnalyzeModalTab.Settings ? 0 : 1;
 
-        public MotelyDeck SelectedDeck => (MotelyDeck)DeckIndex;
-        public MotelyStake SelectedStake => (MotelyStake)StakeIndex;
+        // The pickers count positions; the enums are values. MotelyStake skips 5 (Blue = 4,
+        // Purple = 6 … Gold = 8), so casting the position analyzed Gold as Orange and Purple as
+        // an undefined stake. Enum.GetValues lists the values in the pickers' order.
+        private static readonly MotelyDeck[] Decks = Enum.GetValues<MotelyDeck>();
+        private static readonly MotelyStake[] Stakes = Enum.GetValues<MotelyStake>();
+
+        public MotelyDeck SelectedDeck => Decks[Math.Clamp(DeckIndex, 0, Decks.Length - 1)];
+        public MotelyStake SelectedStake => Stakes[Math.Clamp(StakeIndex, 0, Stakes.Length - 1)];
 
         public bool HasAnalysisResults =>
             CurrentAnalysis is not null && string.IsNullOrEmpty(CurrentAnalysis.Error);
