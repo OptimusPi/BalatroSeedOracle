@@ -1164,9 +1164,20 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     return;
                 }
 
-                var config = _parentViewModel.BuildConfigFromCurrentState();
+                var filePath = _parentViewModel.AutoSaveTarget(out var skipReason);
+                if (filePath is null)
+                {
+                    await Dispatcher.UIThread.InvokeAsync(() =>
+                    {
+                        IsAutoSaving = false;
+                        AutoSaveStatus = skipReason;
+                    });
+                    if (skipReason.Length > 0)
+                        DebugLogger.Log("ConfigureFilterTab", $"Auto-save skipped: {skipReason}");
+                    return;
+                }
 
-                var filePath = FilterFiles.Resolve(filterName.Replace(" ", "_"));
+                var config = _parentViewModel.BuildConfigFromCurrentState();
                 FilterFiles.Save(config, filePath);
 
                 await Dispatcher.UIThread.InvokeAsync(() =>

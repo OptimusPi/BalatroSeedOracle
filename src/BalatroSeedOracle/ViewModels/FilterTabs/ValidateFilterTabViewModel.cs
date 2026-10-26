@@ -140,7 +140,14 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
             var config = BuildConfigFromCurrentState();
 
-            var filePath = FilterFiles.Resolve(FilterName.Trim());
+            // The file that was opened, not a path built from the name: "The Waterbear" opened from
+            // waterbear.yaml would otherwise be written beside it as a second filter.
+            var opened = _parentViewModel.CurrentFilterPath;
+            var filePath =
+                !string.IsNullOrWhiteSpace(opened)
+                && !Path.GetFileName(opened).StartsWith("_UNSAVED_", StringComparison.OrdinalIgnoreCase)
+                    ? opened
+                    : FilterFiles.Resolve(FilterName.Trim());
             FilterFiles.Save(config, filePath);
 
             CurrentFileName = Path.GetFileName(filePath);

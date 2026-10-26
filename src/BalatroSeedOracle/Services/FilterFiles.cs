@@ -72,6 +72,7 @@ public static class FilterFiles
             var directory = Path.GetDirectoryName(filePath);
             if (!string.IsNullOrEmpty(directory))
                 Directory.CreateDirectory(directory);
+            KeepHistory(filePath);
             Helpers.JsonFileStore.WriteAllTextAtomic(filePath, Helpers.JamlConfigText.ToJaml(config));
             return true;
         }
@@ -95,6 +96,34 @@ public static class FilterFiles
         {
             Helpers.DebugLogger.LogError(nameof(FilterFiles), $"List failed: {ex.Message}");
             return [];
+        }
+    }
+
+    /// <summary>Copies kept per filter in <c>.history/</c>, newest first.</summary>
+    public const int HistoryDepth = 10;
+
+    /// <summary>
+    /// Before a save replaces a filter, copy it to <c>.history/&lt;file&gt;.&lt;timestamp&gt;</c> beside it
+    /// (not a filter extension, so it's never listed), keeping the newest <see cref="HistoryDepth"/>.
+    /// A save that loses something — a builder that can't carry a clause's antes, a wrong file —
+    /// can then be undone by copying the file back.
+    /// </summary>
+    public static void KeepHistory(string filePath)
+    {
+        try
+        {
+            if (!File.Exists(filePath))
+                return;
+            var history = Path.Combine(Path.GetDirectoryName(Path.GetFullPath(filePath))!, ".history");
+            Directory.CreateDirectory(history);
+            var name = Path.GetFileName(filePath);
+            File.Copy(filePath, Path.Combine(history, $"{name}.{DateTime.Now:yyyyMMdd-HHmmss-fff}"), overwrite: true);
+            foreach (var old in Directory.EnumerateFiles(history, name + ".*").OrderByDescending(f => f, StringComparer.Ordinal).Skip(HistoryDepth))
+                File.Delete(old);
+        }
+        catch (Exception ex)
+        {
+            Helpers.DebugLogger.LogWarning(nameof(FilterFiles), $"Could not keep a copy of {filePath}: {ex.Message}");
         }
     }
 

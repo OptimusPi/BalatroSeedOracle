@@ -134,6 +134,45 @@ namespace BalatroSeedOracle.ViewModels
         // Computed properties
         public bool HasLoadedFilter => !string.IsNullOrEmpty(CurrentFilterPath);
 
+        /// <summary>The file this designer session's auto-save created, so it may write it again.</summary>
+        private string? _autoSavedPath;
+
+        /// <summary>
+        /// Where an auto-save may write, or null with the reason it may not. Auto-save used to write
+        /// to a path built from the filter's name, from the builder's state, which drops each
+        /// clause's antes, sources and score: opening a filter whose file name differed from its
+        /// name (waterbear.yaml, "The Waterbear") left a lossy duplicate that sorted first and got
+        /// searched, and one whose name matched was overwritten. So: a filter opened from a file is
+        /// never auto-saved (Save writes it), and a new one only to a file that doesn't exist yet
+        /// or that this session's auto-save made.
+        /// </summary>
+        public string? AutoSaveTarget(out string reason)
+        {
+            reason = "";
+            if (
+                !string.IsNullOrWhiteSpace(CurrentFilterPath)
+                && !Path.GetFileName(CurrentFilterPath).StartsWith("_UNSAVED_", StringComparison.OrdinalIgnoreCase)
+            )
+            {
+                reason = "Opened from a file: use Save Filter to write it.";
+                return null;
+            }
+            if (string.IsNullOrWhiteSpace(FilterName))
+                return null;
+
+            var candidate = FilterFiles.Resolve(FilterName.Replace(" ", "_"));
+            if (
+                File.Exists(candidate)
+                && !string.Equals(Path.GetFullPath(candidate), _autoSavedPath, StringComparison.OrdinalIgnoreCase)
+            )
+            {
+                reason = $"Not auto-saved: {Path.GetFileName(candidate)} already exists.";
+                return null;
+            }
+            _autoSavedPath = Path.GetFullPath(candidate);
+            return candidate;
+        }
+
         public ObservableCollection<BalatroSeedOracle.ViewModels.FilterTabs.FilterTabViewModel> FilterTabs { get; }
 
         public BalatroSeedOracle.ViewModels.FilterTabs.FilterTabViewModel MustHaveItems { get; }
