@@ -194,19 +194,29 @@ namespace BalatroSeedOracle.ViewModels
                 var config = Services.FilterFiles.Load(filePath, out var loadError);
                 if (config is null)
                 {
-                    DebugLogger.LogError(
+                    // Listed, not hidden: a filter that silently vanished from the browser left
+                    // its author nothing to fix. The engine's one-line error names the fix.
+                    DebugLogger.LogWarning(
                         "PaginatedFilterBrowserViewModel",
-                        $"Failed to parse YAML {filePath}: {loadError}"
+                        $"Filter does not load: {filePath}: {loadError}"
                     );
-                    return null;
+                    return new FilterBrowserItem
+                    {
+                        Name = Path.GetFileNameWithoutExtension(filePath),
+                        Description = $"This filter doesn't load:\n{loadError}\n\nOpen it with Edit this Filter to fix it.",
+                        Author = "",
+                        DateCreated = File.GetLastWriteTime(filePath),
+                        FilePath = filePath,
+                        LoadError = loadError ?? "the filter did not load.",
+                    };
                 }
-
-                if (string.IsNullOrEmpty(config.Name))
-                    return null;
 
                 var item = new FilterBrowserItem
                 {
-                    Name = config.Name,
+                    // A filter without `name:` is still a filter; its file name stands in.
+                    Name = string.IsNullOrWhiteSpace(config.Name)
+                        ? Path.GetFileNameWithoutExtension(filePath)
+                        : config.Name,
                     Description = config.Description ?? "",
                     Author = config.Author ?? "Unknown",
                     DateCreated = File.GetLastWriteTime(filePath),
@@ -433,6 +443,12 @@ namespace BalatroSeedOracle.ViewModels
         public int ShouldCount { get; set; }
         public int MustNotCount { get; set; }
         public bool IsCreateNew { get; set; } = false;
+
+        /// <summary>Why the file doesn't load, when it doesn't; such an item can be edited, not searched.</summary>
+        public string? LoadError { get; set; }
+
+        public bool IsBroken => LoadError is not null;
+
         public string DeckName { get; set; } = "Red";
         public string StakeName { get; set; } = "White";
 
@@ -447,12 +463,12 @@ namespace BalatroSeedOracle.ViewModels
         public bool HasVouchers => Must.Vouchers.Count > 0 || MustNot.Vouchers.Count > 0;
 
         public string FilterId => Path.GetFileNameWithoutExtension(FilePath);
-        public string AuthorText => $"by {Author}";
+        public string AuthorText => IsBroken ? "⚠ doesn't load" : $"by {Author}";
         public string DateText => DateCreated.ToString("MMM dd, yyyy");
         public string StatsText =>
-            IsCreateNew
-                ? "Start with a blank filter"
-                : $"Must: {MustCount}, Should: {ShouldCount}, Must Not: {MustNotCount}";
+            IsCreateNew ? "Start with a blank filter"
+            : IsBroken ? "⚠ Doesn't load — open it with Edit to fix"
+            : $"Must: {MustCount}, Should: {ShouldCount}, Must Not: {MustNotCount}";
     }
 
     /// <summary>

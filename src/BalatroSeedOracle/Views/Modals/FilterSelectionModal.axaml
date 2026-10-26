@@ -847,8 +847,8 @@
                                                 FontSize="18"
                                                 HorizontalAlignment="Stretch"
                                                 Command="{Binding SearchCommand}"
-                                                IsVisible="{Binding EnableSearch}"
-                                                IsHitTestVisible="{Binding EnableSearch}"/>
+                                                IsVisible="{Binding ShowSearchButton}"
+                                                IsHitTestVisible="{Binding ShowSearchButton}"/>
                                     </Grid>
 
                                     <Grid Grid.Column="2" ColumnDefinitions="*,6,*">

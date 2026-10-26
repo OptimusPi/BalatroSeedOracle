@@ -42,7 +42,11 @@ namespace BalatroSeedOracle.ViewModels
         [NotifyPropertyChangedFor(nameof(ShowFilterTab))]
         [NotifyPropertyChangedFor(nameof(ShowScoreTab))]
         [NotifyPropertyChangedFor(nameof(ShowDeckTab))]
+        [NotifyPropertyChangedFor(nameof(ShowSearchButton))]
         private FilterBrowserItem? _selectedFilter;
+
+        /// <summary>Search is offered for filters that load; a broken one only offers Edit.</summary>
+        public bool ShowSearchButton => EnableSearch && SelectedFilter is not { IsBroken: true };
 
         // Active tab index
         [ObservableProperty]
@@ -152,6 +156,7 @@ namespace BalatroSeedOracle.ViewModels
             EnableAnalyze = enableAnalyze;
 
             OnPropertyChanged(nameof(EnableSearch));
+            OnPropertyChanged(nameof(ShowSearchButton));
             OnPropertyChanged(nameof(EnableEdit));
             OnPropertyChanged(nameof(EnableCopy));
             OnPropertyChanged(nameof(EnableDelete));
@@ -236,6 +241,12 @@ namespace BalatroSeedOracle.ViewModels
                 "FilterSelectionModal",
                 $"✅ SelectedFilter: {SelectedFilter.Name}, ID: {SelectedFilter.FilterId}"
             );
+
+            if (SelectedFilter.IsBroken)
+            {
+                DebugLogger.Log("FilterSelectionModal", $"Search refused: {SelectedFilter.Name} doesn't load");
+                return;
+            }
 
             if (SelectedFilter.IsCreateNew)
             {
