@@ -230,6 +230,128 @@
                         </Grid>
                     </Border>
 
+                    <!-- Find: every ante and place an item appears in this seed -->
+                    <Border Classes="modal-content-panel" Margin="10,0,10,10">
+                        <StackPanel Margin="15" Spacing="10">
+                            <Grid ColumnSpacing="10">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*" MaxWidth="360"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <TextBlock Grid.Column="0"
+                                          Text="Find:"
+                                          VerticalAlignment="Center"
+                                          FontSize="18"
+                                          Foreground="{StaticResource White}"/>
+
+                                <TextBox Grid.Column="1"
+                                        Text="{Binding FindInput}"
+                                        AutomationProperties.Name="Find"
+                                        FontSize="18"
+                                        PlaceholderText="Diet Cola, Perkeo, Negative Tag..."
+                                        VerticalAlignment="Center"
+                                        Height="40"
+                                        CornerRadius="6"
+                                        BorderThickness="0"/>
+
+                                <TextBlock Grid.Column="2"
+                                          Text="Antes"
+                                          VerticalAlignment="Center"
+                                          FontSize="18"
+                                          Foreground="{StaticResource White}"/>
+
+                                <TextBox Grid.Column="3"
+                                        Text="{Binding FindMinAnte}"
+                                        AutomationProperties.Name="Find min ante"
+                                        FontSize="18"
+                                        Width="56"
+                                        MaxLength="2"
+                                        HorizontalContentAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        Height="40"
+                                        CornerRadius="6"
+                                        BorderThickness="0"/>
+
+                                <TextBlock Grid.Column="4"
+                                          Text="-"
+                                          VerticalAlignment="Center"
+                                          FontSize="18"
+                                          Foreground="{StaticResource White}"/>
+
+                                <TextBox Grid.Column="5"
+                                        Text="{Binding FindMaxAnte}"
+                                        AutomationProperties.Name="Find max ante"
+                                        FontSize="18"
+                                        Width="56"
+                                        MaxLength="2"
+                                        HorizontalContentAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        Height="40"
+                                        CornerRadius="6"
+                                        BorderThickness="0"/>
+
+                                <Button Grid.Column="6"
+                                       Content="FIND"
+                                       Command="{Binding FindCommand}"
+                                       MinWidth="100"
+                                       FontSize="18"
+                                       CornerRadius="6"
+                                       Height="44"
+                                       Classes="btn-green"/>
+                            </Grid>
+
+                            <!-- Engine error: unknown name ("did you mean ..."), bad seed or range -->
+                            <TextBlock Text="{Binding FindError}"
+                                      FontSize="18"
+                                      Foreground="{StaticResource Red}"
+                                      TextWrapping="Wrap"
+                                      IsVisible="{Binding HasFindError}"/>
+
+                            <!-- How many hits and how deep it looked, or "not found in antes ..." -->
+                            <TextBlock Text="{Binding FindStatus}"
+                                      FontSize="18"
+                                      Foreground="{StaticResource VeryLightGrey}"
+                                      TextWrapping="Wrap"
+                                      IsVisible="{Binding HasFindStatus}"/>
+
+                            <ItemsControl ItemsSource="{Binding FindRows}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:LocateHitRow">
+                                        <Border Background="{StaticResource DarkGrey2}"
+                                                CornerRadius="6"
+                                                Padding="10,4"
+                                                Margin="0,2">
+                                            <Grid ColumnDefinitions="80,*,Auto" ColumnSpacing="12">
+                                                <TextBlock Grid.Column="0"
+                                                           Text="{Binding AnteText}"
+                                                           FontSize="18"
+                                                           Foreground="{StaticResource TextInactive}"
+                                                           VerticalAlignment="Center"/>
+                                                <TextBlock Grid.Column="1"
+                                                           Text="{Binding Where}"
+                                                           FontSize="18"
+                                                           Foreground="{StaticResource White}"
+                                                           TextTrimming="CharacterEllipsis"
+                                                           VerticalAlignment="Center"/>
+                                                <TextBlock Grid.Column="2"
+                                                           Text="{Binding Item}"
+                                                           FontSize="18"
+                                                           Foreground="{StaticResource White}"
+                                                           VerticalAlignment="Center"/>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
+
                     <!-- Results Section -->
                     <StackPanel Margin="5">
                         <!-- Placeholder -->

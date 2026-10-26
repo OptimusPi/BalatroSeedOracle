@@ -19,7 +19,33 @@ namespace BalatroSeedOracle.ViewModels
 
         [ObservableProperty]
         [NotifyCanExecuteChangedFor(nameof(AnalyzeSeedCommand))]
+        [NotifyCanExecuteChangedFor(nameof(FindCommand))]
         private string _seedInput = "";
+
+        /// <summary>The item to find in the seed: a joker, card, voucher, tag or boss name.</summary>
+        [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(FindCommand))]
+        private string _findInput = "";
+
+        [ObservableProperty]
+        private int _findMinAnte = 1;
+
+        [ObservableProperty]
+        private int _findMaxAnte = 8;
+
+        [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(FindCommand))]
+        private bool _isFinding;
+
+        /// <summary>What the last find found, or "not found in ..." with how deep it looked.</summary>
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(HasFindStatus))]
+        private string _findStatus = "";
+
+        /// <summary>The engine's one-line reason a find could not run (unknown name, bad seed or range).</summary>
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(HasFindError))]
+        private string _findError = "";
 
         [ObservableProperty]
         [NotifyCanExecuteChangedFor(nameof(AnalyzeSeedCommand))]
@@ -79,6 +105,12 @@ namespace BalatroSeedOracle.ViewModels
                 : "";
 
         public ObservableCollection<AnteAnalysisModel> Antes { get; }
+
+        /// <summary>Every place the last find saw the item, one row per hit.</summary>
+        public ObservableCollection<LocateHitRow> FindRows { get; } = new();
+
+        public bool HasFindStatus => !string.IsNullOrEmpty(FindStatus);
+        public bool HasFindError => !string.IsNullOrEmpty(FindError);
 
         #endregion
 
@@ -238,6 +270,50 @@ namespace BalatroSeedOracle.ViewModels
             return !string.IsNullOrWhiteSpace(SeedInput) && !IsAnalyzing;
         }
 
+        /// <summary>Every ante and place the item appears in the seed, for the chosen deck and stake.</summary>
+        [RelayCommand(CanExecute = nameof(CanFind))]
+        private async Task FindAsync()
+        {
+            FindRows.Clear();
+            FindStatus = "";
+            FindError = "";
+
+            var seed = SeedInput.Trim();
+            var item = FindInput.Trim();
+            var deck = SelectedDeck;
+            var stake = SelectedStake;
+            int minAnte = FindMinAnte;
+            int maxAnte = FindMaxAnte;
+
+            try
+            {
+                IsFinding = true;
+                var result = await Task.Run(() =>
+                    Motely.Analysis.MotelySeedLocator.Locate(seed, deck, stake, item, minAnte, maxAnte)
+                );
+
+                foreach (var hit in result.Hits)
+                    FindRows.Add(new LocateHitRow(hit.Ante, hit.Where, hit.Item));
+
+                FindStatus =
+                    result.Hits.Count == 0
+                        ? $"{result.Name}: not found in {result.Depth}"
+                        : $"{result.Name}: {result.Hits.Count} {(result.Hits.Count == 1 ? "hit" : "hits")} in {result.Depth}";
+            }
+            catch (Exception ex) when (ex is FormatException or ArgumentException)
+            {
+                // Unknown name ("did you mean"), bad seed or bad ante range: the engine's line says which.
+                FindError = ex.Message;
+            }
+            finally
+            {
+                IsFinding = false;
+            }
+        }
+
+        private bool CanFind() =>
+            !string.IsNullOrWhiteSpace(SeedInput) && !string.IsNullOrWhiteSpace(FindInput) && !IsFinding;
+
         [RelayCommand]
         private void ClearResults()
         {
@@ -354,5 +430,12 @@ namespace BalatroSeedOracle.ViewModels
         }
 
         #endregion
+    }
+
+    /// <summary>One place a find saw the item: the ante, where in it ("Buffoon Pack (pack 1) card 1"),
+    /// and the item as the analyzer prints it, edition and stickers included.</summary>
+    public sealed record LocateHitRow(int Ante, string Where, string Item)
+    {
+        public string AnteText => $"Ante {Ante}";
     }
 }
