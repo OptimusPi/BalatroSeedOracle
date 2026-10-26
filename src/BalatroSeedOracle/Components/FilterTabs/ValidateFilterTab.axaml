@@ -55,7 +55,7 @@
                     <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto" Margin="0">
                         <!-- Row 0: Copy and Save side-by-side -->
                         <Button Grid.Row="0" Grid.Column="0"
-                                Content="Copy JSON"
+                                Content="Copy JAML"
                                 Command="{Binding CopyJsonCommand}"
                                 Classes="btn-blue"
                                 Foreground="{StaticResource White}"

@@ -612,6 +612,7 @@ namespace BalatroSeedOracle.ViewModels
             )
             {
                 validateVm.PreFillFilterData();
+                validateVm.Validate();
                 BsoLogger.Log("FiltersModalViewModel", "Refreshed Validate Filter tab data");
             }
         }

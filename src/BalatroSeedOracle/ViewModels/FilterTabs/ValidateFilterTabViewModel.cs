@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Avalonia.Media;
@@ -85,6 +86,47 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             DebugLogger.Log("ValidateFilterTab", $"Pre-filled: {FilterName}");
         }
 
+        /// <summary>
+        /// The engine's own check (the one behind <c>motely check</c> and the MCP's seed_validate)
+        /// on the filter as it stands in the builder/editor: it loads and its search plan builds,
+        /// or the one-line reason it doesn't; then any clause that loads but can never hold (a
+        /// boss asked for before its first ante). Runs each time the tab is entered.
+        /// </summary>
+        public void Validate()
+        {
+            JamlConfig config;
+            try
+            {
+                config = BuildConfigFromCurrentState();
+            }
+            catch (Exception ex)
+            {
+                UpdateStatus($"✗ {ex.Message}", true);
+                return;
+            }
+
+            var text = JamlConfigText.ToJaml(config);
+            if (!Motely.FilterCheck.TryCheck(text, out var checkedConfig, out _, out var error))
+            {
+                UpdateStatus($"✗ This filter won't search: {error}", true);
+                return;
+            }
+
+            var summary =
+                $"✓ Valid: {checkedConfig.Must.Count} must, {checkedConfig.Should.Count} should, "
+                + $"{checkedConfig.MustNot.Count} mustNot; the search plan builds.";
+            var warnings = Motely.FilterCheck.Warnings(checkedConfig);
+            if (warnings.Count == 0)
+            {
+                UpdateStatus(summary, false);
+                return;
+            }
+
+            StatusMessage = summary + "\n" + string.Join("\n", warnings.Select(w => "⚠ " + w));
+            StatusColor = Brushes.Orange;
+            DebugLogger.Log("ValidateFilterTab", $"Status: {StatusMessage}");
+        }
+
         #region Command Implementations
 
         [RelayCommand(CanExecute = nameof(CanSave))]
@@ -129,8 +171,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             // Copy to clipboard via event
             CopyToClipboardRequested?.Invoke(this, yaml);
 
-            UpdateStatus("✅ YAML copied to clipboard", false);
-            DebugLogger.Log("ValidateFilterTab", "Filter YAML copied to clipboard");
+            UpdateStatus("✅ JAML copied to clipboard", false);
+            DebugLogger.Log("ValidateFilterTab", "Filter JAML copied to clipboard");
         }
 
         [RelayCommand(CanExecute = nameof(CanSave))]
