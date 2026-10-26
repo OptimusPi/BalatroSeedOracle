@@ -1534,9 +1534,12 @@ namespace BalatroSeedOracle.ViewModels
         {
             if (itemConfig.ItemType == "Operator" && itemConfig.Children is { } children)
             {
-                var operatorItem = new Models.FilterOperatorItem(
-                    (itemConfig.OperatorType ?? "Or").ToUpperInvariant()
-                )
+                // "Or"/"And" (loaded) read as the palette's "OR"/"AND"; "BannedItems" stays as is.
+                var operatorType = itemConfig.OperatorType ?? "OR";
+                if (operatorType.Equals("or", StringComparison.OrdinalIgnoreCase)
+                    || operatorType.Equals("and", StringComparison.OrdinalIgnoreCase))
+                    operatorType = operatorType.ToUpperInvariant();
+                var operatorItem = new Models.FilterOperatorItem(operatorType)
                 {
                     ItemKey = itemConfig.ItemKey,
                     Label = itemConfig.Label,

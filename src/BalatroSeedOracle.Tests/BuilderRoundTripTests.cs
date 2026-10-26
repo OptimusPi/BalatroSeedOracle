@@ -241,6 +241,33 @@ public class BuilderRoundTripTests(HeadlessAvaloniaFixture avalonia, ITestOutput
         Assert.Equal("[1]", Json(built)["should"]!.AsArray().Last()!["antes"]!.ToJsonString());
     }
 
+    [Fact]
+    public void BannedItemsTrayInState_StaysMustNot_WhenTheBuilderIsReentered()
+    {
+        var built = OnUi(() =>
+        {
+            var vm = new FiltersModalViewModel();
+            var visual = new VisualBuilderTabViewModel(vm);
+            vm.VisualBuilderTab = visual;
+            // What SyncOperatorToParent writes for a Banned Items tray dropped in MUST.
+            vm.ItemConfigs["item_1"] = new ItemConfig
+            {
+                ItemKey = "item_1",
+                ItemType = "Operator",
+                ItemName = "BannedItems",
+                OperatorType = "BannedItems",
+                Children = [new ItemConfig { ItemType = "Joker", ItemName = "Blueprint" }],
+            };
+            vm.SelectedMust.Add("item_1");
+            visual.LoadFromParentCollections();
+            return vm.BuildConfigFromCurrentState();
+        });
+
+        Assert.Empty(built.Must);
+        Assert.Single(built.MustNot);
+        Assert.Equal("Blueprint", built.MustNot[0].GetValueName());
+    }
+
     // ── 4. same search results ──
 
     private static Dictionary<string, (int Score, string Tallies)> Run(JamlConfig config, string[] seeds)
