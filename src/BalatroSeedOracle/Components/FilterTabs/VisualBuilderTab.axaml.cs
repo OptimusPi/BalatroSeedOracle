@@ -863,6 +863,8 @@ namespace BalatroSeedOracle.Components.FilterTabs
                                 : null,
                         // Note: SoulFaceImage, EditionImage, DebuffedOverlayImage are read-only (computed from other properties)
                         IsInBannedItemsTray = _draggedItem.IsInBannedItemsTray,
+                        // A card loaded from a filter keeps the clause it came from
+                        Clause = _draggedItem.Clause,
                     };
 
                     vm.UnifiedOperator.Children.Add(itemCopy);
@@ -1121,6 +1123,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                                                 child.Stickers != null
                                                     ? new List<string>(child.Stickers)
                                                     : null,
+                                            Clause = child.Clause,
                                         };
                                         operatorCopy.Children.Add(childCopy);
 
@@ -1242,6 +1245,8 @@ namespace BalatroSeedOracle.Components.FilterTabs
                                             : null,
                                     // Note: SoulFaceImage, EditionImage, DebuffedOverlayImage are read-only (computed from other properties)
                                     IsInBannedItemsTray = _draggedItem.IsInBannedItemsTray,
+                                    // A card loaded from a filter keeps the clause it came from
+                                    Clause = _draggedItem.Clause,
                                 };
 
                                 // From the shelf, add the COPY (allows duplicates from shelf!). From
@@ -2282,6 +2287,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     Category = _draggedItem.Category,
                     DisplayName = _draggedItem.DisplayName,
                     ItemImage = _draggedItem.ItemImage,
+                    Clause = _draggedItem.Clause,
                 };
 
                 vm.UnifiedOperator.Children.Add(itemCopy);

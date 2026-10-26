@@ -83,6 +83,16 @@ namespace BalatroSeedOracle.Models
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public List<ItemConfig>? Children { get; set; } // Child items for operators
 
+        /// <summary>
+        /// The engine clause this item was loaded from, when it came from a filter file. The
+        /// builder shows only part of a clause (name, edition, stickers, …); building the filter
+        /// emits this clause with just the builder's edits applied, so everything the builder
+        /// cannot show (antes, sources, score, min/max, label, nested clauses, …) survives.
+        /// Null for items dragged in from the palette.
+        /// </summary>
+        [JsonIgnore]
+        public Motely.Filters.IMotelyClause? Clause { get; set; }
+
         public override string ToString()
         {
             // Determine item category

@@ -804,14 +804,24 @@ namespace BalatroSeedOracle.ViewModels
         {
             var author = _userProfileService?.GetAuthorName() ?? "Unknown";
 
+            // A loaded filter keeps what the designer has no control for: its id, date, seed
+            // list, cutoff and clause defaults. A new filter gets a fresh id.
+            var loaded = LoadedConfig;
             var config = new JamlConfig
             {
-                Id = Guid.NewGuid().ToString("N"),
+                Id = string.IsNullOrEmpty(loaded?.Id) ? Guid.NewGuid().ToString("N") : loaded.Id,
                 Name = string.IsNullOrWhiteSpace(FilterName) ? "Untitled Filter" : FilterName,
-                Description = FilterDescription,
+                Description =
+                    string.IsNullOrEmpty(FilterDescription) && loaded is { Description: null }
+                        ? null
+                        : FilterDescription,
                 Author = _originalAuthor ?? author,
+                DateCreated = loaded?.DateCreated,
                 Deck = SelectedDeck,
                 Stake = SelectedStake,
+                Seeds = loaded is null ? new List<string>() : new List<string>(loaded.Seeds),
+                Cutoff = loaded?.Cutoff,
+                Defaults = loaded?.Defaults,
                 Must = new List<IMotelyClause>(),
                 Should = new List<IMotelyClause>(),
                 MustNot = new List<IMotelyClause>(),
@@ -895,6 +905,27 @@ namespace BalatroSeedOracle.ViewModels
 
         private IMotelyClause? ConvertFilterItemToClause(Models.FilterItem filterItem)
         {
+            // An item loaded from a filter emits the clause it was loaded from, so everything the
+            // builder doesn't show (antes, sources, score, min/max, label, …) survives; only what
+            // the builder changed on the item is applied. An and/or takes its children as they
+            // now stand in the builder (each emitting its own clause the same way).
+            if (filterItem.Clause is { } loadedClause)
+            {
+                var copy = ShallowCopy(loadedClause);
+                if (copy is LogicClause loadedLogic && filterItem is Models.FilterOperatorItem loadedOperator)
+                {
+                    loadedLogic.Clauses = loadedOperator
+                        .Children.Select(ConvertFilterItemToClause)
+                        .OfType<IMotelyClause>()
+                        .ToArray();
+                }
+                else
+                {
+                    ApplyBuilderEdits(copy, filterItem);
+                }
+                return copy;
+            }
+
             // Handle FilterOperatorItem (OR/AND clauses)
             if (filterItem is Models.FilterOperatorItem operatorItem)
             {
@@ -951,6 +982,58 @@ namespace BalatroSeedOracle.ViewModels
             }
 
             return clause;
+        }
+
+        private static readonly System.Reflection.MethodInfo MemberwiseCloneMethod =
+            typeof(object).GetMethod(
+                "MemberwiseClone",
+                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic
+            )!;
+
+        /// <summary>
+        /// A copy of the clause to emit, so building never changes the loaded clause (the builder
+        /// item and <see cref="LoadedConfig"/> keep it). Shallow is enough: the edits below replace
+        /// values and arrays, never change them in place.
+        /// </summary>
+        private static IMotelyClause ShallowCopy(IMotelyClause clause) =>
+            (IMotelyClause)MemberwiseCloneMethod.Invoke(clause, null)!;
+
+        /// <summary>
+        /// Apply to a loaded clause what the builder set on its item: an edition, stickers, seal,
+        /// enhancement or antes the item holds that differ from the clause's. An item value that is
+        /// empty leaves the clause's own value alone (as for new items, the builder only adds
+        /// decorations; and the ante checkboxes can't show ante 0, so "none ticked" isn't "none").
+        /// </summary>
+        private static void ApplyBuilderEdits(IMotelyClause clause, Models.FilterItem item)
+        {
+            static bool IsSet(string? value) =>
+                !string.IsNullOrEmpty(value) && !value.Equals("none", StringComparison.OrdinalIgnoreCase);
+
+            if (IsSet(item.Edition) && !string.Equals(item.Edition, clause.GetEditionString(), StringComparison.OrdinalIgnoreCase))
+                clause.SetEditionString(item.Edition!);
+
+            if (item.Stickers is { Count: > 0 } stickers)
+            {
+                var current = clause.GetStickerStrings() ?? [];
+                if (
+                    !stickers
+                        .Order(StringComparer.OrdinalIgnoreCase)
+                        .SequenceEqual(current.Order(StringComparer.OrdinalIgnoreCase), StringComparer.OrdinalIgnoreCase)
+                )
+                    clause.SetStickerStrings(stickers.ToArray());
+            }
+
+            if (IsSet(item.Seal) && !string.Equals(item.Seal, clause.GetSealString(), StringComparison.OrdinalIgnoreCase))
+                clause.SetSealString(item.Seal!);
+
+            if (
+                IsSet(item.Enhancement)
+                && !string.Equals(item.Enhancement, clause.GetEnhancementString(), StringComparison.OrdinalIgnoreCase)
+            )
+                clause.SetEnhancementString(item.Enhancement!);
+
+            if (item.Antes is { Length: > 0 } antes && !antes.SequenceEqual(clause.GetAntes()))
+                clause.SetAntes(antes.ToArray());
         }
 
         public void LoadConfigIntoState(JamlConfig config)
@@ -1033,6 +1116,7 @@ namespace BalatroSeedOracle.ViewModels
                     Label = clause.Label,
                     Antes = clause.GetAntes().ToList(),
                     Children = new List<ItemConfig>(),
+                    Clause = clause,
                 };
 
                 int childIndex = 0;
@@ -1066,6 +1150,9 @@ namespace BalatroSeedOracle.ViewModels
                 Edition = clause.GetEditionString() ?? "none",
                 Antes = clause.GetAntes().ToList(),
                 Stickers = clause.GetStickerStrings()?.ToList(),
+                Seal = clause.GetSealString(),
+                Enhancement = clause.GetEnhancementString(),
+                Clause = clause,
             };
 
             if (normalizedType == "SoulJoker")
@@ -1374,7 +1461,7 @@ namespace BalatroSeedOracle.ViewModels
         /// <summary>
         /// Update Visual Builder FilterItem collections from ItemConfigs
         /// </summary>
-        public async Task UpdateVisualBuilderFromItemConfigs()
+        public Task UpdateVisualBuilderFromItemConfigs()
         {
             try
             {
@@ -1382,75 +1469,7 @@ namespace BalatroSeedOracle.ViewModels
                 {
                     // Disable JSON auto-generation during filter load
                     visualVm.BeginFilterLoad();
-
-                    // Clear existing items
-                    visualVm.SelectedMust.Clear();
-                    visualVm.SelectedShould.Clear();
-
-                    // Convert Must items
-                    foreach (var itemKey in SelectedMust)
-                    {
-                        if (ItemConfigs.TryGetValue(itemKey, out var itemConfig))
-                        {
-                            var filterItem = await ConvertItemConfigToFilterItem(itemConfig);
-                            if (filterItem is not null)
-                            {
-                                visualVm.SelectedMust.Add(filterItem);
-                            }
-                        }
-                    }
-
-                    // Convert Should items
-                    foreach (var itemKey in SelectedShould)
-                    {
-                        if (ItemConfigs.TryGetValue(itemKey, out var itemConfig))
-                        {
-                            var filterItem = await ConvertItemConfigToFilterItem(itemConfig);
-                            if (filterItem is not null)
-                            {
-                                visualVm.SelectedShould.Add(filterItem);
-                            }
-                        }
-                    }
-
-                    // Convert MustNot items → BannedItems tray
-                    if (SelectedMustNot is not null && SelectedMustNot.Any())
-                    {
-                        BsoLogger.Log(
-                            "FiltersModalViewModel",
-                            $"Creating BannedItems tray with {SelectedMustNot.Count} items"
-                        );
-
-                        var bannedItemsTray = new Models.FilterOperatorItem("BannedItems");
-
-                        foreach (var itemKey in SelectedMustNot)
-                        {
-                            if (ItemConfigs.TryGetValue(itemKey, out var itemConfig))
-                            {
-                                var filterItem = await ConvertItemConfigToFilterItem(itemConfig);
-                                if (filterItem is not null)
-                                {
-                                    // Set IsInBannedItemsTray flag for debuffed overlay
-                                    filterItem.IsInBannedItemsTray = true;
-                                    bannedItemsTray.Children.Add(filterItem);
-                                }
-                            }
-                        }
-
-                        // Add BannedItems tray to MUST zone
-                        visualVm.SelectedMust.Add(bannedItemsTray);
-
-                        BsoLogger.Log(
-                            "FiltersModalViewModel",
-                            $"Added BannedItems tray with {bannedItemsTray.Children.Count} children to MUST zone"
-                        );
-                    }
-
-                    BsoLogger.Log(
-                        "FiltersModalViewModel",
-                        $"Updated Visual Builder: {visualVm.SelectedMust.Count} must, {visualVm.SelectedShould.Count} should"
-                    );
-
+                    FillVisualBuilder(visualVm);
                     // Re-enable JSON auto-generation after filter load
                     visualVm.EndFilterLoad();
                 }
@@ -1462,58 +1481,130 @@ namespace BalatroSeedOracle.ViewModels
                     $"Error updating Visual Builder: {ex.Message}"
                 );
             }
+            return Task.CompletedTask;
         }
 
         /// <summary>
-        /// Convert ItemConfig to FilterItem for Visual Builder
+        /// Rebuild the builder's MUST/SHOULD zones from <see cref="SelectedMust"/>,
+        /// <see cref="SelectedShould"/> and <see cref="SelectedMustNot"/> (the last as a Banned
+        /// Items tray in MUST). Each item carries the clause it was loaded from, if any.
         /// </summary>
-        private async Task<Models.FilterItem?> ConvertItemConfigToFilterItem(ItemConfig itemConfig)
+        public void FillVisualBuilder(FilterTabs.VisualBuilderTabViewModel visualVm)
         {
+            visualVm.SelectedMust.Clear();
+            visualVm.SelectedShould.Clear();
+
+            foreach (var itemKey in SelectedMust)
+                if (ItemConfigs.TryGetValue(itemKey, out var itemConfig))
+                    visualVm.SelectedMust.Add(CreateBuilderItem(itemConfig));
+
+            foreach (var itemKey in SelectedShould)
+                if (ItemConfigs.TryGetValue(itemKey, out var itemConfig))
+                    visualVm.SelectedShould.Add(CreateBuilderItem(itemConfig));
+
+            // MustNot items → BannedItems tray in the MUST zone
+            if (SelectedMustNot.Count > 0)
+            {
+                var bannedItemsTray = new Models.FilterOperatorItem("BannedItems");
+                foreach (var itemKey in SelectedMustNot)
+                {
+                    if (ItemConfigs.TryGetValue(itemKey, out var itemConfig))
+                    {
+                        var filterItem = CreateBuilderItem(itemConfig);
+                        // Set IsInBannedItemsTray flag for debuffed overlay
+                        filterItem.IsInBannedItemsTray = true;
+                        bannedItemsTray.Children.Add(filterItem);
+                    }
+                }
+                visualVm.SelectedMust.Add(bannedItemsTray);
+            }
+
+            BsoLogger.Log(
+                "FiltersModalViewModel",
+                $"Updated Visual Builder: {visualVm.SelectedMust.Count} must, {visualVm.SelectedShould.Count} should"
+            );
+        }
+
+        /// <summary>
+        /// The builder item for an ItemConfig: an and/or becomes an operator tray holding its
+        /// children, anything else a card. The item keeps the config's loaded clause. Never null:
+        /// an item whose art can't be found still shows (and saves) without it.
+        /// </summary>
+        private Models.FilterItem CreateBuilderItem(ItemConfig itemConfig)
+        {
+            if (itemConfig.ItemType == "Operator" && itemConfig.Children is { } children)
+            {
+                var operatorItem = new Models.FilterOperatorItem(
+                    (itemConfig.OperatorType ?? "Or").ToUpperInvariant()
+                )
+                {
+                    ItemKey = itemConfig.ItemKey,
+                    Label = itemConfig.Label,
+                    Score = itemConfig.Score,
+                    Clause = itemConfig.Clause,
+                };
+                foreach (var child in children)
+                    operatorItem.Children.Add(CreateBuilderItem(child));
+                return operatorItem;
+            }
+
+            var normalizedType = NormalizeItemType(itemConfig.ItemType);
+            var effectiveType = itemConfig.IsSoulJoker ? "SoulJoker" : normalizedType;
+            var edition =
+                string.IsNullOrEmpty(itemConfig.Edition)
+                || itemConfig.Edition.Equals("none", StringComparison.OrdinalIgnoreCase)
+                    ? null
+                    : itemConfig.Edition;
+
+            var filterItem = new Models.FilterItem
+            {
+                Name = itemConfig.ItemName,
+                Type = effectiveType,
+                // Determine category for layout behavior
+                Category = DetermineCategoryFromType(effectiveType),
+                ItemKey = itemConfig.ItemKey,
+                Edition = edition,
+                Stickers = itemConfig.Stickers is { Count: > 0 } ? new List<string>(itemConfig.Stickers) : null,
+                Seal = itemConfig.Seal,
+                Enhancement = itemConfig.Enhancement,
+                Antes = itemConfig.Antes is { Count: > 0 } ? itemConfig.Antes.ToArray() : null,
+                Label = itemConfig.Label,
+                Score = itemConfig.Score,
+                Clause = itemConfig.Clause,
+            };
+
             try
             {
+                filterItem.DisplayName = BalatroData.GetDisplayNameFromSprite(itemConfig.ItemName);
                 var spriteService = SpriteService.Instance;
-
-                var normalizedType = NormalizeItemType(itemConfig.ItemType);
-                var effectiveType = itemConfig.IsSoulJoker ? "SoulJoker" : normalizedType;
-
-                // Determine category for layout behavior
-                var category = DetermineCategoryFromType(effectiveType);
-
-                // Create FilterItem - ItemImage and SoulFaceImage are computed properties based on Type and Name
-                var filterItem = new Models.FilterItem
+                // Get appropriate sprite image based on type
+                filterItem.ItemImage = effectiveType switch
                 {
-                    Name = itemConfig.ItemName,
-                    Type = effectiveType,
-                    Category = category,
-                    ItemKey = itemConfig.ItemKey,
-                    DisplayName = BalatroData.GetDisplayNameFromSprite(itemConfig.ItemName),
-                    // Get appropriate sprite image based on type
-                    ItemImage = effectiveType switch
-                    {
-                        "Joker" or "SoulJoker" or "CommonJoker" or "UncommonJoker" or "RareJoker" =>
-                            spriteService.GetJokerImage(itemConfig.ItemName, itemConfig.Edition),
-                        "SmallBlindTag" or "BigBlindTag" => spriteService.GetTagImage(
-                            itemConfig.ItemName
-                        ),
-                        "Voucher" => spriteService.GetVoucherImage(itemConfig.ItemName),
-                        "Tarot" => spriteService.GetTarotImage(itemConfig.ItemName),
-                        "Planet" => spriteService.GetPlanetCardImage(itemConfig.ItemName),
-                        "Spectral" => spriteService.GetSpectralImage(itemConfig.ItemName),
-                        "Boss" => spriteService.GetBossImage(itemConfig.ItemName),
-                        _ => null,
-                    },
+                    "Joker" or "SoulJoker" or "CommonJoker" or "UncommonJoker" or "RareJoker" =>
+                        spriteService.GetJokerImage(itemConfig.ItemName, itemConfig.Edition),
+                    "SmallBlindTag" or "BigBlindTag" => spriteService.GetTagImage(itemConfig.ItemName),
+                    "Voucher" => spriteService.GetVoucherImage(itemConfig.ItemName),
+                    "Tarot" => spriteService.GetTarotImage(itemConfig.ItemName),
+                    "Planet" => spriteService.GetPlanetCardImage(itemConfig.ItemName),
+                    "Spectral" => spriteService.GetSpectralImage(itemConfig.ItemName),
+                    "Boss" => spriteService.GetBossImage(itemConfig.ItemName),
+                    "PlayingCard" or "StandardCard" => spriteService.GetPlayingCardImage(
+                        string.IsNullOrWhiteSpace(itemConfig.Suit) ? "Spades" : itemConfig.Suit,
+                        string.IsNullOrWhiteSpace(itemConfig.Rank) ? "10" : itemConfig.Rank,
+                        itemConfig.Enhancement
+                    ),
+                    _ => null,
                 };
-
-                return await Task.FromResult<Models.FilterItem?>(filterItem);
             }
             catch (Exception ex)
             {
                 BsoLogger.LogError(
                     "FiltersModalViewModel",
-                    $"Error converting ItemConfig to FilterItem: {ex.Message}"
+                    $"No art for {itemConfig.ItemType} '{itemConfig.ItemName}': {ex.Message}"
                 );
-                return await Task.FromResult<Models.FilterItem?>(null);
             }
+
+            return filterItem;
         }
 
         /// <summary>

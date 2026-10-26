@@ -269,6 +269,12 @@ namespace BalatroSeedOracle.Models
         // Additional properties for filter configuration
         public string? Value { get; set; }
 
+        /// <summary>
+        /// The engine clause this item was loaded from (see <see cref="ItemConfig.Clause"/>);
+        /// null for palette items. Building the filter emits it with the builder's edits applied.
+        /// </summary>
+        public Motely.Filters.IMotelyClause? Clause { get; set; }
+
         private string? _label;
         public string? Label
         {
