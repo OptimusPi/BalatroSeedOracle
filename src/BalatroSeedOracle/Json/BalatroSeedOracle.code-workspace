@@ -5,8 +5,8 @@
 			"path": "../../.."
 		},
 		{
-			"name": "MotelyYAML",
-			"path": "../../../../JammySeedFinder/src/MotelyYAML"
+			"name": "MotelyJAML",
+			"path": "../../../../JammySeedFinder/src/MotelyJAML"
 		}
 	],
 	"settings": {

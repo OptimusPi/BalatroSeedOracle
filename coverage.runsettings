@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- App-side coverage settings for BalatroSeedOracle.Tests.
-     The engine has its own file at src/MotelyYAML/coverage.runsettings; that one lives in the
+     The engine has its own file at src/MotelyJAML/coverage.runsettings; that one lives in the
      submodule and must not be edited from here. Keep the two in sync by hand when excludes change. -->
 <RunSettings>
   <DataCollectionRunSettings>

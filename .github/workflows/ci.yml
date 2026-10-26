@@ -1,4 +1,4 @@
-# The app's gate: every push to main and every PR builds the solution (with the MotelyYAML
+# The app's gate: every push to main and every PR builds the solution (with the MotelyJAML
 # submodule) and runs the xunit suite in Release. No Accelerate key is needed here:
 # Directory.Build.props disables the license task when no key is present.
 name: ci
