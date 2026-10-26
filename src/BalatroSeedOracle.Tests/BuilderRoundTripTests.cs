@@ -226,6 +226,31 @@ public class BuilderRoundTripTests(HeadlessAvaloniaFixture avalonia, ITestOutput
     }
 
     [Fact]
+    public void Waterbear_EditionClearedInBuilder_IsCleared_AndTheClauseKeepsTheRest()
+    {
+        // The builder used to only add: clearing the Negative off `joker: Any` saved it Negative.
+        var original = LoadWaterbear();
+        var index = original.Should.FindIndex(c => c.GetEditionString() == "Negative");
+        Assert.True(index >= 0, "waterbear has a Negative should-clause");
+
+        var built = OnUi(() =>
+        {
+            var designer = Open(WaterbearPath);
+            designer.Visual.SelectedShould[index].Edition = null;
+            return designer.Vm.BuildConfigFromCurrentState();
+        });
+
+        Assert.Null(built.Should[index].GetEditionString());
+        Assert.Equal(original.Should[index].Score, built.Should[index].Score);
+        Assert.Equal("Negative", original.Should[index].GetEditionString()); // the loaded config is untouched
+        var expected = Json(original);
+        var json = Json(built);
+        for (var i = 0; i < original.Should.Count; i++)
+            if (i != index)
+                Assert.Equal(expected["should"]![i]!.ToJsonString(), json["should"]![i]!.ToJsonString());
+    }
+
+    [Fact]
     public void Waterbear_ItemMovedToShould_KeepsItsClause()
     {
         var built = OnUi(() =>

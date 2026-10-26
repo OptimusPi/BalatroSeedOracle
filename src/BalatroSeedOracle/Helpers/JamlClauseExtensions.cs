@@ -123,6 +123,17 @@ public static class JamlClauseExtensions
     }
 
     /// <summary>
+    /// Remove an enum-valued decoration (<c>Edition</c>, <c>Seal</c>, <c>Enhancement</c>) so the clause
+    /// matches any: the property goes back to null. A clause without it is left alone.
+    /// </summary>
+    public static void ClearDecoration(this IMotelyClause clause, string propertyName)
+    {
+        var property = clause.GetType().GetProperty(propertyName);
+        if (property is { CanWrite: true } && Nullable.GetUnderlyingType(property.PropertyType) is not null)
+            property.SetValue(clause, null);
+    }
+
+    /// <summary>
     /// Set an enum-valued decoration (<c>Edition</c>, <c>Seal</c>, …) by name. A name the enum does
     /// not know is ignored, as is a clause without that property — the builder offers decorations
     /// for every item and only some clauses carry them.

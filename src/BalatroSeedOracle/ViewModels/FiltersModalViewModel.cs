@@ -1009,10 +1009,17 @@ namespace BalatroSeedOracle.ViewModels
             static bool IsSet(string? value) =>
                 !string.IsNullOrEmpty(value) && !value.Equals("none", StringComparison.OrdinalIgnoreCase);
 
+            // A loaded item starts with its clause's edition, stickers, seal and enhancement (and
+            // none when the clause has none), so an item with none whose clause has one was
+            // cleared in the builder: clear it on the clause too, not just add.
             if (IsSet(item.Edition) && !string.Equals(item.Edition, clause.GetEditionString(), StringComparison.OrdinalIgnoreCase))
                 clause.SetEditionString(item.Edition!);
+            else if (!IsSet(item.Edition) && clause.GetEditionString() is not null)
+                clause.ClearDecoration("Edition");
 
-            if (item.Stickers is { Count: > 0 } stickers)
+            if (item.Stickers is not { Count: > 0 } && clause.GetStickerStrings() is { Length: > 0 })
+                clause.SetStickerStrings([]);
+            else if (item.Stickers is { Count: > 0 } stickers)
             {
                 var current = clause.GetStickerStrings() ?? [];
                 if (
@@ -1025,12 +1032,16 @@ namespace BalatroSeedOracle.ViewModels
 
             if (IsSet(item.Seal) && !string.Equals(item.Seal, clause.GetSealString(), StringComparison.OrdinalIgnoreCase))
                 clause.SetSealString(item.Seal!);
+            else if (!IsSet(item.Seal) && clause.GetSealString() is not null)
+                clause.ClearDecoration("Seal");
 
             if (
                 IsSet(item.Enhancement)
                 && !string.Equals(item.Enhancement, clause.GetEnhancementString(), StringComparison.OrdinalIgnoreCase)
             )
                 clause.SetEnhancementString(item.Enhancement!);
+            else if (!IsSet(item.Enhancement) && clause.GetEnhancementString() is not null)
+                clause.ClearDecoration("Enhancement");
 
             if (item.Antes is { Length: > 0 } antes && !antes.SequenceEqual(clause.GetAntes()))
                 clause.SetAntes(antes.ToArray());
