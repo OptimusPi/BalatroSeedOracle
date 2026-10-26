@@ -185,6 +185,12 @@ namespace BalatroSeedOracle.Controls
             private float _psyBass = 0.0f;
             private float _psyBlend = 0.0f; // 0..1 blend factor for psychedelic overlay
 
+            // Music-reactive offsets, added on top of the base uniforms at render time so the
+            // base values (presets, search transitions) are never overwritten.
+            private float _audioSpin = 0.0f;
+            private float _audioZoom = 0.0f;
+            private float _audioSaturation = 0.0f;
+
             public float GetTimeSpeed() => _timeSpeed;
 
             public float GetSpinTimeSpeed() => _spinTimeSpeed;
@@ -335,6 +341,20 @@ namespace BalatroSeedOracle.Controls
 
             public void SetPsyFluidFlow(float value) => _psyFluidFlow = value;
 
+            public void SetPsyAudio(float melody, float chords, float bass)
+            {
+                _psyMelody = melody;
+                _psyChords = chords;
+                _psyBass = bass;
+            }
+
+            public void SetAudioOffsets(float spin, float zoom, float saturation)
+            {
+                _audioSpin = spin;
+                _audioZoom = zoom;
+                _audioSaturation = saturation;
+            }
+
             public override void OnRender(ImmediateDrawingContext context)
             {
                 if (_isDisposed)
@@ -438,11 +458,11 @@ namespace BalatroSeedOracle.Controls
                     1f,
                 };
                 _shaderBuilder.Uniforms["contrast"] = _contrast;
-                _shaderBuilder.Uniforms["spin_amount"] = _spinAmount;
+                _shaderBuilder.Uniforms["spin_amount"] = _spinAmount + _audioSpin;
                 _shaderBuilder.Uniforms["parallax_x"] = _parallaxX;
                 _shaderBuilder.Uniforms["parallax_y"] = _parallaxY;
-                _shaderBuilder.Uniforms["zoom_scale"] = _zoomScale;
-                _shaderBuilder.Uniforms["saturation_amount"] = _saturationAmount;
+                _shaderBuilder.Uniforms["zoom_scale"] = _zoomScale + _audioZoom;
+                _shaderBuilder.Uniforms["saturation_amount"] = _saturationAmount + _audioSaturation;
                 _shaderBuilder.Uniforms["saturation_amount_2"] = _saturationAmount2;
                 _shaderBuilder.Uniforms["pixel_size"] = _pixelSize;
                 _shaderBuilder.Uniforms["spin_ease"] = _spinEase;
@@ -518,5 +538,16 @@ namespace BalatroSeedOracle.Controls
         public void SetPsychedelicKaleidoscope(float value) => _renderer?.SetPsyKaleidoscope(value);
 
         public void SetPsychedelicFluidFlow(float value) => _renderer?.SetPsyFluidFlow(value);
+
+        /// <summary>Music levels (0..1) for the psychedelic overlay's melody/chords/bass uniforms.</summary>
+        public void SetPsychedelicAudio(float melody, float chords, float bass) =>
+            _renderer?.SetPsyAudio(melody, chords, bass);
+
+        /// <summary>
+        /// Music-reactive boosts added on top of the current spin amount, zoom scale and
+        /// saturation (0 = no effect). Fed by <see cref="Services.MusicVisualizer"/>.
+        /// </summary>
+        public void SetAudioReactiveOffsets(float spin, float zoom, float saturation) =>
+            _renderer?.SetAudioOffsets(spin, zoom, saturation);
     }
 }

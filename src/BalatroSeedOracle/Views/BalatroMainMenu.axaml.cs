@@ -897,8 +897,68 @@ namespace BalatroSeedOracle.Views
             // Set up click-away handler for popups (NOT for main modals which have back buttons)
             this.PointerPressed += OnPointerPressedForPopupClickAway;
 
+            StartMusicVisualizer();
+
             // Request focus so keyboard events work (F11, ESC)
             this.Focus();
+        }
+
+        private readonly MusicVisualizer _musicVisualizer = new();
+        private DispatcherTimer? _musicVisualizerTimer;
+        private bool _musicOffsetsActive;
+
+        /// <summary>
+        /// Feed the background shader real levels from the playing music stems (~30 Hz):
+        /// spin / zoom / saturation boosts per the profile's visualizer settings, and the
+        /// psychedelic overlay's melody / chords / bass uniforms.
+        /// </summary>
+        private void StartMusicVisualizer()
+        {
+            if (_musicVisualizerTimer is not null)
+                return;
+            _musicVisualizerTimer = new DispatcherTimer(
+                TimeSpan.FromMilliseconds(33),
+                DispatcherPriority.Background,
+                OnMusicVisualizerTick
+            );
+            _musicVisualizerTimer.Start();
+            this.DetachedFromVisualTree += (_, _) =>
+            {
+                _musicVisualizerTimer?.Stop();
+                _musicVisualizerTimer = null;
+            };
+        }
+
+        private void OnMusicVisualizerTick(object? sender, EventArgs e)
+        {
+            var shader = _shaderBackground;
+            if (shader is null)
+                return;
+            var music = MusicService.IsInstanceCreated ? MusicService.Instance : null;
+            if (music is null || !music.IsStarted)
+            {
+                if (_musicOffsetsActive)
+                {
+                    shader.SetAudioReactiveOffsets(0f, 0f, 0f);
+                    shader.SetPsychedelicAudio(0f, 0f, 0f);
+                    _musicOffsetsActive = false;
+                }
+                return;
+            }
+
+            var settings = App.GetService<UserProfileService>()?.GetProfile().VisualizerSettings;
+            if (settings is null)
+                return;
+            _musicVisualizer.Update(music.GetGroupLevel);
+            var offsets = _musicVisualizer.Map(settings);
+            shader.SetAudioReactiveOffsets(offsets.Spin, offsets.Zoom, offsets.Saturation);
+            var k = Math.Clamp(settings.AudioIntensity, 0f, 2f);
+            shader.SetPsychedelicAudio(
+                _musicVisualizer.Level(MusicGroup.Melody) * k,
+                _musicVisualizer.Level(MusicGroup.Chords) * k,
+                _musicVisualizer.Level(MusicGroup.Bass) * k
+            );
+            _musicOffsetsActive = true;
         }
 
         /// <summary>

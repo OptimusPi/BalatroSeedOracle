@@ -78,7 +78,25 @@ public partial class App : Application
             mainMenu.ApplyShaderParameters(ShaderPresetHelper.Load("normal"));
             _ = SpriteService.Instance.PreloadAllSpritesAsync(null);
 
+            // Background music: stems are opened on a worker thread and played through the
+            // same NAudio output as the sound effects. Muted at launch => started on unmute.
+            if (profile.GetProfile().IsMusicMuted)
+                DebugLogger.Log(nameof(MusicService), "Music muted in the profile; it starts when unmuted");
+            else
+                _ = MusicService.Instance.StartAsync();
+            menuVM.PropertyChanged += (_, e) =>
+            {
+                if (e.PropertyName == nameof(BalatroMainMenuViewModel.Volume) && menuVM.Volume > 0)
+                    _ = MusicService.Instance.StartAsync();
+            };
+
             desktop.ShutdownRequested += (_, _) => profile.FlushProfile();
+            desktop.Exit += (_, _) =>
+            {
+                if (MusicService.IsInstanceCreated)
+                    MusicService.Instance.Dispose();
+                SoundEffectService.DisposeShared();
+            };
         }
 
         base.OnFrameworkInitializationCompleted();

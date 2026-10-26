@@ -418,12 +418,18 @@ namespace BalatroSeedOracle.ViewModels
                 // Load visualizer settings
                 var profile = _userProfileService.GetProfile();
 
-                // Load volume and mute state
-                Volume = profile.MusicVolume * 100; // Convert 0-1 to 0-100
-                if (profile.IsMusicMuted)
+                // Load volume and mute state. Read both before assigning Volume: the
+                // assignments must not save (and overwrite IsMusicMuted) half-way through.
+                var (volume, previous) = VolumeFromProfile(profile);
+                _loadingSettings = true;
+                try
                 {
-                    _previousVolume = Volume;
-                    Volume = 0;
+                    _previousVolume = previous;
+                    Volume = volume;
+                }
+                finally
+                {
+                    _loadingSettings = false;
                 }
 
                 DebugLogger.Log(
@@ -440,13 +446,38 @@ namespace BalatroSeedOracle.ViewModels
             }
         }
 
+        private bool _loadingSettings;
+
+        /// <summary>
+        /// Slider value (0-100, 0 = muted) and the value Unmute restores, from the stored
+        /// profile (MusicVolume 0-1 is kept while muted).
+        /// </summary>
+        public static (double Volume, double Previous) VolumeFromProfile(UserProfile profile)
+        {
+            var stored = Math.Clamp(profile.MusicVolume * 100.0, 0, 100); // Convert 0-1 to 0-100
+            var restore = stored > 0 ? stored : 70;
+            return profile.IsMusicMuted ? (0, restore) : (stored, restore);
+        }
+
+        /// <summary>
+        /// Write the slider state to the profile: 0 means muted, and muting keeps the volume to
+        /// come back to so a restart can unmute to it.
+        /// </summary>
+        public static void StoreVolume(UserProfile profile, double volume, double previousVolume)
+        {
+            profile.IsMusicMuted = volume <= 0;
+            var level = profile.IsMusicMuted ? previousVolume : volume;
+            profile.MusicVolume = (float)(Math.Clamp(level, 0, 100) / 100.0); // Convert 0-100 to 0-1
+        }
+
         private void SaveVolumeToProfile()
         {
+            if (_loadingSettings)
+                return;
             try
             {
                 var profile = _userProfileService.GetProfile();
-                profile.MusicVolume = (float)(Volume / 100.0); // Convert 0-100 to 0-1
-                profile.IsMusicMuted = Volume == 0;
+                StoreVolume(profile, Volume, _previousVolume);
                 _userProfileService.SaveProfile();
                 DebugLogger.Log(
                     "BalatroMainMenuViewModel",
