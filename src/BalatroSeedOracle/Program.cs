@@ -6,8 +6,12 @@ namespace BalatroSeedOracle;
 internal static class Program
 {
     [STAThread]
-    public static void Main(string[] args) =>
+    public static void Main(string[] args)
+    {
+        // Before anything opens a relative path: see AppHome.
+        Services.AppHome.Enter();
         BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
+    }
 
     public static AppBuilder BuildAvaloniaApp()
     {
