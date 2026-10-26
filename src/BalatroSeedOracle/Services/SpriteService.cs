@@ -83,7 +83,11 @@ public class SpriteService
             return null;
 
         var type = typeHint is null ? string.Empty : Normalize(typeHint);
-        if (type.Length > 0 && !IsTypeWord(type) && IsTypeWord(Normalize(itemName)))
+        // Callers pass (type, name) as often as (name, type). A type word in the name slot means
+        // the two were swapped, unless the hint is a type word too; a joker clause type
+        // ("RareJoker", "CommonJoker") is always the type, even before the joker named "Joker".
+        var first = Normalize(itemName);
+        if (type.Length > 0 && IsTypeWord(first) && (!IsTypeWord(type) || IsJokerClauseType(first)))
         {
             (itemName, typeHint) = (typeHint!, itemName);
             type = Normalize(typeHint);
@@ -95,7 +99,9 @@ public class SpriteService
         // "Any" / "*" with a category goes to that category's wildcard sprite (anyjoker, anytag...).
         switch (type)
         {
-            case "joker" or "jokers" or "souljoker" or "legendaryjoker" or "wildcardjoker":
+            // The rarity keys too: a synced `rareJoker: Blueprint` clause arrives as ("RareJoker", "Blueprint").
+            case "joker" or "jokers" or "souljoker" or "legendaryjoker" or "wildcardjoker"
+                or "commonjoker" or "uncommonjoker" or "rarejoker":
                 return GetJokerImage(itemName);
             case "tag" or "tags" or "smallblindtag" or "bigblindtag" or "skiptag":
                 return GetTagImage(itemName);
@@ -659,6 +665,9 @@ public class SpriteService
         return false;
     }
 
+    private static bool IsJokerClauseType(string n) =>
+        n is "commonjoker" or "uncommonjoker" or "rarejoker" or "souljoker" or "legendaryjoker";
+
     private static bool IsTypeWord(string n) =>
         n
             is "joker"
@@ -666,6 +675,9 @@ public class SpriteService
                 or "souljoker"
                 or "legendaryjoker"
                 or "wildcardjoker"
+                or "commonjoker"
+                or "uncommonjoker"
+                or "rarejoker"
                 or "tag"
                 or "tags"
                 or "smallblindtag"

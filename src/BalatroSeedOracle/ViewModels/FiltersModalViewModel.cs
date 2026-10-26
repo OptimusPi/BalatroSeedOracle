@@ -1450,10 +1450,8 @@ namespace BalatroSeedOracle.ViewModels
                     // Get appropriate sprite image based on type
                     ItemImage = effectiveType switch
                     {
-                        "Joker" or "SoulJoker" => spriteService.GetJokerImage(
-                            itemConfig.ItemName,
-                            itemConfig.Edition
-                        ),
+                        "Joker" or "SoulJoker" or "CommonJoker" or "UncommonJoker" or "RareJoker" =>
+                            spriteService.GetJokerImage(itemConfig.ItemName, itemConfig.Edition),
                         "SmallBlindTag" or "BigBlindTag" => spriteService.GetTagImage(
                             itemConfig.ItemName
                         ),
@@ -1487,7 +1485,7 @@ namespace BalatroSeedOracle.ViewModels
 
             return normalizedType switch
             {
-                "Joker" or "SoulJoker" => "Jokers",
+                "Joker" or "SoulJoker" or "CommonJoker" or "UncommonJoker" or "RareJoker" => "Jokers",
                 "SmallBlindTag" or "BigBlindTag" => "Tags",
                 "Boss" => "Bosses",
                 "Voucher" => "Vouchers",
@@ -1516,6 +1514,12 @@ namespace BalatroSeedOracle.ViewModels
             {
                 "joker" => "Joker",
                 "souljoker" => "SoulJoker",
+                // The rarity keys keep their rarity (so a save writes `rareJoker:` back), but
+                // title-casing made "Rarejoker", which had no sprite and no category.
+                "commonjoker" => "CommonJoker",
+                "uncommonjoker" => "UncommonJoker",
+                "rarejoker" => "RareJoker",
+                "legendaryjoker" => "SoulJoker",
                 "smallblindtag" => "SmallBlindTag",
                 "bigblindtag" => "BigBlindTag",
                 "tag" => "SmallBlindTag",

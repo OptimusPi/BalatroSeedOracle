@@ -128,6 +128,11 @@ public class SpriteServiceTests(HeadlessAvaloniaFixture avalonia) : IClassFixtur
     // (type, name) order, as JamlEditorTabViewModel passes it
     [InlineData("Joker", "Blueprint")]
     [InlineData("Tag", "Charm Tag")]
+    // A synced rareJoker/uncommonJoker/commonJoker clause's builder type, in (type, name) order:
+    // these came back null, so Sync to Visual showed Blueprint/Baron/Mime with no card art.
+    [InlineData("RareJoker", "Blueprint")]
+    [InlineData("UncommonJoker", "Mime")]
+    [InlineData("CommonJoker", "Joker")]
     public void TolerantNamesResolve(string name, string typeHint)
     {
         var image = avalonia.Run(() => Sprites.GetItemImage(name, typeHint));
