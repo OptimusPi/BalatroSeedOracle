@@ -272,7 +272,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
                 // Override name and description from this tab's inputs
                 config.Name = string.IsNullOrEmpty(FilterName) ? "Untitled Filter" : FilterName;
-                config.Description = FilterDescription;
+                // An empty box means no description, not `description: ""` written into the file.
+                config.Description = string.IsNullOrWhiteSpace(FilterDescription) ? null : FilterDescription;
 
                 return config;
             });
