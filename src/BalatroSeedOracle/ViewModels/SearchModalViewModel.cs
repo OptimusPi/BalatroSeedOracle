@@ -1408,17 +1408,11 @@ namespace BalatroSeedOracle.ViewModels
                 return;
             }
 
-            if (
-                !string.Equals(
-                    Path.GetExtension(configPath),
-                    ".yaml",
-                    StringComparison.OrdinalIgnoreCase
-                )
-            )
+            if (!Services.FilterFiles.IsFilterFile(configPath))
             {
                 BsoLogger.LogError(
                     "SearchModalViewModel",
-                    $"Not a .yaml filter file: {configPath}"
+                    $"Not a filter file (.yaml, .yml or .jaml): {configPath}"
                 );
                 return;
             }
