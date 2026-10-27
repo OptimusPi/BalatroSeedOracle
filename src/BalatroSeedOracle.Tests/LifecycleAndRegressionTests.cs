@@ -422,4 +422,251 @@ public class LifecycleAndRegressionTests(HeadlessAvaloniaFixture avalonia)
             return 0;
         });
     }
+
+    private static void EnsureAppResourcesLoaded()
+    {
+        var app = Application.Current!;
+        if (app.Resources.ContainsKey("BalatroFont"))
+            return;
+
+        var templateApp = new BalatroSeedOracle.App();
+        templateApp.Initialize();
+        var resources = templateApp.Resources.ToList();
+        templateApp.Resources.Clear();
+        foreach (var kv in resources)
+        {
+            app.Resources[kv.Key] = kv.Value;
+        }
+        var styles = templateApp.Styles.ToList();
+        templateApp.Styles.Clear();
+        foreach (var style in styles)
+        {
+            app.Styles.Add(style);
+        }
+    }
+
+    [Fact]
+    public void SearchModal_ReopenAndTabSwitch_DoesNotThrowOrBlankContent()
+    {
+        OnUi(() =>
+        {
+            EnsureAppResourcesLoaded();
+
+            var profile = new UserProfileService();
+            var searchVm = new SearchModalViewModel(
+                profile,
+                () => new AnalyzeModalViewModel(SpriteService.Instance, profile)
+            );
+
+            var modal1 = new SearchModal(searchVm);
+            var window = new Window { Content = modal1 };
+            window.Show();
+            try
+            {
+                var host1 = modal1.FindControl<ContentControl>("TabContentHost")!;
+                Assert.IsType<SearchTab>(host1.Content);
+
+                // Construct modal2 BEFORE modal1 is removed from the visual tree
+                // (reproducing BalatroMainMenu.ShowSearchModalWithFilterAsync race)
+                var modal2 = new SearchModal(searchVm);
+                Assert.Null(modal1.DataContext);
+                Assert.Null(host1.Content);
+
+                // Replace modal1 with modal2 in the visual tree (triggers modal1 detach/unload)
+                window.Content = modal2;
+
+                var host2 = modal2.FindControl<ContentControl>("TabContentHost")!;
+                Assert.Same(searchVm, modal2.DataContext);
+                Assert.IsType<SearchTab>(host2.Content);
+
+                // Switch tabs on modal2 — must not throw "Control already has a visual parent"
+                searchVm.SelectedTabIndex = 1;
+                Assert.IsType<ResultsTab>(host2.Content);
+
+                searchVm.SelectedTabIndex = 0;
+                Assert.IsType<SearchTab>(host2.Content);
+            }
+            finally
+            {
+                window.Close();
+            }
+
+            return 0;
+        });
+    }
+
+    [Fact]
+    public void FiltersModal_ReopenAndTabSwitch_DisposesOldTabsAndReparentsCleanly()
+    {
+        OnUi(() =>
+        {
+            EnsureAppResourcesLoaded();
+
+            var profile = new UserProfileService();
+            FiltersModalViewModel? filtersVm = null;
+            filtersVm = new FiltersModalViewModel(
+                profile,
+                () => new ValidateFilterTabViewModel(filtersVm!)
+            );
+
+            var modal1 = new FiltersModal(filtersVm);
+            var firstVisualVm = (VisualBuilderTabViewModel)filtersVm.VisualBuilderTab!;
+            var firstYamlVm = (JamlEditorTabViewModel)filtersVm.YAMLEditorTab!;
+
+            int oldVisualEvents = 0;
+            int oldYamlEvents = 0;
+            firstVisualVm.PropertyChanged += (_, _) => oldVisualEvents++;
+            firstYamlVm.PropertyChanged += (_, _) => oldYamlEvents++;
+
+            var window = new Window { Content = modal1 };
+            window.Show();
+            try
+            {
+                // Construct modal2 while modal1 is still mounted
+                var modal2 = new FiltersModal(filtersVm);
+                Assert.Null(modal1.DataContext);
+
+                window.Content = modal2;
+                var host2 = modal2.FindControl<ContentControl>("TabContentHost")!;
+                Assert.IsType<VisualBuilderTab>(host2.Content);
+
+                // Mutating parent VM must not notify disposed VMs from modal1
+                filtersVm.FilterName = "Reopened Filter";
+                Assert.Equal(0, oldVisualEvents);
+                Assert.Equal(0, oldYamlEvents);
+
+                // Switch across all 4 tabs in modal2
+                filtersVm.SelectedTabIndex = 1;
+                Assert.IsType<DeckStakeTab>(host2.Content);
+
+                filtersVm.SelectedTabIndex = 2;
+                Assert.IsType<YAMLEditorTab>(host2.Content);
+
+                filtersVm.SelectedTabIndex = 3;
+                Assert.IsType<ValidateFilterTab>(host2.Content);
+
+                filtersVm.SelectedTabIndex = 0;
+                Assert.IsType<VisualBuilderTab>(host2.Content);
+            }
+            finally
+            {
+                window.Close();
+            }
+
+            return 0;
+        });
+    }
+
+    [Fact]
+    public void DeckStakeTab_And_AnalyzeModal_LiveControlSyncsWithViewModel()
+    {
+        OnUi(() =>
+        {
+            EnsureAppResourcesLoaded();
+
+            var parentVm = new FiltersModalViewModel
+            {
+                SelectedDeckIndex = 3,
+                SelectedStakeIndex = 4,
+            };
+            var deckStakeVm = new DeckStakeTabViewModel(parentVm);
+            var deckStakeTab = new DeckStakeTab { DataContext = deckStakeVm };
+
+            var analyzeVm = new AnalyzeModalViewModel(
+                SpriteService.Instance,
+                new UserProfileService()
+            )
+            {
+                DeckIndex = 5,
+                StakeIndex = 2,
+            };
+            var analyzeModal = new AnalyzeModal(analyzeVm);
+
+            var window = new Window { Content = deckStakeTab };
+            window.Show();
+            try
+            {
+                var selector1 = deckStakeTab.FindControl<DeckAndStakeSelector>(
+                    "DeckAndStakeSelector"
+                )!;
+                Assert.Equal(3, selector1.DeckIndex);
+                Assert.Equal(4, selector1.StakeIndex);
+
+                // View -> ViewModel sync
+                selector1.DeckIndex = 7;
+                selector1.StakeIndex = 6;
+                Assert.Equal(7, deckStakeVm.SelectedDeckIndex);
+                Assert.Equal(6, deckStakeVm.SelectedStakeIndex);
+                Assert.Equal(7, parentVm.SelectedDeckIndex);
+                Assert.Equal(6, parentVm.SelectedStakeIndex);
+
+                // ViewModel -> View sync
+                deckStakeVm.SelectedDeckIndex = 1;
+                deckStakeVm.SelectedStakeIndex = 2;
+                Assert.Equal(1, selector1.DeckIndex);
+                Assert.Equal(2, selector1.StakeIndex);
+
+                // Switch to AnalyzeModal and verify its DeckAndStakeSelector sync
+                window.Content = analyzeModal;
+                var selector2 = analyzeModal.FindControl<DeckAndStakeSelector>(
+                    "DeckAndStakeSelector"
+                )!;
+                Assert.Equal(5, selector2.DeckIndex);
+                Assert.Equal(2, selector2.StakeIndex);
+
+                selector2.DeckIndex = 9;
+                selector2.StakeIndex = 7;
+                Assert.Equal(9, analyzeVm.DeckIndex);
+                Assert.Equal(7, analyzeVm.StakeIndex);
+
+                analyzeVm.DeckIndex = 4;
+                analyzeVm.StakeIndex = 3;
+                Assert.Equal(4, selector2.DeckIndex);
+                Assert.Equal(3, selector2.StakeIndex);
+            }
+            finally
+            {
+                window.Close();
+            }
+
+            return 0;
+        });
+    }
+
+    [Fact]
+    public void FilterOperatorControl_ReattachingToVisualTree_ResubscribesToOperatorChildren()
+    {
+        OnUi(() =>
+        {
+            EnsureAppResourcesLoaded();
+
+            var op = new FilterOperatorItem("OR");
+            var control = new FilterOperatorControl { DataContext = op };
+            var subField = typeof(FilterOperatorControl).GetField(
+                "_subscribedOperatorItem",
+                BindingFlags.NonPublic | BindingFlags.Instance
+            )!;
+
+            var window = new Window { Content = control };
+            window.Show();
+            try
+            {
+                Assert.Same(op, subField.GetValue(control));
+
+                // Detach from visual tree
+                window.Content = null;
+                Assert.Null(subField.GetValue(control));
+
+                // Re-attach to visual tree
+                window.Content = control;
+                Assert.Same(op, subField.GetValue(control));
+            }
+            finally
+            {
+                window.Close();
+            }
+
+            return 0;
+        });
+    }
 }

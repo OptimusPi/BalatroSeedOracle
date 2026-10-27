@@ -1143,6 +1143,24 @@ namespace BalatroSeedOracle.Views
             translateTransform.Y = UIConstants.ModalSlideOffset;
             translateTransform.X = 0;
 
+            // If a SearchModal with an active search is being replaced by another modal
+            // (e.g., opening Seed Analyzer from ResultsTab or DataGridResultsWindow),
+            // mark the search as minimized and ensure the desktop shortcut icon is shown.
+            var previousContent = _modalContentWrapper.Content;
+            if (!ReferenceEquals(previousContent, content))
+            {
+                var existingSearchModal = FindSearchModalIn(previousContent);
+                if (
+                    existingSearchModal?.ViewModel is { } searchVm
+                    && !string.IsNullOrEmpty(searchVm.CurrentSearchId)
+                    && searchVm.IsSearching
+                )
+                {
+                    searchVm.IsMinimized = true;
+                    ShowSearchDesktopIcon(searchVm.CurrentSearchId, searchVm.CurrentFilterPath);
+                }
+            }
+
             // Set the content in the wrapper
             DebugLogger.LogImportant("BalatroMainMenu", $"[ShowModalContent] Attempting to set wrapper content to: {content?.GetType().FullName ?? "NULL"}");
             _modalContentWrapper.Content = content;

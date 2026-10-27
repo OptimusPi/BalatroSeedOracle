@@ -15,6 +15,9 @@ namespace BalatroSeedOracle.Views.Modals
 {
     public partial class SearchModal : UserControl
     {
+        private static SearchModal? _activeInstance;
+        private ContentControl? _tabContentHost;
+
         public SearchModalViewModel ViewModel { get; }
 
         public event EventHandler? CloseRequested;
@@ -35,19 +38,55 @@ namespace BalatroSeedOracle.Views.Modals
             ViewModel = null!;
             DataContext = null;
             InitializeComponent();
+            _tabContentHost = this.FindControl<ContentControl>("TabContentHost");
             WireUpComponentEvents();
         }
 
         public SearchModal(SearchModalViewModel viewModel)
         {
-            ViewModel = viewModel;
-            ViewModel.DetachTabViews();
-            DataContext = ViewModel;
+            ViewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
+            if (_activeInstance != null && _activeInstance != this)
+            {
+                _activeInstance.DetachFromViewModel();
+            }
 
-            SubscribeViewModelEvents();
-
+            DataContext = null;
             InitializeComponent();
+            _tabContentHost = this.FindControl<ContentControl>("TabContentHost");
+            AttachToViewModel();
             WireUpComponentEvents();
+        }
+
+        private void AttachToViewModel()
+        {
+            if (ViewModel == null)
+                return;
+
+            if (_activeInstance != null && _activeInstance != this)
+            {
+                _activeInstance.DetachFromViewModel();
+            }
+
+            _activeInstance = this;
+            ViewModel.RefreshCurrentTabContent();
+            DataContext = ViewModel;
+            SubscribeViewModelEvents();
+        }
+
+        private void DetachFromViewModel()
+        {
+            UnsubscribeViewModelEvents();
+            if (_tabContentHost != null)
+            {
+                _tabContentHost.Content = null;
+            }
+            DataContext = null;
+
+            if (_activeInstance == this)
+            {
+                ViewModel?.DetachTabViews();
+                _activeInstance = null;
+            }
         }
 
         private void SubscribeViewModelEvents()
@@ -129,17 +168,42 @@ namespace BalatroSeedOracle.Views.Modals
             AvaloniaXamlLoader.Load(this);
         }
 
+        protected override void OnAttachedToVisualTree(Avalonia.VisualTreeAttachmentEventArgs e)
+        {
+            base.OnAttachedToVisualTree(e);
+            if (ViewModel != null && DataContext == null)
+            {
+                AttachToViewModel();
+            }
+            else
+            {
+                SubscribeViewModelEvents();
+            }
+        }
+
+        protected override void OnDetachedFromVisualTree(Avalonia.VisualTreeAttachmentEventArgs e)
+        {
+            base.OnDetachedFromVisualTree(e);
+            DetachFromViewModel();
+        }
+
         protected override void OnLoaded(Avalonia.Interactivity.RoutedEventArgs e)
         {
             base.OnLoaded(e);
-            SubscribeViewModelEvents();
+            if (ViewModel != null && DataContext == null)
+            {
+                AttachToViewModel();
+            }
+            else
+            {
+                SubscribeViewModelEvents();
+            }
         }
 
         protected override void OnUnloaded(Avalonia.Interactivity.RoutedEventArgs e)
         {
             base.OnUnloaded(e);
-            UnsubscribeViewModelEvents();
-            ViewModel?.DetachTabViews();
+            DetachFromViewModel();
         }
 
         /// <summary>

@@ -17,6 +17,7 @@ namespace BalatroSeedOracle.Views.Modals
     {
         private AnalyzeModalViewModel? ViewModel => DataContext as AnalyzeModalViewModel;
         private DeckAndStakeSelector? _deckAndStakeSelector;
+        private AnalyzeModalViewModel? _subscribedViewModel;
 
         /// <summary>Parameterless ctor for XAML loader only. Throws at runtime. Creator must pass ViewModel.</summary>
         public AnalyzeModal()
@@ -37,22 +38,29 @@ namespace BalatroSeedOracle.Views.Modals
             InitializeComponent();
         }
 
-        protected override void OnLoaded(RoutedEventArgs e)
+        private void AttachSelectorAndViewModel()
         {
-            base.OnLoaded(e);
-
-            // DeckAndStakeSelector (x:Name) is wired by the generated InitializeComponent(); cache it here.
             _deckAndStakeSelector = DeckAndStakeSelector;
 
-            // Sync initial indices and subscribe to DeckSelected / SelectionChanged events
-            if (_deckAndStakeSelector != null)
+            if (_subscribedViewModel != null)
             {
-                if (ViewModel != null)
+                _subscribedViewModel.PropertyChanged -= OnViewModelPropertyChanged;
+                _subscribedViewModel = null;
+            }
+
+            if (ViewModel != null)
+            {
+                _subscribedViewModel = ViewModel;
+                _subscribedViewModel.PropertyChanged += OnViewModelPropertyChanged;
+                if (_deckAndStakeSelector != null)
                 {
                     _deckAndStakeSelector.DeckIndex = ViewModel.DeckIndex;
                     _deckAndStakeSelector.StakeIndex = ViewModel.StakeIndex;
                 }
+            }
 
+            if (_deckAndStakeSelector != null)
+            {
                 _deckAndStakeSelector.SelectionChanged -= OnDeckAndStakeSelectionChanged;
                 _deckAndStakeSelector.DeckSelected -= OnDeckSelected;
 
@@ -61,15 +69,67 @@ namespace BalatroSeedOracle.Views.Modals
             }
         }
 
-        protected override void OnUnloaded(RoutedEventArgs e)
+        private void DetachSelectorAndViewModel()
         {
-            base.OnUnloaded(e);
+            if (_subscribedViewModel != null)
+            {
+                _subscribedViewModel.PropertyChanged -= OnViewModelPropertyChanged;
+                _subscribedViewModel = null;
+            }
 
             if (_deckAndStakeSelector != null)
             {
                 _deckAndStakeSelector.SelectionChanged -= OnDeckAndStakeSelectionChanged;
                 _deckAndStakeSelector.DeckSelected -= OnDeckSelected;
             }
+        }
+
+        private void OnViewModelPropertyChanged(
+            object? sender,
+            System.ComponentModel.PropertyChangedEventArgs e
+        )
+        {
+            if (_deckAndStakeSelector == null || ViewModel == null)
+                return;
+
+            if (
+                e.PropertyName == nameof(AnalyzeModalViewModel.DeckIndex)
+                && _deckAndStakeSelector.DeckIndex != ViewModel.DeckIndex
+            )
+            {
+                _deckAndStakeSelector.DeckIndex = ViewModel.DeckIndex;
+            }
+            else if (
+                e.PropertyName == nameof(AnalyzeModalViewModel.StakeIndex)
+                && _deckAndStakeSelector.StakeIndex != ViewModel.StakeIndex
+            )
+            {
+                _deckAndStakeSelector.StakeIndex = ViewModel.StakeIndex;
+            }
+        }
+
+        protected override void OnAttachedToVisualTree(Avalonia.VisualTreeAttachmentEventArgs e)
+        {
+            base.OnAttachedToVisualTree(e);
+            AttachSelectorAndViewModel();
+        }
+
+        protected override void OnDetachedFromVisualTree(Avalonia.VisualTreeAttachmentEventArgs e)
+        {
+            DetachSelectorAndViewModel();
+            base.OnDetachedFromVisualTree(e);
+        }
+
+        protected override void OnLoaded(RoutedEventArgs e)
+        {
+            base.OnLoaded(e);
+            AttachSelectorAndViewModel();
+        }
+
+        protected override void OnUnloaded(RoutedEventArgs e)
+        {
+            base.OnUnloaded(e);
+            DetachSelectorAndViewModel();
         }
 
         private void OnDeckAndStakeSelectionChanged(

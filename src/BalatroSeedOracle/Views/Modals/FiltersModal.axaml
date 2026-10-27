@@ -34,7 +34,8 @@
                 Margin="0,4,0,0"
                 ClipToBounds="True">
             <!-- Show the selected tab content directly -->
-            <ContentControl Content="{Binding CurrentTabContent}"
+            <ContentControl x:Name="TabContentHost"
+                              Content="{Binding CurrentTabContent}"
                               HorizontalAlignment="Stretch"
                               VerticalAlignment="Stretch"/>
         </Border>
@@ -43,7 +44,8 @@
         <Panel IsVisible="{Binding CurrentPopup, Converter={x:Static ObjectConverters.IsNotNull}}"
                Background="{StaticResource ModalOverlay}"
                ZIndex="100">
-            <ContentControl Content="{Binding CurrentPopup}"
+            <ContentControl x:Name="PopupContentHost"
+                            Content="{Binding CurrentPopup}"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"/>
         </Panel>

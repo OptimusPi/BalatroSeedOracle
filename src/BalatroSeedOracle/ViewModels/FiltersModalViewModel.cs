@@ -691,6 +691,8 @@ namespace BalatroSeedOracle.ViewModels
             BsoLogger.Log("FiltersModalViewModel", $"Tab switch to {value}");
 
             UpdateTabVisibility(value);
+            CurrentTabContent = null;
+            DetachTabViews();
             CurrentTabContent = (value >= 0 && value < TabItems.Count) ? TabItems[value].Content : null;
 
             // Tab order: 0=Build Filter, 1=Deck/Stake, 2=YAML Editor, 3=Validate Filter
@@ -1195,9 +1197,29 @@ namespace BalatroSeedOracle.ViewModels
             return ++_instanceCounter;
         }
 
+        public void DetachTabViews()
+        {
+            foreach (var tabItem in TabItems)
+            {
+                if (tabItem.Content is Control control)
+                {
+                    SearchModalViewModel.DetachControlFromParent(control);
+                }
+            }
+            if (CurrentPopup is Control popupControl)
+            {
+                SearchModalViewModel.DetachControlFromParent(popupControl);
+            }
+        }
+
         public void InitializeTabs()
         {
+            CurrentTabContent = null;
+            CurrentPopup = null;
+            DetachTabViews();
+
             (VisualBuilderTab as FilterTabs.VisualBuilderTabViewModel)?.Dispose();
+            (DeckStakeTab as FilterTabs.DeckStakeTabViewModel)?.Dispose();
             (YAMLEditorTab as FilterTabs.JamlEditorTabViewModel)?.Dispose();
 
             TabItems.Clear();

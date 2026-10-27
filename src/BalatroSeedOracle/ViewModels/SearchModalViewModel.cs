@@ -369,7 +369,11 @@ namespace BalatroSeedOracle.ViewModels
             var analyzeVm = CreateAnalyzeModalViewModel();
             var analyzeModal = new AnalyzeModal(analyzeVm);
             analyzeModal.SetSeedAndAnalyze(seed);
-            MainMenu.ShowModal(analyzeModal, "SEED ANALYZER");
+
+            var modal = new StandardModal("ANALYZE");
+            modal.SetContent(analyzeModal);
+            modal.BackClicked += (s, ev) => MainMenu.HideModalContent();
+            MainMenu.ShowModalContent(modal, "SEED ANALYZER");
         }
 
         /// <summary>
@@ -431,7 +435,19 @@ namespace BalatroSeedOracle.ViewModels
             DetachControlFromParent(_resultsTab);
         }
 
-        private static void DetachControlFromParent(Control? control)
+        public void RefreshCurrentTabContent()
+        {
+            CurrentTabContent = null;
+            DetachTabViews();
+            CurrentTabContent = SelectedTabIndex switch
+            {
+                0 => _searchTab ??= new Views.SearchModalTabs.SearchTab(),
+                1 => _resultsTab ??= new Views.SearchModalTabs.ResultsTab(),
+                _ => null,
+            };
+        }
+
+        internal static void DetachControlFromParent(Control? control)
         {
             if (control is null)
                 return;
@@ -459,13 +475,7 @@ namespace BalatroSeedOracle.ViewModels
 
         partial void OnSelectedTabIndexChanged(int value)
         {
-            DetachTabViews();
-            CurrentTabContent = value switch
-            {
-                0 => _searchTab ??= new Views.SearchModalTabs.SearchTab(),
-                1 => _resultsTab ??= new Views.SearchModalTabs.ResultsTab(),
-                _ => null,
-            };
+            RefreshCurrentTabContent();
         }
 
         partial void OnIsSearchingChanged(bool value)

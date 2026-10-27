@@ -12,28 +12,36 @@ namespace BalatroSeedOracle.Components.FilterTabs
     public partial class DeckStakeTab : UserControl
     {
         private DeckAndStakeSelector? _deckAndStakeSelector;
+        private ViewModels.FilterTabs.DeckStakeTabViewModel? _subscribedViewModel;
 
         public DeckStakeTab()
         {
             InitializeComponent();
         }
 
-        protected override void OnLoaded(RoutedEventArgs e)
+        private void AttachSelectorAndViewModel()
         {
-            base.OnLoaded(e);
-
-            // DeckAndStakeSelector (x:Name) is wired by the generated InitializeComponent(); cache it here.
             _deckAndStakeSelector = DeckAndStakeSelector;
 
-            // Subscribe to events from the DeckAndStakeSelector
-            if (_deckAndStakeSelector != null)
+            if (_subscribedViewModel != null)
             {
-                if (DataContext is ViewModels.FilterTabs.DeckStakeTabViewModel vm)
+                _subscribedViewModel.PropertyChanged -= OnViewModelPropertyChanged;
+                _subscribedViewModel = null;
+            }
+
+            if (DataContext is ViewModels.FilterTabs.DeckStakeTabViewModel vm)
+            {
+                _subscribedViewModel = vm;
+                _subscribedViewModel.PropertyChanged += OnViewModelPropertyChanged;
+                if (_deckAndStakeSelector != null)
                 {
                     _deckAndStakeSelector.DeckIndex = vm.SelectedDeckIndex;
                     _deckAndStakeSelector.StakeIndex = vm.SelectedStakeIndex;
                 }
+            }
 
+            if (_deckAndStakeSelector != null)
+            {
                 _deckAndStakeSelector.DeckSelected -= OnDeckSelected;
                 _deckAndStakeSelector.SelectionChanged -= OnSelectionChanged;
 
@@ -42,16 +50,72 @@ namespace BalatroSeedOracle.Components.FilterTabs
             }
         }
 
-        protected override void OnUnloaded(RoutedEventArgs e)
+        private void DetachSelectorAndViewModel()
         {
-            base.OnUnloaded(e);
+            if (_subscribedViewModel != null)
+            {
+                _subscribedViewModel.PropertyChanged -= OnViewModelPropertyChanged;
+                _subscribedViewModel = null;
+            }
 
-            // Unsubscribe to prevent memory leaks
             if (_deckAndStakeSelector != null)
             {
                 _deckAndStakeSelector.DeckSelected -= OnDeckSelected;
                 _deckAndStakeSelector.SelectionChanged -= OnSelectionChanged;
             }
+        }
+
+        private void OnViewModelPropertyChanged(
+            object? sender,
+            System.ComponentModel.PropertyChangedEventArgs e
+        )
+        {
+            if (
+                _deckAndStakeSelector == null
+                || DataContext is not ViewModels.FilterTabs.DeckStakeTabViewModel vm
+            )
+            {
+                return;
+            }
+
+            if (
+                e.PropertyName == nameof(ViewModels.FilterTabs.DeckStakeTabViewModel.SelectedDeckIndex)
+                && _deckAndStakeSelector.DeckIndex != vm.SelectedDeckIndex
+            )
+            {
+                _deckAndStakeSelector.DeckIndex = vm.SelectedDeckIndex;
+            }
+            else if (
+                e.PropertyName == nameof(ViewModels.FilterTabs.DeckStakeTabViewModel.SelectedStakeIndex)
+                && _deckAndStakeSelector.StakeIndex != vm.SelectedStakeIndex
+            )
+            {
+                _deckAndStakeSelector.StakeIndex = vm.SelectedStakeIndex;
+            }
+        }
+
+        protected override void OnAttachedToVisualTree(Avalonia.VisualTreeAttachmentEventArgs e)
+        {
+            base.OnAttachedToVisualTree(e);
+            AttachSelectorAndViewModel();
+        }
+
+        protected override void OnDetachedFromVisualTree(Avalonia.VisualTreeAttachmentEventArgs e)
+        {
+            DetachSelectorAndViewModel();
+            base.OnDetachedFromVisualTree(e);
+        }
+
+        protected override void OnLoaded(RoutedEventArgs e)
+        {
+            base.OnLoaded(e);
+            AttachSelectorAndViewModel();
+        }
+
+        protected override void OnUnloaded(RoutedEventArgs e)
+        {
+            base.OnUnloaded(e);
+            DetachSelectorAndViewModel();
         }
 
         private void OnSelectionChanged(object? sender, (int deckIndex, int stakeIndex) selection)
