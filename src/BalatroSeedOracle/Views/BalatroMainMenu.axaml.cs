@@ -352,6 +352,7 @@ namespace BalatroSeedOracle.Views
             {
                 var searchContent = new Modals.SearchModal(ViewModel.SearchModalViewModel);
                 searchContent.ViewModel.MainMenu = this;
+                searchContent.CloseRequested += (s, e) => HideModalContent();
 
                 if (!string.IsNullOrEmpty(configPath))
                 {
@@ -360,16 +361,38 @@ namespace BalatroSeedOracle.Views
                         throw new InvalidOperationException($"Filter file not found: {configPath}");
                     }
 
-                    await searchContent.ViewModel.LoadFilterAsync(configPath);
-
-                    if (string.IsNullOrEmpty(searchContent.ViewModel.CurrentFilterPath))
-                    {
-                        throw new InvalidOperationException(
-                            $"ASSERT FAILED: Filter did not load! Path: {configPath}"
+                    bool isSameActiveFilter =
+                        (searchContent.ViewModel.IsMinimized || searchContent.ViewModel.IsSearching)
+                        && string.Equals(
+                            searchContent.ViewModel.CurrentFilterPath,
+                            configPath,
+                            StringComparison.OrdinalIgnoreCase
                         );
-                    }
 
-                    searchContent.ViewModel.SelectedTabIndex = 0;
+                    if (isSameActiveFilter)
+                    {
+                        searchContent.ViewModel.ReconnectFromLake();
+                    }
+                    else
+                    {
+                        await searchContent.ViewModel.LoadFilterAsync(configPath);
+
+                        if (string.IsNullOrEmpty(searchContent.ViewModel.CurrentFilterPath))
+                        {
+                            throw new InvalidOperationException(
+                                $"ASSERT FAILED: Filter did not load! Path: {configPath}"
+                            );
+                        }
+
+                        if (searchContent.ViewModel.IsMinimized)
+                        {
+                            searchContent.ViewModel.ReconnectFromLake();
+                        }
+                        else
+                        {
+                            searchContent.ViewModel.SelectedTabIndex = 0;
+                        }
+                    }
                 }
                 else
                 {
@@ -378,19 +401,23 @@ namespace BalatroSeedOracle.Views
                     );
                 }
 
-                searchContent.ViewModel.CreateShortcutRequested += (sender, cfgPath) =>
-                {
-                    var modalSearchId = searchContent.ViewModel.CurrentSearchId;
-                    if (!string.IsNullOrEmpty(modalSearchId))
-                    {
-                        ShowSearchDesktopIcon(modalSearchId, cfgPath);
-                    }
-                };
+                searchContent.ViewModel.CreateShortcutRequested -= OnSearchCreateShortcutRequested;
+                searchContent.ViewModel.CreateShortcutRequested += OnSearchCreateShortcutRequested;
 
                 var modal = new StandardModal("🎰 SEED SEARCH");
                 modal.SetContent(searchContent);
                 modal.BackClicked += (s, e) =>
                 {
+                    // If a search is actively running, closing via Back should minimize to the
+                    // desktop icon rather than returning to FilterSelectionModal.
+                    if (searchContent.ViewModel.IsSearching)
+                    {
+                        _previousModalContent = null;
+                        _previousModalTitle = null;
+                        HideModalContent();
+                        return;
+                    }
+
                     // Check if we have a previous modal to return to
                     if (_previousModalContent != null && _previousModalTitle != null)
                     {
@@ -420,6 +447,15 @@ namespace BalatroSeedOracle.Views
                     "BalatroMainMenu",
                     $"Failed to show search modal with filter: {ex.Message}"
                 );
+            }
+        }
+
+        private void OnSearchCreateShortcutRequested(object? sender, string cfgPath)
+        {
+            var modalSearchId = ViewModel?.SearchModalViewModel?.CurrentSearchId;
+            if (!string.IsNullOrEmpty(modalSearchId))
+            {
+                ShowSearchDesktopIcon(modalSearchId, cfgPath);
             }
         }
 
@@ -648,7 +684,7 @@ namespace BalatroSeedOracle.Views
         {
             try
             {
-                var filtersDir = "YAMLFilters";
+                var filtersDir = Services.FilterFiles.Dir;
 
                 System.IO.Directory.CreateDirectory(filtersDir);
 
@@ -814,6 +850,10 @@ namespace BalatroSeedOracle.Views
             {
                 DebugLogger.LogError("BalatroMainMenu", "ToolsModal could not be resolved from services");
                 return;
+            }
+            if (toolsModal.Parent is ContentControl oldParent)
+            {
+                oldParent.Content = null;
             }
             var modal = new StandardModal("TOOLS");
             modal.SetContent(toolsModal);
@@ -1299,6 +1339,7 @@ namespace BalatroSeedOracle.Views
                 && !string.IsNullOrEmpty(searchVm.CurrentSearchId)
                 && searchVm.IsSearching)
             {
+                searchVm.IsMinimized = true;
                 ShowSearchDesktopIcon(searchVm.CurrentSearchId, searchVm.CurrentFilterPath);
             }
 

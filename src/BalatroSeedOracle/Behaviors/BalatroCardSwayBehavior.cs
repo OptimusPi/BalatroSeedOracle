@@ -1,9 +1,8 @@
 using System;
-using System.Linq;
+using System.Collections.Generic;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
-using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
 using Avalonia.Xaml.Interactivity;
 using BalatroSeedOracle.Constants;
@@ -16,7 +15,62 @@ namespace BalatroSeedOracle.Behaviors
     /// </summary>
     public class BalatroCardSwayBehavior : Behavior<Control>
     {
-        private DispatcherTimer? _animationTimer;
+        private static readonly object _timerLock = new();
+        private static readonly HashSet<BalatroCardSwayBehavior> _activeBehaviors = new();
+        private static DispatcherTimer? _sharedTimer;
+
+        private static void RegisterActive(BalatroCardSwayBehavior behavior)
+        {
+            lock (_timerLock)
+            {
+                _activeBehaviors.Add(behavior);
+                if (_sharedTimer == null)
+                {
+                    _sharedTimer = new DispatcherTimer
+                    {
+                        Interval = TimeSpan.FromMilliseconds(UIConstants.AnimationFrameRateMs),
+                    };
+                    _sharedTimer.Tick += OnSharedTimerTick;
+                }
+                if (!_sharedTimer.IsEnabled)
+                {
+                    _sharedTimer.Start();
+                }
+            }
+        }
+
+        private static void UnregisterActive(BalatroCardSwayBehavior behavior)
+        {
+            lock (_timerLock)
+            {
+                _activeBehaviors.Remove(behavior);
+                if (_activeBehaviors.Count == 0 && _sharedTimer is { IsEnabled: true })
+                {
+                    _sharedTimer.Stop();
+                }
+            }
+        }
+
+        private static void OnSharedTimerTick(object? sender, EventArgs e)
+        {
+            BalatroCardSwayBehavior[] snapshot;
+            lock (_timerLock)
+            {
+                if (_activeBehaviors.Count == 0)
+                {
+                    _sharedTimer?.Stop();
+                    return;
+                }
+                snapshot = new BalatroCardSwayBehavior[_activeBehaviors.Count];
+                _activeBehaviors.CopyTo(snapshot);
+            }
+
+            foreach (var behavior in snapshot)
+            {
+                behavior.OnAnimationTick();
+            }
+        }
+
         private DateTime _startTime;
         private double _cardId; // Unique ID for timing variation
         private bool _isHovering; // Track if mouse is over the card
@@ -45,7 +99,7 @@ namespace BalatroSeedOracle.Behaviors
                 return;
 
             // Generate unique card ID for timing variation (like Balatro)
-            _cardId = new Random().NextDouble() * 100;
+            _cardId = Random.Shared.NextDouble() * 100;
             _startTime = DateTime.Now;
 
             // Setup or retrieve the shared TransformGroup to prevent stomping on other behaviors
@@ -71,14 +125,13 @@ namespace BalatroSeedOracle.Behaviors
             // Listen for hover events to pause sway when hovering
             AssociatedObject.PointerEntered += OnPointerEntered;
             AssociatedObject.PointerExited += OnPointerExited;
+            AssociatedObject.AttachedToVisualTree += OnVisualTreeAttached;
+            AssociatedObject.DetachedFromVisualTree += OnVisualTreeDetached;
 
-            // Start animation timer (60 FPS like Balatro)
-            _animationTimer = new DispatcherTimer
+            if (TopLevel.GetTopLevel(AssociatedObject) != null)
             {
-                Interval = TimeSpan.FromMilliseconds(UIConstants.AnimationFrameRateMs), // ~60 FPS
-            };
-            _animationTimer.Tick += OnAnimationTick;
-            _animationTimer.Start();
+                RegisterActive(this);
+            }
         }
 
         protected override void OnDetaching()
@@ -89,6 +142,8 @@ namespace BalatroSeedOracle.Behaviors
             {
                 AssociatedObject.PointerEntered -= OnPointerEntered;
                 AssociatedObject.PointerExited -= OnPointerExited;
+                AssociatedObject.AttachedToVisualTree -= OnVisualTreeAttached;
+                AssociatedObject.DetachedFromVisualTree -= OnVisualTreeDetached;
 
                 if (AssociatedObject.RenderTransform is TransformGroup group && _rotateTransform != null)
                 {
@@ -100,9 +155,19 @@ namespace BalatroSeedOracle.Behaviors
                 }
             }
 
-            _animationTimer?.Stop();
-            _animationTimer = null;
+            UnregisterActive(this);
             _rotateTransform = null;
+        }
+
+        private void OnVisualTreeAttached(object? sender, VisualTreeAttachmentEventArgs e)
+        {
+            RegisterActive(this);
+        }
+
+        private void OnVisualTreeDetached(object? sender, VisualTreeAttachmentEventArgs e)
+        {
+            _isHovering = false;
+            UnregisterActive(this);
         }
 
         private void OnPointerEntered(object? sender, Avalonia.Input.PointerEventArgs e)
@@ -115,9 +180,9 @@ namespace BalatroSeedOracle.Behaviors
             _isHovering = false;
         }
 
-        private void OnAnimationTick(object? sender, EventArgs e)
+        private void OnAnimationTick()
         {
-            if (AssociatedObject == null || _rotateTransform == null)
+            if (AssociatedObject == null || !AssociatedObject.IsEffectivelyVisible || _rotateTransform == null)
                 return;
 
             // STOP sway when hovering - let magnetic tilt take over!
@@ -125,18 +190,9 @@ namespace BalatroSeedOracle.Behaviors
                 return;
 
             // AMBIENT MODE - Breathing motion when not hovering
-            // Calculate elapsed time (like G.TIMERS.REAL in Balatro)
             var elapsedSeconds = (DateTime.Now - _startTime).TotalSeconds;
-
-            // Balatro's ambient tilt formula from card.lua:4380-4383
-            // Creates circular breathing motion using cos/sin
             var tilt_angle = elapsedSeconds * (1.56 + (_cardId / 1.14212) % 1) + _cardId / 1.35122;
-
-            // Calculate rotation angle for subtle sway (breathing effect)
-            // Use cos to create smooth back-and-forth tilt
             var swayAngle = AmbientTilt * Math.Cos(tilt_angle) * 10; // 10 degrees max sway
-
-            // Apply rotation (creates subtle breathing sway)
             _rotateTransform.Angle = swayAngle;
         }
     }

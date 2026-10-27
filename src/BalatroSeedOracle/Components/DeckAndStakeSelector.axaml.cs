@@ -77,6 +77,30 @@ public partial class DeckAndStakeSelector : UserControl
         // Pure MVVM: bindings handle synchronization; no manual event hookups required
     }
 
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+    {
+        base.OnPropertyChanged(change);
+        if (_viewModel == null)
+            return;
+
+        if (change.Property == DeckIndexProperty && change.NewValue is int newDeck)
+        {
+            var clamped = Math.Max(0, Math.Min(14, newDeck));
+            if (_viewModel.DeckIndex != clamped)
+            {
+                _viewModel.DeckIndex = clamped;
+            }
+        }
+        else if (change.Property == StakeIndexProperty && change.NewValue is int newStake)
+        {
+            var clamped = Math.Max(0, Math.Min(7, newStake));
+            if (_viewModel.StakeIndex != clamped)
+            {
+                _viewModel.StakeIndex = clamped;
+            }
+        }
+    }
+
     // DeckIndex property for MVVM two-way binding
     public static readonly StyledProperty<int> DeckIndexProperty = AvaloniaProperty.Register<
         DeckAndStakeSelector,

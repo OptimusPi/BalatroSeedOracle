@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.VisualTree;
@@ -21,6 +22,7 @@ namespace BalatroSeedOracle.Controls
         {
             InitializeComponent();
             this.AttachedToVisualTree += OnAttachedToVisualTree;
+            this.DetachedFromVisualTree += OnDetachedFromVisualTree;
         }
 
         private void OnAttachedToVisualTree(
@@ -28,21 +30,37 @@ namespace BalatroSeedOracle.Controls
             Avalonia.VisualTreeAttachmentEventArgs e
         )
         {
+            if (_parentWindow != null)
+            {
+                _parentWindow.PropertyChanged -= OnParentWindowPropertyChanged;
+            }
+
             // Find the parent window
             _parentWindow = this.GetVisualAncestors().OfType<Window>().FirstOrDefault();
 
             if (_parentWindow != null)
             {
-                // Subscribe to window state changes
-                _parentWindow.PropertyChanged += (s, e) =>
-                {
-                    if (e.Property == Window.WindowStateProperty)
-                    {
-                        UpdateButtonState();
-                    }
-                };
+                _parentWindow.PropertyChanged += OnParentWindowPropertyChanged;
+                UpdateButtonState();
+            }
+        }
 
-                // Initialize button state
+        private void OnDetachedFromVisualTree(
+            object? sender,
+            Avalonia.VisualTreeAttachmentEventArgs e
+        )
+        {
+            if (_parentWindow != null)
+            {
+                _parentWindow.PropertyChanged -= OnParentWindowPropertyChanged;
+                _parentWindow = null;
+            }
+        }
+
+        private void OnParentWindowPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
+        {
+            if (e.Property == Window.WindowStateProperty)
+            {
                 UpdateButtonState();
             }
         }
@@ -57,12 +75,10 @@ namespace BalatroSeedOracle.Controls
             {
                 if (_isMaximized)
                 {
-                    // Restore to normal
                     _parentWindow.WindowState = WindowState.Normal;
                 }
                 else
                 {
-                    // Maximize
                     _parentWindow.WindowState = WindowState.Maximized;
                 }
             }
@@ -77,41 +93,28 @@ namespace BalatroSeedOracle.Controls
             if (_parentWindow == null)
                 return;
 
-            // Direct x:Name field access - no FindControl!
             _isMaximized = _parentWindow.WindowState == WindowState.Maximized;
 
             if (_isMaximized)
             {
-                // Show restore icon and tooltip
                 IconBlock.Data = (Avalonia.Media.Geometry)this.FindResource("WindowRestoreIconData")!;
                 ToolTip.SetTip(MaximizeBtn, "Restore Window");
-                // The visible text label collapses to "" in narrow layouts (see ShowLabel) —
-                // AutomationProperties.Name keeps this button's purpose available to screen
-                // readers regardless of whether the text label is currently shown.
                 Avalonia.Automation.AutomationProperties.SetName(MaximizeBtn, "Restore Window");
                 LabelBlock.Text = "";
             }
             else
             {
-                // Show maximize icon and tooltip
                 IconBlock.Data = (Avalonia.Media.Geometry)this.FindResource("FullscreenIconData")!;
                 ToolTip.SetTip(MaximizeBtn, "Maximize Window");
                 Avalonia.Automation.AutomationProperties.SetName(MaximizeBtn, "Maximize Window");
                 LabelBlock.Text = "";
             }
 
-            // Fire event for any listeners
             MaximizeStateChanged?.Invoke(this, _isMaximized);
         }
 
-        /// <summary>
-        /// Get current maximize state
-        /// </summary>
         public bool IsMaximized => _isMaximized;
 
-        /// <summary>
-        /// Programmatically set window state
-        /// </summary>
         public void SetMaximized(bool maximized)
         {
             if (_parentWindow == null)
@@ -120,12 +123,8 @@ namespace BalatroSeedOracle.Controls
             _parentWindow.WindowState = maximized ? WindowState.Maximized : WindowState.Normal;
         }
 
-        /// <summary>
-        /// Show text label next to icon
-        /// </summary>
         public void ShowLabel(bool show)
         {
-            // Direct x:Name field access - no FindControl!
             if (show)
             {
                 LabelBlock.Text = _isMaximized ? "RESTORE" : "MAXIMIZE";

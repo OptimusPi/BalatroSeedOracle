@@ -88,7 +88,8 @@ namespace BalatroSeedOracle.Components
             if (ChildrenItemsControl == null)
                 return;
 
-            // Add pointer handlers to enable dragging individual cards
+            // Add pointer handlers to enable dragging individual cards (remove first to avoid duplicates)
+            ChildrenItemsControl.RemoveHandler(PointerPressedEvent, OnCardPointerPressed);
             ChildrenItemsControl.AddHandler(
                 PointerPressedEvent,
                 OnCardPointerPressed,
@@ -132,6 +133,17 @@ namespace BalatroSeedOracle.Components
                     "FilterOperatorControl",
                     $"OnCardPointerPressed: {ex.Message}"
                 );
+            }
+        }
+
+        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnAttachedToVisualTree(e);
+            if (_subscribedOperatorItem == null && DataContext is FilterOperatorItem operatorItem)
+            {
+                operatorItem.Children.CollectionChanged += OnChildrenCollectionChanged;
+                _subscribedOperatorItem = operatorItem;
+                UpdateFannedLayout();
             }
         }
 

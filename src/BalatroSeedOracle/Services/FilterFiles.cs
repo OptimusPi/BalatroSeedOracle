@@ -15,7 +15,10 @@ namespace BalatroSeedOracle.Services;
 public static class FilterFiles
 {
     /// <summary>The run-directory filter folder (created at startup by App).</summary>
-    public static string Dir => "YAMLFilters";
+    public static string Dir =>
+        Directory.Exists("YAMLFilters") ? "YAMLFilters"
+        : Directory.Exists("YamlFilters") ? "YamlFilters"
+        : "YAMLFilters";
 
     /// <summary>The extensions a JAML filter is written in; the first is the one new filters get.</summary>
     public static readonly string[] Extensions = [".yaml", ".yml", ".jaml"];

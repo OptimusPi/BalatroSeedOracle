@@ -10,17 +10,55 @@ namespace BalatroSeedOracle.Components.FilterTabs
 {
     public partial class ValidateFilterTab : UserControl
     {
+        private ValidateFilterTabViewModel? _subscribedViewModel;
+
         public ValidateFilterTabViewModel? ViewModel => DataContext as ValidateFilterTabViewModel;
 
         public ValidateFilterTab()
         {
             InitializeComponent();
 
+            DataContextChanged += OnDataContextChanged;
+        }
+
+        private void OnDataContextChanged(object? sender, EventArgs e)
+        {
+            if (_subscribedViewModel != null)
+            {
+                _subscribedViewModel.CopyToClipboardRequested -= OnCopyToClipboardRequested;
+                _subscribedViewModel = null;
+            }
+
             if (ViewModel != null)
             {
-                ViewModel.CopyToClipboardRequested += async (s, text) =>
-                    await CopyToClipboardAsync(text);
+                ViewModel.CopyToClipboardRequested += OnCopyToClipboardRequested;
+                _subscribedViewModel = ViewModel;
             }
+        }
+
+        private async void OnCopyToClipboardRequested(object? sender, string text)
+        {
+            await CopyToClipboardAsync(text);
+        }
+
+        protected override void OnAttachedToVisualTree(Avalonia.VisualTreeAttachmentEventArgs e)
+        {
+            base.OnAttachedToVisualTree(e);
+            if (_subscribedViewModel == null && ViewModel != null)
+            {
+                ViewModel.CopyToClipboardRequested += OnCopyToClipboardRequested;
+                _subscribedViewModel = ViewModel;
+            }
+        }
+
+        protected override void OnDetachedFromVisualTree(Avalonia.VisualTreeAttachmentEventArgs e)
+        {
+            if (_subscribedViewModel != null)
+            {
+                _subscribedViewModel.CopyToClipboardRequested -= OnCopyToClipboardRequested;
+                _subscribedViewModel = null;
+            }
+            base.OnDetachedFromVisualTree(e);
         }
 
         public async Task CopyToClipboardAsync(string text)

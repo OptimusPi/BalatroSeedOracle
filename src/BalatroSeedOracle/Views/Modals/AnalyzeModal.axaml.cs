@@ -44,18 +44,56 @@ namespace BalatroSeedOracle.Views.Modals
             // DeckAndStakeSelector (x:Name) is wired by the generated InitializeComponent(); cache it here.
             _deckAndStakeSelector = DeckAndStakeSelector;
 
-            // Subscribe to DeckSelected event to switch to analyzer tab
+            // Sync initial indices and subscribe to DeckSelected / SelectionChanged events
+            if (_deckAndStakeSelector != null)
+            {
+                if (ViewModel != null)
+                {
+                    _deckAndStakeSelector.DeckIndex = ViewModel.DeckIndex;
+                    _deckAndStakeSelector.StakeIndex = ViewModel.StakeIndex;
+                }
+
+                _deckAndStakeSelector.SelectionChanged -= OnDeckAndStakeSelectionChanged;
+                _deckAndStakeSelector.DeckSelected -= OnDeckSelected;
+
+                _deckAndStakeSelector.SelectionChanged += OnDeckAndStakeSelectionChanged;
+                _deckAndStakeSelector.DeckSelected += OnDeckSelected;
+            }
+        }
+
+        protected override void OnUnloaded(RoutedEventArgs e)
+        {
+            base.OnUnloaded(e);
+
+            if (_deckAndStakeSelector != null)
+            {
+                _deckAndStakeSelector.SelectionChanged -= OnDeckAndStakeSelectionChanged;
+                _deckAndStakeSelector.DeckSelected -= OnDeckSelected;
+            }
+        }
+
+        private void OnDeckAndStakeSelectionChanged(
+            object? sender,
+            (int deckIndex, int stakeIndex) selection
+        )
+        {
+            if (ViewModel != null)
+            {
+                ViewModel.DeckIndex = selection.deckIndex;
+                ViewModel.StakeIndex = selection.stakeIndex;
+            }
+        }
+
+        private void OnDeckSelected(object? sender, EventArgs e)
+        {
             if (_deckAndStakeSelector != null && ViewModel != null)
             {
-                _deckAndStakeSelector.DeckSelected += (s, _) =>
-                {
-                    // Update ViewModel with selected deck/stake indices
-                    ViewModel.DeckIndex = _deckAndStakeSelector.DeckIndex;
-                    ViewModel.StakeIndex = _deckAndStakeSelector.StakeIndex;
+                // Update ViewModel with selected deck/stake indices
+                ViewModel.DeckIndex = _deckAndStakeSelector.DeckIndex;
+                ViewModel.StakeIndex = _deckAndStakeSelector.StakeIndex;
 
-                    // Notify ViewModel that deck was selected (switches to analyzer tab)
-                    ViewModel.OnDeckSelected();
-                };
+                // Notify ViewModel that deck was selected (switches to analyzer tab)
+                ViewModel.OnDeckSelected();
             }
         }
 

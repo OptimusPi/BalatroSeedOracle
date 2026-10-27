@@ -61,6 +61,24 @@ namespace BalatroSeedOracle.Views.Modals
         /// <summary>Sets the modal content area.</summary>
         public void SetContent(Control content)
         {
+            if (content.Parent is ContentControl oldParent && !ReferenceEquals(oldParent, ModalContent))
+            {
+                oldParent.Content = null;
+            }
+            if (content.Parent is ContentPresenter oldPresenter)
+            {
+                oldPresenter.Content = null;
+            }
+            if (Avalonia.VisualTree.VisualExtensions.GetVisualParent(content) is ContentPresenter visualPresenter)
+            {
+                if (visualPresenter.TemplatedParent is ContentControl templatedParent
+                    && !ReferenceEquals(templatedParent, ModalContent))
+                {
+                    templatedParent.Content = null;
+                }
+                visualPresenter.Content = null;
+            }
+
             ModalContent.Content = content;
         }
 

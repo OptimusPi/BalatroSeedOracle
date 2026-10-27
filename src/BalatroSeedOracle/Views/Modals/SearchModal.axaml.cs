@@ -41,15 +41,70 @@ namespace BalatroSeedOracle.Views.Modals
         public SearchModal(SearchModalViewModel viewModel)
         {
             ViewModel = viewModel;
+            ViewModel.DetachTabViews();
             DataContext = ViewModel;
 
-            ViewModel.CloseRequested += (s, e) => CloseRequested?.Invoke(this, e);
-            ViewModel.MinimizeToDesktopRequested += OnMinimizeToDesktopRequested;
-            ViewModel.CopyToClipboardRequested += async (s, text) =>
-                await CopyToClipboardAsync(text);
+            SubscribeViewModelEvents();
 
             InitializeComponent();
             WireUpComponentEvents();
+        }
+
+        private void SubscribeViewModelEvents()
+        {
+            if (ViewModel == null)
+                return;
+
+            ViewModel.CloseRequested -= OnViewModelCloseRequested;
+            ViewModel.MinimizeToDesktopRequested -= OnMinimizeToDesktopRequested;
+            ViewModel.CopyToClipboardRequested -= OnCopyToClipboardRequested;
+            ViewModel.ShowDataGridResultsRequested -= OnShowDataGridResultsRequested;
+
+            ViewModel.CloseRequested += OnViewModelCloseRequested;
+            ViewModel.MinimizeToDesktopRequested += OnMinimizeToDesktopRequested;
+            ViewModel.CopyToClipboardRequested += OnCopyToClipboardRequested;
+            ViewModel.ShowDataGridResultsRequested += OnShowDataGridResultsRequested;
+        }
+
+        private void UnsubscribeViewModelEvents()
+        {
+            if (ViewModel == null)
+                return;
+
+            ViewModel.CloseRequested -= OnViewModelCloseRequested;
+            ViewModel.MinimizeToDesktopRequested -= OnMinimizeToDesktopRequested;
+            ViewModel.CopyToClipboardRequested -= OnCopyToClipboardRequested;
+            ViewModel.ShowDataGridResultsRequested -= OnShowDataGridResultsRequested;
+        }
+
+        private void OnViewModelCloseRequested(object? sender, EventArgs e)
+        {
+            CloseRequested?.Invoke(this, e);
+        }
+
+        private async void OnCopyToClipboardRequested(object? sender, string text)
+        {
+            await CopyToClipboardAsync(text);
+        }
+
+        private void OnShowDataGridResultsRequested(
+            object? sender,
+            (SearchModalViewModel Search, string? FilterName) args
+        )
+        {
+            try
+            {
+                var window = new Windows.DataGridResultsWindow();
+                window.LoadResults(args.Search.SearchResults, args.FilterName);
+                window.Show();
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError(
+                    "SearchModal",
+                    $"Failed to open DataGridResultsWindow: {ex.Message}"
+                );
+            }
         }
 
         public async Task CopyToClipboardAsync(string text)
@@ -74,10 +129,17 @@ namespace BalatroSeedOracle.Views.Modals
             AvaloniaXamlLoader.Load(this);
         }
 
+        protected override void OnLoaded(Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            base.OnLoaded(e);
+            SubscribeViewModelEvents();
+        }
+
         protected override void OnUnloaded(Avalonia.Interactivity.RoutedEventArgs e)
         {
             base.OnUnloaded(e);
-            ViewModel?.Dispose();
+            UnsubscribeViewModelEvents();
+            ViewModel?.DetachTabViews();
         }
 
         /// <summary>

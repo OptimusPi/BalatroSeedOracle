@@ -288,6 +288,41 @@ public class SeedLakeSinkTests
     }
 
     [Fact]
+    public void Scored_results_persist_and_parse_score_and_tallies()
+    {
+        var id = "bso-scored-" + Guid.NewGuid().ToString("N");
+        var path = SeedLakeSink.SeedFilePath(null, id);
+        try
+        {
+            using (var sink = new SeedLakeSink(null, id))
+            {
+                var r1 = new Motely.Filters.MotelyScoredSeedResult { Seed = "SEED1111", Score = 42, Tallies = [10, 20, 12] };
+                var r2 = new Motely.Filters.MotelyScoredSeedResult { Seed = "SEED1111", Score = 99, Tallies = [99] };
+                sink.OnScored(in r1);
+                sink.OnScored(in r2); // duplicate seed ignored
+                sink.OnSeed("SEED2222");
+            }
+
+            var lines = File.ReadAllLines(path);
+            Assert.Equal(2, lines.Length);
+
+            Assert.True(SeedLakeSink.TryParseLine(lines[0], out var seed1, out var score1, out var tallies1));
+            Assert.Equal("SEED1111", seed1);
+            Assert.Equal(42, score1);
+            Assert.Equal(new[] { 10, 20, 12 }, tallies1);
+
+            Assert.True(SeedLakeSink.TryParseLine(lines[1], out var seed2, out var score2, out var tallies2));
+            Assert.Equal("SEED2222", seed2);
+            Assert.Equal(0, score2);
+            Assert.Null(tallies2);
+        }
+        finally
+        {
+            File.Delete(path);
+        }
+    }
+
+    [Fact]
     public void Search_id_is_sanitized_into_the_search_results_folder()
     {
         var path = SeedLakeSink.SeedFilePath(null, "a/b:c*d");

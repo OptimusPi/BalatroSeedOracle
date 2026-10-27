@@ -223,11 +223,24 @@ namespace BalatroSeedOracle.Controls
             }
         }
 
-        protected override Size MeasureOverride(Size availableSize)
+        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
-            // Trigger render on measure to ensure proper layout
+            base.OnAttachedToVisualTree(e);
+            if (Items is INotifyCollectionChanged collection)
+            {
+                collection.CollectionChanged -= OnItemsCollectionChanged;
+                collection.CollectionChanged += OnItemsCollectionChanged;
+            }
             RenderCards();
-            return base.MeasureOverride(availableSize);
+        }
+
+        protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            if (Items is INotifyCollectionChanged collection)
+            {
+                collection.CollectionChanged -= OnItemsCollectionChanged;
+            }
+            base.OnDetachedFromVisualTree(e);
         }
     }
 }

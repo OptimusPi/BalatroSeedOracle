@@ -58,6 +58,18 @@ namespace BalatroSeedOracle.Views.SearchModalTabs
             }
         }
 
+        protected override void OnAttachedToVisualTree(
+            Avalonia.VisualTreeAttachmentEventArgs e
+        )
+        {
+            base.OnAttachedToVisualTree(e);
+            if (_subscribedViewModel == null && DataContext is INotifyPropertyChanged vm)
+            {
+                vm.PropertyChanged += OnViewModelPropertyChanged;
+                _subscribedViewModel = vm;
+            }
+        }
+
         protected override void OnDetachedFromVisualTree(
             Avalonia.VisualTreeAttachmentEventArgs e
         )

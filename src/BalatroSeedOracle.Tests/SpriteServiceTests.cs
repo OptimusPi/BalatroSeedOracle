@@ -53,11 +53,13 @@ public class SpriteServiceTests(HeadlessAvaloniaFixture avalonia)
     public static TheoryData<string, string> EngineNames()
     {
         var data = new TheoryData<string, string>();
+        var seen = new HashSet<(string, string)>();
         void Add<T>(string category)
             where T : struct, Enum
         {
             foreach (var name in Enum.GetNames<T>())
-                data.Add(category, name);
+                if (seen.Add((category, name)))
+                    data.Add(category, name);
         }
         Add<MotelyJoker>("joker");
         Add<MotelyTag>("tag");
@@ -86,12 +88,15 @@ public class SpriteServiceTests(HeadlessAvaloniaFixture avalonia)
     public static TheoryData<string, string> PickerNames()
     {
         var data = new TheoryData<string, string>();
+        var seen = new HashSet<(string, string)>();
         void Add(string category, Dictionary<string, string> items)
         {
             foreach (var (key, display) in items)
             {
-                data.Add(category, key);
-                data.Add(category, display);
+                if (seen.Add((category, key)))
+                    data.Add(category, key);
+                if (seen.Add((category, display)))
+                    data.Add(category, display);
             }
         }
         Add("joker", BalatroData.Jokers);

@@ -6,8 +6,6 @@
              x:DataType="vm:DeckStakeTabViewModel">
                 <components:DeckAndStakeSelector
                     x:Name="DeckAndStakeSelector"
-                    DeckIndex="{Binding SelectedDeckIndex, Mode=TwoWay}"
-                    StakeIndex="{Binding SelectedStakeIndex, Mode=TwoWay}"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Top"
                     Margin="0,20,0,20"/>

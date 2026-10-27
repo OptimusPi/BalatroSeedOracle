@@ -21,7 +21,10 @@ namespace BalatroSeedOracle.Tests;
 public class BuilderRoundTripTests(HeadlessAvaloniaFixture avalonia, ITestOutputHelper output)
 {
     private static readonly string RepoRoot = FindRepoRoot();
-    private const string WaterbearPath = @"D:\BalatroSeedOracle\YAMLFilters\waterbear.yaml";
+    private static readonly string WaterbearPath =
+        File.Exists(Path.Combine(RepoRoot, "YAMLFilters", "waterbear.yaml"))
+            ? Path.Combine(RepoRoot, "YAMLFilters", "waterbear.yaml")
+            : Path.Combine(RepoRoot, "YamlFilters", "waterbear.yaml");
     private static readonly string[] WaterbearSeeds = ["DL241111", "8N5A1111", "MW1G1111"];
 
     private static string FindRepoRoot()

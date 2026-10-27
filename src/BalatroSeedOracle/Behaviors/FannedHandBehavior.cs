@@ -34,6 +34,10 @@ namespace BalatroSeedOracle.Behaviors
         {
             if (AssociatedObject != null)
             {
+                if (AssociatedObject.ItemsSource is INotifyCollectionChanged collection)
+                {
+                    collection.CollectionChanged -= OnCollectionChanged;
+                }
                 AssociatedObject.Loaded -= OnLoaded;
             }
 
@@ -44,6 +48,7 @@ namespace BalatroSeedOracle.Behaviors
         {
             if (AssociatedObject?.ItemsSource is INotifyCollectionChanged collection)
             {
+                collection.CollectionChanged -= OnCollectionChanged;
                 collection.CollectionChanged += OnCollectionChanged;
             }
 
@@ -94,13 +99,14 @@ namespace BalatroSeedOracle.Behaviors
                                 var x = index * CardSpacing;
 
                                 // Y position: slight arc (cards in middle slightly higher)
-                                var normalizedOffset = Math.Abs(offsetFromCenter / centerIndex);
+                                var normalizedOffset = centerIndex > 0 ? Math.Abs(offsetFromCenter / centerIndex) : 0;
                                 var y = normalizedOffset * normalizedOffset * 12; // Parabolic curve
 
                                 // Rotation: fan out from center
-                                var rotation = (offsetFromCenter / centerIndex) * MaxRotation;
+                                var rotation = centerIndex > 0 ? (offsetFromCenter / centerIndex) * MaxRotation : 0;
 
-                                // Apply transformsCanvas.SetLeft(control, x);
+                                // Apply transforms
+                                Canvas.SetLeft(control, x);
                                 Canvas.SetTop(control, y);
 
                                 control.RenderTransform = new RotateTransform(rotation);

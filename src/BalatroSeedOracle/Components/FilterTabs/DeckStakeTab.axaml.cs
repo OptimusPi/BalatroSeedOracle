@@ -28,6 +28,15 @@ namespace BalatroSeedOracle.Components.FilterTabs
             // Subscribe to events from the DeckAndStakeSelector
             if (_deckAndStakeSelector != null)
             {
+                if (DataContext is ViewModels.FilterTabs.DeckStakeTabViewModel vm)
+                {
+                    _deckAndStakeSelector.DeckIndex = vm.SelectedDeckIndex;
+                    _deckAndStakeSelector.StakeIndex = vm.SelectedStakeIndex;
+                }
+
+                _deckAndStakeSelector.DeckSelected -= OnDeckSelected;
+                _deckAndStakeSelector.SelectionChanged -= OnSelectionChanged;
+
                 _deckAndStakeSelector.DeckSelected += OnDeckSelected;
                 _deckAndStakeSelector.SelectionChanged += OnSelectionChanged;
             }

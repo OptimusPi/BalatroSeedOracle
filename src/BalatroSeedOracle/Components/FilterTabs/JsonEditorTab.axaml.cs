@@ -49,12 +49,12 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 _jsonEditor.TextArea.KeyDown += OnKeyDown;
             }
 
-            if (ViewModel != null)
-            {
-                ViewModel.CopyToClipboardRequested += async (s, text) =>
-                    await CopyToClipboardAsync(text);
-            }
+
         }
+
+        private async void OnCopyToClipboardRequested(object? sender, string text) =>
+            await CopyToClipboardAsync(text);
+
 
         public async Task CopyToClipboardAsync(string text)
         {
@@ -94,6 +94,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     if (_subscribedViewModel != null)
                     {
                         _subscribedViewModel.PropertyChanged -= OnViewModelPropertyChanged;
+                        _subscribedViewModel.CopyToClipboardRequested -= OnCopyToClipboardRequested;
                         _subscribedViewModel = null;
                     }
 
@@ -101,8 +102,9 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     {
                         _jsonEditor.Text = ViewModel.JsonContent;
 
-                        // Subscribe to ViewModel property changes
+                        // Subscribe to ViewModel property changes & clipboard events
                         ViewModel.PropertyChanged += OnViewModelPropertyChanged;
+                        ViewModel.CopyToClipboardRequested += OnCopyToClipboardRequested;
                         _subscribedViewModel = ViewModel;
                     }
                 };
@@ -224,6 +226,23 @@ namespace BalatroSeedOracle.Components.FilterTabs
             }
         }
 
+        protected override void OnAttachedToVisualTree(
+            Avalonia.VisualTreeAttachmentEventArgs e
+        )
+        {
+            base.OnAttachedToVisualTree(e);
+            if (_subscribedViewModel == null && ViewModel != null)
+            {
+                if (_jsonEditor != null && _jsonEditor.Text != ViewModel.JsonContent)
+                {
+                    _jsonEditor.Text = ViewModel.JsonContent;
+                }
+                ViewModel.PropertyChanged += OnViewModelPropertyChanged;
+                ViewModel.CopyToClipboardRequested += OnCopyToClipboardRequested;
+                _subscribedViewModel = ViewModel;
+            }
+        }
+
         protected override void OnDetachedFromVisualTree(
             Avalonia.VisualTreeAttachmentEventArgs e
         )
@@ -231,6 +250,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
             if (_subscribedViewModel != null)
             {
                 _subscribedViewModel.PropertyChanged -= OnViewModelPropertyChanged;
+                _subscribedViewModel.CopyToClipboardRequested -= OnCopyToClipboardRequested;
                 _subscribedViewModel = null;
             }
             base.OnDetachedFromVisualTree(e);

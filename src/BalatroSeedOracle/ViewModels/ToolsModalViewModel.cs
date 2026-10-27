@@ -149,9 +149,10 @@ namespace BalatroSeedOracle.ViewModels
             int deletedFilters = 0;
             int deletedResults = 0;
 
-            if (Directory.Exists("YAMLFilters"))
+            var filtersDir = Services.FilterFiles.Dir;
+            if (Directory.Exists(filtersDir))
             {
-                foreach (var file in Directory.GetFiles("YAMLFilters").Where(Services.FilterFiles.IsFilterFile))
+                foreach (var file in Directory.GetFiles(filtersDir).Where(Services.FilterFiles.IsFilterFile))
                 {
                     File.Delete(file);
                     deletedFilters++;

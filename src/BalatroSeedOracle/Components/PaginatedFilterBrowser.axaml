@@ -43,10 +43,12 @@
                         <StackPanel Name="FilterListPanel" Margin="0">
                             <ItemsControl ItemsSource="{Binding CurrentPageFilters}">
                                 <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
+                                    <DataTemplate x:DataType="vm:FilterBrowserItemViewModel">
                                         <Button Content="{Binding DisplayText}"
                                                 Classes="filter-list-item"
-                                                Classes.selected="{Binding IsSelected}"/>
+                                                Classes.selected="{Binding IsSelected}"
+                                                Command="{Binding $parent[UserControl].((vm:PaginatedFilterBrowserViewModel)DataContext).SelectFilterCommand}"
+                                                CommandParameter="{Binding}"/>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>

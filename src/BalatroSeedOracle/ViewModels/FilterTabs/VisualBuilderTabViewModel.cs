@@ -394,21 +394,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             // Subscribe to parent's property changes to update FilterName and edit mode
             if (_parentViewModel is not null)
             {
-                _parentViewModel.PropertyChanged += (s, e) =>
-                {
-                    if (e.PropertyName == nameof(FiltersModalViewModel.FilterName))
-                    {
-                        OnPropertyChanged(nameof(FilterName));
-                    }
-                    else if (e.PropertyName == nameof(FiltersModalViewModel.FilterNameEditMode))
-                    {
-                        OnPropertyChanged(nameof(FilterNameEditMode));
-                    }
-                    else if (e.PropertyName == nameof(FiltersModalViewModel.FilterNameDisplayMode))
-                    {
-                        OnPropertyChanged(nameof(FilterNameDisplayMode));
-                    }
-                };
+                _parentViewModel.PropertyChanged += OnParentPropertyChanged;
             }
 
             // Initialize collections
@@ -2981,23 +2967,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     {
                         item.Seal = seal == "None" ? null : seal;
 
-                        // CRITICAL FIX: Reload sprite with seal overlay (like SetEdition does for jokers)
-                        // StandardCard display name format: "A♠", "10♥", etc.
+                        // Reload sprite with seal overlay using the card's Suit and Rank properties
                         var sealParam = seal == "None" ? null : seal;
-                        var displayParts =
-                            item.DisplayName?.Split('♠', '♥', '♦', '♣') ?? new[] { "", "" };
-                        var rank = displayParts.Length > 0 ? displayParts[0] : "";
-                        var suitChar = item.DisplayName?.LastOrDefault(c =>
-                            c == '♠' || c == '♥' || c == '♦' || c == '♣'
-                        );
-                        var suit = suitChar switch
-                        {
-                            '♠' => "Spades",
-                            '♥' => "Hearts",
-                            '♦' => "Diamonds",
-                            '♣' => "Clubs",
-                            _ => "Spades",
-                        };
+                        var suit = !string.IsNullOrEmpty(item.Suit) ? item.Suit : "Hearts";
+                        var rank = !string.IsNullOrEmpty(item.Rank) ? item.Rank : "Ace";
 
                         // Reload card image with seal overlay
                         item.ItemImage = SpriteService.Instance.GetPlayingCardImage(
@@ -3341,6 +3314,39 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             // Also refresh expanded state to ensure drop zones are visible
             OnPropertyChanged(nameof(IsMustExpanded));
             OnPropertyChanged(nameof(IsShouldExpanded));
+        }
+
+        private void OnParentPropertyChanged(
+            object? sender,
+            System.ComponentModel.PropertyChangedEventArgs e
+        )
+        {
+            if (e.PropertyName == nameof(FiltersModalViewModel.FilterName))
+            {
+                OnPropertyChanged(nameof(FilterName));
+            }
+            else if (e.PropertyName == nameof(FiltersModalViewModel.FilterNameEditMode))
+            {
+                OnPropertyChanged(nameof(FilterNameEditMode));
+            }
+            else if (e.PropertyName == nameof(FiltersModalViewModel.FilterNameDisplayMode))
+            {
+                OnPropertyChanged(nameof(FilterNameDisplayMode));
+            }
+        }
+
+        public void Dispose()
+        {
+            if (_parentViewModel is not null)
+            {
+                _parentViewModel.PropertyChanged -= OnParentPropertyChanged;
+            }
+
+            SelectedMust.CollectionChanged -= OnZoneCollectionChanged;
+            SelectedShould.CollectionChanged -= OnZoneCollectionChanged;
+            SelectedMustNot.CollectionChanged -= OnZoneCollectionChanged;
+            OrTrayItems.CollectionChanged -= OnZoneCollectionChanged;
+            AndTrayItems.CollectionChanged -= OnZoneCollectionChanged;
         }
 
         #endregion

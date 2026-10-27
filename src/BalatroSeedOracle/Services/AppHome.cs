@@ -55,11 +55,13 @@ public static class AppHome
 
     private static bool HoldsFilters(string directory)
     {
-        var filters = Path.Combine(directory, MarkerFolder);
-        return Directory.Exists(filters)
-            && Directory.EnumerateFiles(filters).Any(f =>
-                f.EndsWith(".yaml", StringComparison.OrdinalIgnoreCase)
-                || f.EndsWith(".yml", StringComparison.OrdinalIgnoreCase)
-                || f.EndsWith(".jaml", StringComparison.OrdinalIgnoreCase));
+        return Directory.Exists(directory)
+            && Directory.EnumerateDirectories(directory)
+                .Where(d => string.Equals(Path.GetFileName(d), MarkerFolder, StringComparison.OrdinalIgnoreCase))
+                .SelectMany(Directory.EnumerateFiles)
+                .Any(f =>
+                    f.EndsWith(".yaml", StringComparison.OrdinalIgnoreCase)
+                    || f.EndsWith(".yml", StringComparison.OrdinalIgnoreCase)
+                    || f.EndsWith(".jaml", StringComparison.OrdinalIgnoreCase));
     }
 }

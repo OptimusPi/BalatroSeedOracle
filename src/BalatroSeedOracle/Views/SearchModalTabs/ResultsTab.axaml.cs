@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using Avalonia.Controls;
 using BalatroSeedOracle.Helpers;
+using BalatroSeedOracle.Models;
 using BalatroSeedOracle.ViewModels;
 
 namespace BalatroSeedOracle.Views.SearchModalTabs
@@ -16,6 +18,7 @@ namespace BalatroSeedOracle.Views.SearchModalTabs
         {
             InitializeComponent();
             this.AttachedToVisualTree += OnAttachedToVisualTree;
+            this.DetachedFromVisualTree += OnDetachedFromVisualTree;
         }
 
         private void OnAttachedToVisualTree(object? sender, Avalonia.VisualTreeAttachmentEventArgs e)
@@ -27,14 +30,48 @@ namespace BalatroSeedOracle.Views.SearchModalTabs
                     $"OnAttachedToVisualTree: Grid found with {vm.SearchResults.Count} search results available for binding"
                 );
 
-                // Forward grid events to VM commands (business logic lives in the VM).
-                ResultsGrid.ExportAllRequested += async (s, results) =>
-                    await vm.ExportSearchResultsAsync(TopLevel.GetTopLevel(this), results);
+                // Ensure no duplicate subscriptions across tab switches
+                ResultsGrid.ExportAllRequested -= OnExportAllRequested;
+                ResultsGrid.AnalyzeRequested -= OnAnalyzeRequested;
+                ResultsGrid.PopOutRequested -= OnPopOutRequested;
 
-                ResultsGrid.AnalyzeRequested += (s, result) =>
-                    vm.OpenAnalyzeModalForSeed(result?.Seed);
+                ResultsGrid.ExportAllRequested += OnExportAllRequested;
+                ResultsGrid.AnalyzeRequested += OnAnalyzeRequested;
+                ResultsGrid.PopOutRequested += OnPopOutRequested;
+            }
+        }
 
-                ResultsGrid.PopOutRequested += (s, e2) => vm.RequestPopOutResults();
+        private void OnDetachedFromVisualTree(object? sender, Avalonia.VisualTreeAttachmentEventArgs e)
+        {
+            if (ResultsGrid != null)
+            {
+                ResultsGrid.ExportAllRequested -= OnExportAllRequested;
+                ResultsGrid.AnalyzeRequested -= OnAnalyzeRequested;
+                ResultsGrid.PopOutRequested -= OnPopOutRequested;
+            }
+        }
+
+        private async void OnExportAllRequested(object? sender, IEnumerable<SearchResult> results)
+        {
+            if (DataContext is SearchModalViewModel vm)
+            {
+                await vm.ExportSearchResultsAsync(TopLevel.GetTopLevel(this), results);
+            }
+        }
+
+        private void OnAnalyzeRequested(object? sender, SearchResult? result)
+        {
+            if (DataContext is SearchModalViewModel vm)
+            {
+                vm.OpenAnalyzeModalForSeed(result?.Seed);
+            }
+        }
+
+        private void OnPopOutRequested(object? sender, EventArgs e)
+        {
+            if (DataContext is SearchModalViewModel vm)
+            {
+                vm.RequestPopOutResults();
             }
         }
 

@@ -108,6 +108,8 @@ namespace BalatroSeedOracle.Components.FilterTabs
             vm.SelectedMust.CollectionChanged += OnMustCollectionChanged;
             vm.SelectedShould.CollectionChanged += OnShouldCollectionChanged;
             vm.PropertyChanged += OnViewModelPropertyChanged;
+            vm.UnifiedOperator.Children.CollectionChanged -= OnUnifiedTrayChildrenChanged;
+            vm.UnifiedOperator.Children.CollectionChanged += OnUnifiedTrayChildrenChanged;
         }
 
         private void UnsubscribeFromViewModel(ViewModels.FilterTabs.VisualBuilderTabViewModel? vm)
@@ -118,6 +120,25 @@ namespace BalatroSeedOracle.Components.FilterTabs
             vm.PropertyChanged -= OnViewModelPropertyChanged;
             vm.SelectedMust.CollectionChanged -= OnMustCollectionChanged;
             vm.SelectedShould.CollectionChanged -= OnShouldCollectionChanged;
+            vm.UnifiedOperator.Children.CollectionChanged -= OnUnifiedTrayChildrenChanged;
+        }
+
+        private void EnsureTopLevelSubscribed()
+        {
+            var topLevel = TopLevel.GetTopLevel(this);
+            if (_topLevel != null && _topLevel != topLevel)
+            {
+                _topLevel.PointerMoved -= OnPointerMovedManualDrag;
+                _topLevel.PointerReleased -= OnPointerReleasedManualDrag;
+            }
+            _topLevel = topLevel;
+            if (_topLevel != null)
+            {
+                _topLevel.PointerMoved -= OnPointerMovedManualDrag;
+                _topLevel.PointerReleased -= OnPointerReleasedManualDrag;
+                _topLevel.PointerMoved += OnPointerMovedManualDrag;
+                _topLevel.PointerReleased += OnPointerReleasedManualDrag;
+            }
         }
 
         private void SetupDropZones()
@@ -127,15 +148,22 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 $"Drop zones found - Must: {MustDropZone != null}, Should: {ShouldDropZone != null}"
             );
 
+            if (
+                _subscribedViewModel == null
+                && DataContext is ViewModels.FilterTabs.VisualBuilderTabViewModel vm
+            )
+            {
+                SubscribeToViewModel(vm);
+                _subscribedViewModel = vm;
+            }
+
             // Setup operator tray drop zones
             SetupOperatorTray();
 
             // Attach pointer handlers to TopLevel so we get events even when pointer moves outside the control
-            var topLevel = TopLevel.GetTopLevel(this);
-            if (topLevel != null)
+            EnsureTopLevelSubscribed();
+            if (_topLevel != null)
             {
-                topLevel.PointerMoved += OnPointerMovedManualDrag;
-                topLevel.PointerReleased += OnPointerReleasedManualDrag;
                 DebugLogger.Log(
                     "VisualBuilderTab",
                     "Manual drag pointer handlers attached to TopLevel"
@@ -154,6 +182,9 @@ namespace BalatroSeedOracle.Components.FilterTabs
         {
             if (UnifiedTray != null)
             {
+                UnifiedTray.RemoveHandler(DragDrop.DragOverEvent, OnUnifiedTrayDragOver);
+                UnifiedTray.RemoveHandler(DragDrop.DragLeaveEvent, OnUnifiedTrayDragLeave);
+                UnifiedTray.RemoveHandler(DragDrop.DropEvent, OnUnifiedTrayDrop);
                 UnifiedTray.AddHandler(DragDrop.DragOverEvent, OnUnifiedTrayDragOver);
                 UnifiedTray.AddHandler(DragDrop.DragLeaveEvent, OnUnifiedTrayDragLeave);
                 UnifiedTray.AddHandler(DragDrop.DropEvent, OnUnifiedTrayDrop);
@@ -163,6 +194,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
             // Subscribe to UnifiedOperator.Children collection changes to update fanned layout
             if (DataContext is ViewModels.FilterTabs.VisualBuilderTabViewModel vm)
             {
+                vm.UnifiedOperator.Children.CollectionChanged -= OnUnifiedTrayChildrenChanged;
                 vm.UnifiedOperator.Children.CollectionChanged += OnUnifiedTrayChildrenChanged;
                 // Initial layout
                 UpdateUnifiedTrayFannedLayout();
@@ -360,12 +392,12 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     }
                     // Arm a pending drag; it becomes real only after the pointer
                     // travels DragStartThreshold px (see OnPointerMovedManualDrag).
+                    EnsureTopLevelSubscribed();
                     _pendingDragItem = item;
                     _pendingDragSource = sender as Control;
                     _pendingSourceDropZone = null; // This item is from the shelf, not a drop zone
                     _pendingFromShelf = true;
-                    var topLevel = TopLevel.GetTopLevel(this);
-                    _pendingPressPoint = topLevel != null ? e.GetPosition(topLevel) : e.GetPosition(this);
+                    _pendingPressPoint = _topLevel != null ? e.GetPosition(_topLevel) : e.GetPosition(this);
                 }
                 else
                 {
@@ -472,12 +504,12 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
                 // Arm a pending drag; it becomes real only after the pointer
                 // travels DragStartThreshold px (see OnPointerMovedManualDrag).
+                EnsureTopLevelSubscribed();
                 _pendingDragItem = item;
                 _pendingDragSource = control;
                 _pendingSourceDropZone = _sourceDropZone;
                 _pendingFromShelf = false;
-                var topLevel = TopLevel.GetTopLevel(this);
-                _pendingPressPoint = topLevel != null ? e.GetPosition(topLevel) : e.GetPosition(this);
+                _pendingPressPoint = _topLevel != null ? e.GetPosition(_topLevel) : e.GetPosition(this);
             }
             catch (Exception ex)
             {
@@ -833,39 +865,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                         $"Dropped {_draggedItem.Name} into unified tray"
                     );
 
-                    var itemCopy = new Models.FilterItem
-                    {
-                        Name = _draggedItem.Name,
-                        Type = _draggedItem.Type,
-                        Category = _draggedItem.Category,
-                        DisplayName = _draggedItem.DisplayName,
-                        ItemKey = _draggedItem.ItemKey,
-                        ItemImage = _draggedItem.ItemImage,
-                        IsFavorite = _draggedItem.IsFavorite,
-                        Status = _draggedItem.Status,
-                        // Copy configuration properties
-                        Value = _draggedItem.Value,
-                        Label = _draggedItem.Label,
-                        Antes = _draggedItem.Antes,
-                        Edition = _draggedItem.Edition,
-                        IncludeBoosterPacks = _draggedItem.IncludeBoosterPacks,
-                        IncludeShopStream = _draggedItem.IncludeShopStream,
-                        IncludeSkipTags = _draggedItem.IncludeSkipTags,
-                        // Copy playing card properties
-                        Rank = _draggedItem.Rank,
-                        Suit = _draggedItem.Suit,
-                        Enhancement = _draggedItem.Enhancement,
-                        Seal = _draggedItem.Seal,
-                        // Copy stickers for overlay rendering (eternal/perishable/rental)
-                        Stickers =
-                            _draggedItem.Stickers != null
-                                ? new List<string>(_draggedItem.Stickers)
-                                : null,
-                        // Note: SoulFaceImage, EditionImage, DebuffedOverlayImage are read-only (computed from other properties)
-                        IsInBannedItemsTray = _draggedItem.IsInBannedItemsTray,
-                        // A card loaded from a filter keeps the clause it came from
-                        Clause = _draggedItem.Clause,
-                    };
+                    var itemCopy = CloneFilterItem(_draggedItem);
 
                     vm.UnifiedOperator.Children.Add(itemCopy);
 
@@ -1078,8 +1078,9 @@ namespace BalatroSeedOracle.Components.FilterTabs
                                         var spriteService = SpriteService.Instance;
                                         var childImage = child.Type switch
                                         {
-                                            "Joker" or "SoulJoker" => spriteService.GetJokerImage(
-                                                child.Name
+                                            "Joker" or "SoulJoker" or "CommonJoker" or "UncommonJoker" or "RareJoker" => spriteService.GetJokerImage(
+                                                child.Name,
+                                                child.Edition
                                             ),
                                             "SmallBlindTag" or "BigBlindTag" =>
                                                 spriteService.GetTagImage(child.Name),
@@ -1095,36 +1096,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                                             _ => child.ItemImage, // Fallback to original if type unknown
                                         };
 
-                                        var childCopy = new Models.FilterItem
-                                        {
-                                            Name = child.Name,
-                                            Type = child.Type,
-                                            Category = child.Category,
-                                            DisplayName = child.DisplayName,
-                                            ItemKey = child.ItemKey,
-                                            ItemImage = childImage, // Use freshly fetched image
-                                            IsFavorite = child.IsFavorite,
-                                            Status = child.Status,
-                                            // Copy configuration properties
-                                            Value = child.Value,
-                                            Label = child.Label,
-                                            Antes = child.Antes,
-                                            Edition = child.Edition,
-                                            IncludeBoosterPacks = child.IncludeBoosterPacks,
-                                            IncludeShopStream = child.IncludeShopStream,
-                                            IncludeSkipTags = child.IncludeSkipTags,
-                                            // Copy playing card properties
-                                            Rank = child.Rank,
-                                            Suit = child.Suit,
-                                            Enhancement = child.Enhancement,
-                                            Seal = child.Seal,
-                                            // Copy stickers for overlay rendering (eternal/perishable/rental)
-                                            Stickers =
-                                                child.Stickers != null
-                                                    ? new List<string>(child.Stickers)
-                                                    : null,
-                                            Clause = child.Clause,
-                                        };
+                                        var childCopy = CloneFilterItem(child, childImage);
                                         operatorCopy.Children.Add(childCopy);
 
                                         DebugLogger.Log(
@@ -1215,39 +1187,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                             else
                             {
                                 // Create a COPY of the item to avoid sharing instances with the palette
-                                var itemCopy = new Models.FilterItem
-                                {
-                                    Name = _draggedItem.Name,
-                                    Type = _draggedItem.Type,
-                                    Category = _draggedItem.Category,
-                                    DisplayName = _draggedItem.DisplayName,
-                                    ItemKey = _draggedItem.ItemKey,
-                                    ItemImage = _draggedItem.ItemImage,
-                                    IsFavorite = _draggedItem.IsFavorite,
-                                    Status = _draggedItem.Status,
-                                    // Copy configuration properties
-                                    Value = _draggedItem.Value,
-                                    Label = _draggedItem.Label,
-                                    Antes = _draggedItem.Antes,
-                                    Edition = _draggedItem.Edition,
-                                    IncludeBoosterPacks = _draggedItem.IncludeBoosterPacks,
-                                    IncludeShopStream = _draggedItem.IncludeShopStream,
-                                    IncludeSkipTags = _draggedItem.IncludeSkipTags,
-                                    // Copy playing card properties
-                                    Rank = _draggedItem.Rank,
-                                    Suit = _draggedItem.Suit,
-                                    Enhancement = _draggedItem.Enhancement,
-                                    Seal = _draggedItem.Seal,
-                                    // Copy stickers for overlay rendering (eternal/perishable/rental)
-                                    Stickers =
-                                        _draggedItem.Stickers != null
-                                            ? new List<string>(_draggedItem.Stickers)
-                                            : null,
-                                    // Note: SoulFaceImage, EditionImage, DebuffedOverlayImage are read-only (computed from other properties)
-                                    IsInBannedItemsTray = _draggedItem.IsInBannedItemsTray,
-                                    // A card loaded from a filter keeps the clause it came from
-                                    Clause = _draggedItem.Clause,
-                                };
+                                var itemCopy = CloneFilterItem(_draggedItem);
 
                                 // From the shelf, add the COPY (allows duplicates from shelf!). From
                                 // the other zone, move the card itself: it already belongs to the
@@ -1944,15 +1884,57 @@ namespace BalatroSeedOracle.Components.FilterTabs
             finally
             {
                 // ALWAYS clear references, even if cleanup fails
+                // Do NOT clear _topLevel here: subsequent drags rely on it, and
+                // OnDetachedFromVisualTree needs it to unsubscribe PointerMoved/PointerReleased.
                 _dragAdorner = null;
                 _adornerTransform = null;
                 _adornerLeanTransform = null;
                 _adornerLayer = null;
-                _topLevel = null;
             }
 
             // Hide all drop zone overlays when drag ends
             HideAllDropZoneOverlays();
+        }
+
+        private static Models.FilterItem CloneFilterItem(
+            Models.FilterItem source,
+            IImage? overrideImage = null
+        )
+        {
+            return new Models.FilterItem
+            {
+                Name = source.Name,
+                Type = source.Type,
+                Category = source.Category,
+                DisplayName = source.DisplayName,
+                ItemKey = source.ItemKey,
+                ItemImage = overrideImage ?? source.ItemImage,
+                IsFavorite = source.IsFavorite,
+                Status = source.Status,
+                Value = source.Value,
+                Label = source.Label,
+                Score = source.Score,
+                MinCount = source.MinCount,
+                Antes = source.Antes != null ? (int[])source.Antes.Clone() : null,
+                ShopSlots = source.ShopSlots != null ? (int[])source.ShopSlots.Clone() : null,
+                PackPositions =
+                    source.PackPositions != null ? (int[])source.PackPositions.Clone() : null,
+                Sources = source.Sources != null ? (string[])source.Sources.Clone() : null,
+                Edition = source.Edition,
+                IncludeBoosterPacks = source.IncludeBoosterPacks,
+                IncludeShopStream = source.IncludeShopStream,
+                IncludeSkipTags = source.IncludeSkipTags,
+                Rank = source.Rank,
+                Suit = source.Suit,
+                Enhancement = source.Enhancement,
+                Seal = source.Seal,
+                Stickers =
+                    source.Stickers != null ? new List<string>(source.Stickers) : null,
+                IsDebuffed = source.IsDebuffed,
+                IsInvertedFilter = source.IsInvertedFilter,
+                IsInBannedItemsTray = source.IsInBannedItemsTray,
+                Clause = source.Clause,
+            };
         }
 
         /// <summary>
@@ -2012,6 +1994,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
             {
                 _topLevel.PointerMoved -= OnPointerMovedManualDrag;
                 _topLevel.PointerReleased -= OnPointerReleasedManualDrag;
+                _topLevel = null;
             }
 
             // Ensure cleanup on navigation away
@@ -2149,6 +2132,8 @@ namespace BalatroSeedOracle.Components.FilterTabs
             if (!pointerPoint.Properties.IsLeftButtonPressed)
                 return;
 
+            EnsureTopLevelSubscribed();
+
             // Start dragging the unified operator with its children
             _draggedItem = vm.UnifiedOperator;
             _isDragging = true;
@@ -2156,7 +2141,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
             _originalDragSource = sender as Control;
             _sourceDropZone = null; // From tray, not a drop zone
 
-            var topLevel = TopLevel.GetTopLevel(this);
+            var topLevel = _topLevel;
             if (topLevel != null && _originalDragSource != null)
             {
                 var sourcePos = _originalDragSource.TranslatePoint(
@@ -2280,15 +2265,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 DebugLogger.Log("VisualBuilderTab", $"Adding {_draggedItem.Name} to unified tray");
 
                 // Add a COPY of the item to the tray (so users can add same item multiple times)
-                var itemCopy = new Models.FilterItem
-                {
-                    Name = _draggedItem.Name,
-                    Type = _draggedItem.Type,
-                    Category = _draggedItem.Category,
-                    DisplayName = _draggedItem.DisplayName,
-                    ItemImage = _draggedItem.ItemImage,
-                    Clause = _draggedItem.Clause,
-                };
+                var itemCopy = CloneFilterItem(_draggedItem);
 
                 vm.UnifiedOperator.Children.Add(itemCopy);
                 e.Handled = true;

@@ -425,8 +425,41 @@ namespace BalatroSeedOracle.ViewModels
             BsoLogger.Log("SearchModalViewModel", $"Exported results to {file.Path.LocalPath}");
         }
 
+        public void DetachTabViews()
+        {
+            DetachControlFromParent(_searchTab);
+            DetachControlFromParent(_resultsTab);
+        }
+
+        private static void DetachControlFromParent(Control? control)
+        {
+            if (control is null)
+                return;
+
+            if (control.Parent is ContentControl parentControl)
+            {
+                parentControl.Content = null;
+            }
+            if (control.Parent is Avalonia.Controls.Presenters.ContentPresenter parentPresenter)
+            {
+                parentPresenter.Content = null;
+            }
+            if (
+                Avalonia.VisualTree.VisualExtensions.GetVisualParent(control)
+                is Avalonia.Controls.Presenters.ContentPresenter visualPresenter
+            )
+            {
+                if (visualPresenter.TemplatedParent is ContentControl templatedParent)
+                {
+                    templatedParent.Content = null;
+                }
+                visualPresenter.Content = null;
+            }
+        }
+
         partial void OnSelectedTabIndexChanged(int value)
         {
+            DetachTabViews();
             CurrentTabContent = value switch
             {
                 0 => _searchTab ??= new Views.SearchModalTabs.SearchTab(),
@@ -863,17 +896,28 @@ namespace BalatroSeedOracle.ViewModels
 
             try
             {
-                var seeds = File.ReadLines(lakePath)
+                var lines = File.ReadLines(lakePath)
                     .Select(l => l.Trim())
                     .Where(l => l.Length > 0)
                     .ToList();
-                var total = seeds.Count;
+                var total = lines.Count;
                 LastKnownResultCount = total;
 
                 SearchResults.Clear();
                 // Newest finds are at the end of the file; the grid shows the most recent window.
-                foreach (var seed in seeds.Skip(Math.Max(0, total - MaxLiveResults)))
-                    SearchResults.Add(new Models.SearchResult { Seed = seed });
+                foreach (var line in lines.Skip(Math.Max(0, total - MaxLiveResults)))
+                {
+                    if (Services.SeedLakeSink.TryParseLine(line, out var seed, out var score, out var scores))
+                    {
+                        SearchResults.Add(new Models.SearchResult
+                        {
+                            Seed = seed,
+                            TotalScore = score,
+                            Scores = scores,
+                            Labels = _tallyLabels.Length > 0 ? _tallyLabels : null,
+                        });
+                    }
+                }
 
                 OnPropertyChanged(nameof(ResultsCount));
                 OnPropertyChanged(nameof(FoundCount));
@@ -1085,16 +1129,13 @@ namespace BalatroSeedOracle.ViewModels
             IsSearchTabVisible = false;
             IsResultsTabVisible = false;
 
-            // Show only the selected tab
+            // Show only the selected tab (0 = Search, 1 = Results)
             switch (tabIndex)
             {
                 case 0:
-                    IsSettingsTabVisible = true;
-                    break;
-                case 1:
                     IsSearchTabVisible = true;
                     break;
-                case 2:
+                case 1:
                     IsResultsTabVisible = true;
                     break;
             }
@@ -1243,8 +1284,8 @@ namespace BalatroSeedOracle.ViewModels
                 Scores = scores,
             };
 
-            // Set labels only on the first result to drive grid headers
-            if (SearchResults.Count == 0 && _tallyLabels.Length > 0)
+            // Set labels on every result so sorting or trimming never loses grid column headers
+            if (_tallyLabels.Length > 0)
             {
                 result.Labels = _tallyLabels;
             }
@@ -1469,7 +1510,7 @@ namespace BalatroSeedOracle.ViewModels
             );
 
             // Switch to the Search tab so user can start searching
-            SelectedTabIndex = 1; // Search tab (Deck/Stake removed)
+            SelectedTabIndex = 0;
         }
 
         // Track last console log time to avoid spamming

@@ -468,20 +468,110 @@ LIMIT 50;",
             }
         }
 
+        public void LoadResults(
+            IEnumerable<Models.SearchResult> results,
+            string? filterName = null
+        )
+        {
+            if (!string.IsNullOrWhiteSpace(filterName))
+            {
+                Title = $"Search Results - {filterName}";
+            }
+
+            _results.Clear();
+            _filteredResults.Clear();
+
+            var resultList =
+                results?.OrderByDescending(r => r.TotalScore).ToList()
+                ?? new List<Models.SearchResult>();
+
+            if (_resultsGrid != null)
+            {
+                _resultsGrid.Columns.Clear();
+                _resultsGrid.Columns.Add(
+                    new DataGridTextColumn
+                    {
+                        Header = "Rank",
+                        Binding = new Binding(nameof(DataGridResultItem.Rank)),
+                        Width = new DataGridLength(80),
+                    }
+                );
+                _resultsGrid.Columns.Add(
+                    new DataGridTextColumn
+                    {
+                        Header = "Seed",
+                        Binding = new Binding(nameof(DataGridResultItem.Seed)),
+                        Width = new DataGridLength(140),
+                    }
+                );
+                _resultsGrid.Columns.Add(
+                    new DataGridTextColumn
+                    {
+                        Header = "Total Score",
+                        Binding = new Binding(nameof(DataGridResultItem.TotalScore)),
+                        Width = new DataGridLength(110),
+                    }
+                );
+
+                var sample = resultList.FirstOrDefault(r =>
+                    r.Scores != null && r.Scores.Length > 0
+                );
+                if (sample?.Scores != null)
+                {
+                    for (int i = 0; i < sample.Scores.Length; i++)
+                    {
+                        var header =
+                            sample.Labels != null
+                            && i < sample.Labels.Length
+                            && !string.IsNullOrWhiteSpace(sample.Labels[i])
+                                ? sample.Labels[i]
+                                : $"Tally {i + 1}";
+                        _resultsGrid.Columns.Add(
+                            new DataGridTextColumn
+                            {
+                                Header = header,
+                                Binding = new Binding(
+                                    $"{nameof(DataGridResultItem.TallyScores)}[{i}]"
+                                ),
+                                Width = new DataGridLength(100),
+                            }
+                        );
+                    }
+                }
+            }
+
+            int rank = 1;
+            foreach (var r in resultList)
+            {
+                var item = new DataGridResultItem
+                {
+                    Rank = rank++,
+                    Seed = r.Seed,
+                    TotalScore = r.TotalScore,
+                    TallyScores = r.Scores?.ToList() ?? new List<int>(),
+                };
+                _results.Add(item);
+                _filteredResults.Add(item);
+            }
+
+            UpdateStatus($"Showing {_filteredResults.Count:N0} of {_results.Count:N0} results");
+        }
+
         private void ViewInAnalyzer(object? sender, RoutedEventArgs e)
         {
             if (_resultsGrid?.SelectedItem is DataGridResultItem item)
             {
                 try
                 {
-                    // Find the main window and show as modal
-                    var mainWindow = TopLevel.GetTopLevel(this) as Views.MainWindow;
-                    var mainMenu = mainWindow?.MainMenu;
+                    // Find the main menu and show as modal
+                    var mainMenu =
+                        App.GetService<Views.BalatroMainMenu>()
+                        ?? (TopLevel.GetTopLevel(this) as Views.MainWindow)?.MainMenu;
 
-                    if (mainMenu != null)
+                    if (mainMenu != null && mainMenu.ViewModel != null)
                     {
-                        // Create analyzer modal with the seed
-                        var analyzeModal = new Views.Modals.AnalyzeModal();
+                        var analyzeVm = mainMenu.ViewModel.CreateAnalyzeModalViewModel();
+                        var analyzeModal = new Views.Modals.AnalyzeModal(analyzeVm);
                         analyzeModal.SetSeedAndAnalyze(item.Seed);
 
                         var modal = new Views.Modals.StandardModal("ANALYZE");

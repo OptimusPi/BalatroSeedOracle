@@ -441,6 +441,23 @@ namespace BalatroSeedOracle.Components.FilterTabs
             }
         }
 
+        protected override void OnAttachedToVisualTree(
+            Avalonia.VisualTreeAttachmentEventArgs e
+        )
+        {
+            base.OnAttachedToVisualTree(e);
+            if (_subscribedViewModel == null && ViewModel != null)
+            {
+                if (YAMLEditor != null && YAMLEditor.Text != ViewModel.YamlContent)
+                {
+                    YAMLEditor.Text = ViewModel.YamlContent;
+                }
+                ViewModel.PropertyChanged += OnViewModelPropertyChanged;
+                ViewModel.JumpToError += OnJumpToError;
+                _subscribedViewModel = ViewModel;
+            }
+        }
+
         protected override void OnDetachedFromVisualTree(
             Avalonia.VisualTreeAttachmentEventArgs e
         )

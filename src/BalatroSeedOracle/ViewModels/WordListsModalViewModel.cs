@@ -13,13 +13,7 @@ namespace BalatroSeedOracle.ViewModels
     /// </summary>
     public partial class WordListsModalViewModel : ObservableObject
     {
-        private readonly string _wordListsPath = Path.Combine(
-            AppContext.BaseDirectory,
-            "..",
-            "..",
-            "..",
-            "WordLists"
-        );
+        private readonly string _wordListsPath = Path.GetFullPath("WordLists");
 
         private string? _currentFile;
         private bool _hasUnsavedChanges;
@@ -113,9 +107,13 @@ tag"
             Files.Clear();
 
             var files = Directory
-                .GetFiles(_wordListsPath, "*.db")
+                .EnumerateFiles(_wordListsPath)
+                .Where(f =>
+                    f.EndsWith(".txt", StringComparison.OrdinalIgnoreCase)
+                    || f.EndsWith(".db", StringComparison.OrdinalIgnoreCase)
+                )
                 .Select(f => Path.GetFileName(f))
-                .OrderBy(f => f);
+                .OrderBy(f => f, StringComparer.OrdinalIgnoreCase);
 
             foreach (var file in files)
             {

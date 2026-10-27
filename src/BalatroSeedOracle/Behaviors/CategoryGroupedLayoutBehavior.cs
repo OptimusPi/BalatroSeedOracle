@@ -55,6 +55,10 @@ namespace BalatroSeedOracle.Behaviors
         {
             if (AssociatedObject != null)
             {
+                if (AssociatedObject.ItemsSource is INotifyCollectionChanged collection)
+                {
+                    collection.CollectionChanged -= OnCollectionChanged;
+                }
                 AssociatedObject.Loaded -= OnLoaded;
             }
 
@@ -65,6 +69,7 @@ namespace BalatroSeedOracle.Behaviors
         {
             if (AssociatedObject?.ItemsSource is INotifyCollectionChanged collection)
             {
+                collection.CollectionChanged -= OnCollectionChanged;
                 collection.CollectionChanged += OnCollectionChanged;
             }
 

@@ -35,10 +35,20 @@ namespace BalatroSeedOracle.Views.Modals
         /// <summary>
         /// Load configuration from file (delegates to ViewModel)
         /// </summary>
-        public Task LoadConfigAsync(string configPath)
+        public async Task LoadConfigAsync(string configPath)
         {
-            ViewModel?.LoadFilter();
-            return Task.CompletedTask;
+            if (ViewModel == null)
+                return;
+
+            if (!string.IsNullOrWhiteSpace(configPath))
+            {
+                ViewModel.CurrentFilterPath = configPath;
+                await ViewModel.ReloadVisualFromSavedFileCommand.ExecuteAsync(null);
+            }
+            else
+            {
+                ViewModel.LoadFilter();
+            }
         }
 
         /// <summary>

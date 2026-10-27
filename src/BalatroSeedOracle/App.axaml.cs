@@ -40,7 +40,7 @@ public partial class App : Application
         };
 
         // All data lives in the run directory, same convention as Motely.CLI.
-        Directory.CreateDirectory("YAMLFilters");
+        Directory.CreateDirectory(FilterFiles.Dir);
         Directory.CreateDirectory("SearchResults");
         Directory.CreateDirectory("WordLists");
         Directory.CreateDirectory("VisualizerPresets");
@@ -65,6 +65,9 @@ public partial class App : Application
         Register(searchVM);
         Register(menuVM);
         Register(mainMenu);
+        Register(new FilterListViewModel(SpriteService.Instance));
+        Register(new PaginatedFilterBrowserViewModel(profile));
+        Register(new Views.Modals.ToolsModal(new ToolsModalViewModel()));
 
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {

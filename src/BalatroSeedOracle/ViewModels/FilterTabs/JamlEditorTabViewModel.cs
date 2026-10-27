@@ -362,22 +362,39 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             // Listen for filter name changes from parent to update display
             if (_parentViewModel is not null)
             {
-                _parentViewModel.PropertyChanged += (s, e) =>
-                {
-                    if (e.PropertyName == nameof(FiltersModalViewModel.FilterName))
-                    {
-                        OnPropertyChanged(nameof(FilterFileName));
-                    }
-                    else if (
-                        e.PropertyName == nameof(FiltersModalViewModel.SelectedDeckIndex)
-                        || e.PropertyName == nameof(FiltersModalViewModel.SelectedStakeIndex)
-                        || e.PropertyName == nameof(FiltersModalViewModel.SelectedDeck)
-                    )
-                    {
-                        AutoGenerateFromVisual();
-                    }
-                };
+                _parentViewModel.PropertyChanged += OnParentPropertyChanged;
             }
+        }
+
+        private void OnParentPropertyChanged(
+            object? sender,
+            System.ComponentModel.PropertyChangedEventArgs e
+        )
+        {
+            if (e.PropertyName == nameof(FiltersModalViewModel.FilterName))
+            {
+                OnPropertyChanged(nameof(FilterFileName));
+            }
+            else if (
+                e.PropertyName == nameof(FiltersModalViewModel.SelectedDeckIndex)
+                || e.PropertyName == nameof(FiltersModalViewModel.SelectedStakeIndex)
+                || e.PropertyName == nameof(FiltersModalViewModel.SelectedDeck)
+            )
+            {
+                AutoGenerateFromVisual();
+            }
+        }
+
+        public void Dispose()
+        {
+            if (_parentViewModel is not null)
+            {
+                _parentViewModel.PropertyChanged -= OnParentPropertyChanged;
+            }
+
+            _validationThrottleCts?.Cancel();
+            _validationThrottleCts?.Dispose();
+            _validationThrottleCts = null;
         }
 
         #region Command Implementations

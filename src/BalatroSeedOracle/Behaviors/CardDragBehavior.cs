@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -17,7 +18,62 @@ namespace BalatroSeedOracle.Behaviors
     /// </summary>
     public class CardDragBehavior : Behavior<Control>
     {
-        private DispatcherTimer? _animationTimer;
+        private static readonly object _timerLock = new();
+        private static readonly HashSet<CardDragBehavior> _activeBehaviors = new();
+        private static DispatcherTimer? _sharedTimer;
+
+        private static void RegisterActive(CardDragBehavior behavior)
+        {
+            lock (_timerLock)
+            {
+                _activeBehaviors.Add(behavior);
+                if (_sharedTimer == null)
+                {
+                    _sharedTimer = new DispatcherTimer
+                    {
+                        Interval = TimeSpan.FromMilliseconds(UIConstants.AnimationFrameRateMs),
+                    };
+                    _sharedTimer.Tick += OnSharedTimerTick;
+                }
+                if (!_sharedTimer.IsEnabled)
+                {
+                    _sharedTimer.Start();
+                }
+            }
+        }
+
+        private static void UnregisterActive(CardDragBehavior behavior)
+        {
+            lock (_timerLock)
+            {
+                _activeBehaviors.Remove(behavior);
+                if (_activeBehaviors.Count == 0 && _sharedTimer is { IsEnabled: true })
+                {
+                    _sharedTimer.Stop();
+                }
+            }
+        }
+
+        private static void OnSharedTimerTick(object? sender, EventArgs e)
+        {
+            CardDragBehavior[] snapshot;
+            lock (_timerLock)
+            {
+                if (_activeBehaviors.Count == 0)
+                {
+                    _sharedTimer?.Stop();
+                    return;
+                }
+                snapshot = new CardDragBehavior[_activeBehaviors.Count];
+                _activeBehaviors.CopyTo(snapshot);
+            }
+
+            foreach (var behavior in snapshot)
+            {
+                behavior.UpdateTransforms();
+            }
+        }
+
         private DateTime _startTime;
         private double _cardId;
         private Point? _lastPointerPosition;
@@ -80,7 +136,7 @@ namespace BalatroSeedOracle.Behaviors
                 return;
 
             // Generate unique card ID for timing variation
-            _cardId = new Random().NextDouble() * 100;
+            _cardId = Random.Shared.NextDouble() * 100;
             _startTime = DateTime.Now;
 
             // PROPER SOLUTION: Find the first child control to apply transforms to
@@ -157,18 +213,24 @@ namespace BalatroSeedOracle.Behaviors
             _hitboxElement.PointerPressed += OnPointerPressed;
             _hitboxElement.PointerReleased += OnPointerReleased;
 
-            // Create animation timer and start it immediately for ambient sway
-            _animationTimer = new DispatcherTimer
+            AssociatedObject.AttachedToVisualTree += OnVisualTreeAttached;
+            AssociatedObject.DetachedFromVisualTree += OnVisualTreeDetached;
+
+            if (TopLevel.GetTopLevel(AssociatedObject) != null)
             {
-                Interval = TimeSpan.FromMilliseconds(UIConstants.AnimationFrameRateMs), // 60 FPS
-            };
-            _animationTimer.Tick += OnAnimationTick;
-            _animationTimer.Start(); // For ambient sway and juice decay only
+                RegisterActive(this);
+            }
         }
 
         protected override void OnDetaching()
         {
             base.OnDetaching();
+
+            if (AssociatedObject != null)
+            {
+                AssociatedObject.AttachedToVisualTree -= OnVisualTreeAttached;
+                AssociatedObject.DetachedFromVisualTree -= OnVisualTreeDetached;
+            }
 
             if (_hitboxElement != null)
             {
@@ -179,8 +241,21 @@ namespace BalatroSeedOracle.Behaviors
                 _hitboxElement.PointerReleased -= OnPointerReleased;
             }
 
-            _animationTimer?.Stop();
-            _animationTimer = null;
+            UnregisterActive(this);
+        }
+
+        private void OnVisualTreeAttached(object? sender, VisualTreeAttachmentEventArgs e)
+        {
+            RegisterActive(this);
+        }
+
+        private void OnVisualTreeDetached(object? sender, VisualTreeAttachmentEventArgs e)
+        {
+            _isHovering = false;
+            _isDragging = false;
+            _lastPointerPosition = null;
+            _pointerPressedPosition = null;
+            UnregisterActive(this);
         }
 
         private void OnPointerEntered(object? sender, PointerEventArgs e)
@@ -200,7 +275,6 @@ namespace BalatroSeedOracle.Behaviors
             {
                 _juiceStartTime = DateTime.Now;
             }
-
         }
 
         private void OnPointerExited(object? sender, PointerEventArgs e)
@@ -230,14 +304,6 @@ namespace BalatroSeedOracle.Behaviors
         {
             _isDragging = true;
             _pointerPressedPosition = e.GetPosition(_hitboxElement);
-
-            // Juice is triggered on hover (OnPointerEntered), not here
-
-            // Ensure animation timer is running when dragging
-            if (_animationTimer != null && !_animationTimer.IsEnabled)
-            {
-                _animationTimer.Start();
-            }
         }
 
         private void OnPointerReleased(object? sender, PointerReleasedEventArgs e)
@@ -246,18 +312,12 @@ namespace BalatroSeedOracle.Behaviors
             _pointerPressedPosition = null;
         }
 
-        private void OnAnimationTick(object? sender, EventArgs e)
-        {
-            // Timer only handles ambient sway and juice decay
-            // Magnetic tilt is event-driven via OnPointerMoved
-            UpdateTransforms();
-        }
-
         private void UpdateTransforms()
         {
             if (
                 !IsAnimationEnabled
                 || AssociatedObject == null
+                || !AssociatedObject.IsEffectivelyVisible
                 || _translateTransform == null
                 || _scaleTransform == null
                 || _rotateTransform == null
@@ -324,28 +384,19 @@ namespace BalatroSeedOracle.Behaviors
                 var tiltFactor = 0.3; // Balatro constant
                 var tiltAmount = Math.Abs(hoverOffsetY + hoverOffsetX - 1) * tiltFactor;
 
-                // When mouse is at center (0.5, 0.5): |0.5 + 0.5 - 1| * 0.3 = 0 (NO TILT!)
-                // When mouse is at corners: |0 + 0 - 1| * 0.3 = 0.3 or |1 + 1 - 1| * 0.3 = 0.3 (MAX TILT!)
-
                 // Apply 3D perspective approximation
-                // Y offset controls X skew (vertical tilt makes top/bottom change width)
-                // X offset controls Y skew (horizontal tilt makes left/right change height)
-                // Negate to tilt TOWARD mouse, scale by tilt intensity and user TiltStrength
                 skewX = -offsetY * tiltAmount * (TiltStrength / tiltFactor);
                 skewY = -offsetX * tiltAmount * (TiltStrength / tiltFactor);
             }
             else
             {
                 // AMBIENT MODE: Subtle breathing sway (like real Balatro!)
-                // tilt_angle = G.TIMERS.REAL*(1.56 + (self.ID/1.14212)%1) + self.ID/1.35122
                 var tiltAngle =
                     elapsedSeconds * (1.56 + (_cardId / 1.14212) % 1) + _cardId / 1.35122;
 
-                // Balatro's ambient tilt: self.ambient_tilt*(0.5+math.cos(tilt_angle))*tilt_factor
                 var ambientTilt = UIConstants.CardAmbientTiltMultiplier; // 0.2
                 var tiltFactor = 0.3;
 
-                // Calculate rotation for breathing effect (using Balatro's exact formula)
                 rotationAngle = ambientTilt * (0.5 + Math.Cos(tiltAngle)) * tiltFactor * 10;
             }
 
@@ -377,12 +428,10 @@ namespace BalatroSeedOracle.Behaviors
 
                 if (juiceElapsed < juiceDuration)
                 {
-                    // Calculate decay factor (cubic for scale, quadratic for translation wobble)
                     var progress = juiceElapsed / juiceDuration;
                     var decayScale = Math.Max(0, Math.Pow(1 - progress, 3));
                     var decayWobble = Math.Max(0, Math.Pow(1 - progress, 2));
 
-                    // Scale oscillation: scale_amt * sin(FREQUENCY*t) * decay^3
                     var scaleJuice =
                         JuiceAmount
                         * Math.Sin(UIConstants.JuiceBounceFrequency * juiceElapsed)
@@ -390,7 +439,6 @@ namespace BalatroSeedOracle.Behaviors
                     _scaleTransform.ScaleX = UIConstants.DefaultScaleFactor + scaleJuice;
                     _scaleTransform.ScaleY = UIConstants.DefaultScaleFactor + scaleJuice;
 
-                    // Translation wobble: subtle X/Y oscillation instead of rotation
                     var wobbleX =
                         (JuiceAmount * UIConstants.CardJuiceRotationFactor * 10.0)
                         * Math.Sin(UIConstants.JuiceWobbleFrequency * juiceElapsed)
@@ -400,16 +448,13 @@ namespace BalatroSeedOracle.Behaviors
                         * Math.Cos(UIConstants.JuiceWobbleFrequency * juiceElapsed * 0.7)
                         * decayWobble;
 
-                    // Add wobble to lean (compound the effects)
                     _translateTransform.X = leanX + wobbleX;
                     _translateTransform.Y = leanY + wobbleY;
                 }
                 else
                 {
-                    // Juice finished
                     _juiceStartTime = null;
 
-                    // Apply hover scale if hovering (prevents seizure bug by creating buffer zone)
                     if (_isHovering)
                     {
                         _scaleTransform.ScaleX = 1.12;
@@ -424,7 +469,6 @@ namespace BalatroSeedOracle.Behaviors
             }
             else
             {
-                // No juice - apply hover scale if hovering (prevents seizure bug)
                 if (_isHovering)
                 {
                     _scaleTransform.ScaleX = 1.12;

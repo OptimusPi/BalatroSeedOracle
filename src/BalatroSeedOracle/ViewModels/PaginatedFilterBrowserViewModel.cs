@@ -109,7 +109,7 @@ namespace BalatroSeedOracle.ViewModels
 
         private async System.Threading.Tasks.Task<string> CreateTempFilter()
         {
-            var tempPath = Path.Combine("YAMLFilters", "_UNSAVED_CREATION.yaml");
+            var tempPath = Path.Combine(Services.FilterFiles.Dir, "_UNSAVED_CREATION.yaml");
 
             // Create basic empty filter structure
             var emptyFilter = new JamlConfig

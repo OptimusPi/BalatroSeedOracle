@@ -616,12 +616,9 @@ namespace BalatroSeedOracle.ViewModels
                     break;
                 case 2:
                     IsJsonTabVisible = true;
-                    BsoLogger.Log("FiltersModalViewModel", "JSON Editor tab visible");
+                    BsoLogger.Log("FiltersModalViewModel", "JAML Editor tab visible");
                     break;
                 case 3:
-                    BsoLogger.Log("FiltersModalViewModel", "YAML Editor tab visible");
-                    break;
-                case 4:
                     IsSaveTabVisible = true;
                     RefreshSaveTabData();
                     BsoLogger.Log("FiltersModalViewModel", "Validate Filter tab visible");
@@ -1200,6 +1197,9 @@ namespace BalatroSeedOracle.ViewModels
 
         public void InitializeTabs()
         {
+            (VisualBuilderTab as FilterTabs.VisualBuilderTabViewModel)?.Dispose();
+            (YAMLEditorTab as FilterTabs.JamlEditorTabViewModel)?.Dispose();
+
             TabItems.Clear();
 
             // Create the proper VisualBuilderTabViewModel for the visual builder
@@ -1294,7 +1294,7 @@ namespace BalatroSeedOracle.ViewModels
                     ApplyStakeFromConfig(config.Stake.ToString());
 
                     // Switch to Visual Builder tab
-                    SelectedTabIndex = 1;
+                    SelectedTabIndex = 0;
                     BsoLogger.Log(
                         "FiltersModalViewModel",
                         $"Filter loaded for editing: {config.Name}"
@@ -1376,7 +1376,7 @@ namespace BalatroSeedOracle.ViewModels
                             ApplyDeckFromConfig(newConfig.Deck.ToString());
                             ApplyStakeFromConfig(newConfig.Stake.ToString());
 
-                            SelectedTabIndex = 1;
+                            SelectedTabIndex = 0;
                             BsoLogger.Log(
                                 "FiltersModalViewModel",
                                 $"Created and loaded copy: {candidateName}"
@@ -1431,7 +1431,7 @@ namespace BalatroSeedOracle.ViewModels
                         "Create New Filter requested from Load tab"
                     );
                     CreateNewFilter();
-                    SelectedTabIndex = 1;
+                    SelectedTabIndex = 0;
                     BsoLogger.Log(
                         "FiltersModalViewModel",
                         "Switched to Visual Builder for new filter"
