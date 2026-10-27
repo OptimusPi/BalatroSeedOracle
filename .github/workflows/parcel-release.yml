@@ -1,95 +1,145 @@
 name: Parcel Release
 
 on:
+  push:
+    tags:
+      - 'v*'
   release:
     types: [published]
-  workflow_dispatch: # Keep manual trigger for testing
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+# One secret, two consumers — both must see the SAME offline key (avln_off_key:*):
+#   ACCELERATE_LICENSE_KEY     -> Directory.Build.props -> <AvaloniaUILicenseKey/>, required
+#                                 by the Release licensing task for the commercial
+#                                 Accelerate controls (TreeDataGrid, WebView).
+#                                 Missing/invalid => AVLIC0001 before packaging.
+#   AVALONIA_TOOLS_LICENSE_KEY -> what the Parcel CLI authenticates with.
+env:
+  ACCELERATE_LICENSE_KEY: ${{ secrets.PARCEL_LICENSE_KEY }}
+  AVALONIA_TOOLS_LICENSE_KEY: ${{ secrets.PARCEL_LICENSE_KEY }}
 
 jobs:
-  build-and-package:
+  package-windows-linux:
+    name: Package Windows (.exe) & Linux (.deb)
     runs-on: windows-latest
-
-    # One secret, two consumers — both must see the SAME offline key (avln_off_key:*):
-    #   ACCELERATE_LICENSE_KEY     -> Directory.Build.props -> <AvaloniaUILicenseKey/>, required
-    #                                 by the Release licensing task for the commercial
-    #                                 Accelerate controls (TreeDataGrid, Markdown, Charts,
-    #                                 Media). Missing/invalid => AVLIC0001 before packaging.
-    #   AVALONIA_TOOLS_LICENSE_KEY -> what the Parcel CLI authenticates with.
-    # The PARCEL_LICENSE_KEY secret currently holds the SHORT ONLINE key, which this
-    # subscription cannot redeem ("This subscription doesn't provide online license keys").
-    # Update the secret's VALUE to the long offline key before tagging.
-    env:
-      ACCELERATE_LICENSE_KEY: ${{ secrets.PARCEL_LICENSE_KEY }}
-      AVALONIA_TOOLS_LICENSE_KEY: ${{ secrets.PARCEL_LICENSE_KEY }}
-
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      with:
-        submodules: recursive
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: '10.0.x'
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
 
-    # .NET 10+ uses the unified AvaloniaUI.Parcel package; the platform-specific
-    # AvaloniaUI.Parcel.Windows package is only needed on older SDKs.
-    - name: Install Parcel
-      run: dotnet tool install --global AvaloniaUI.Parcel
+      - name: Install Parcel
+        run: dotnet tool install --global AvaloniaUI.Parcel
 
-    - name: Add dotnet tools to PATH
-      run: echo "$env:USERPROFILE\.dotnet\tools" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+      - name: Add dotnet tools to PATH
+        run: echo "$env:USERPROFILE\.dotnet\tools" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
-    - name: Restore dependencies
-      run: dotnet restore src/BalatroSeedOracle/BalatroSeedOracle.csproj
+      - name: Restore dependencies
+        run: dotnet restore src/BalatroSeedOracle/BalatroSeedOracle.csproj
 
-    - name: Build
-      run: dotnet build src/BalatroSeedOracle/BalatroSeedOracle.csproj --configuration Release --no-restore
+      - name: Build
+        run: dotnet build src/BalatroSeedOracle/BalatroSeedOracle.csproj --configuration Release --no-restore
 
-    # Parcel 1.0.6 requires the `pack` subcommand — the old flat
-    # `parcel <project> --runtimes ... --packages ...` form was removed.
-    # Verified locally from a Windows host: win-x64/nsis and linux-x64/deb build clean;
-    # osx-x64/dmg produces an artifact but reports a signing error (app assets sit in
-    # Contents/MacOS instead of Contents/Resources) and is only ad-hoc signed.
-    - name: Package with Parcel
-      run: |
-        cd src/BalatroSeedOracle
-        parcel pack BalatroSeedOracle.parcel -r win-x64 linux-x64 osx-x64 -p nsis deb dmg
+      - name: Package Windows & Linux with Parcel
+        run: |
+          cd src/BalatroSeedOracle
+          parcel pack BalatroSeedOracle.parcel -r win-x64 linux-x64 -p nsis deb
 
-    - name: Upload Windows Installer
-      uses: actions/upload-artifact@v4
-      with:
-        # Parcel nests output by platform, e.g. bin/packages/Windows/*.exe
-        name: windows-installer
-        path: src/BalatroSeedOracle/bin/packages/**/*.exe
-        if-no-files-found: error
+      - name: Upload Windows Installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-installer
+          path: src/BalatroSeedOracle/bin/packages/**/*.exe
+          if-no-files-found: error
 
-    - name: Upload macOS Bundle
-      uses: actions/upload-artifact@v4
-      with:
-        name: macos-bundle
-        path: src/BalatroSeedOracle/bin/packages/**/*.dmg
-        if-no-files-found: warn
+      - name: Upload Linux Package
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-package
+          path: src/BalatroSeedOracle/bin/packages/**/*.deb
+          if-no-files-found: error
 
-    - name: Upload Linux Package
-      uses: actions/upload-artifact@v4
-      with:
-        name: linux-package
-        path: src/BalatroSeedOracle/bin/packages/**/*.deb
-        if-no-files-found: warn
+  package-macos:
+    name: Package macOS (.dmg arm64 & x64)
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
-    - name: Create GitHub Release
-      if: startsWith(github.ref, 'refs/tags/')
-      uses: softprops/action-gh-release@v1
-      with:
-        files: |
-          src/BalatroSeedOracle/bin/packages/**/*.exe
-          src/BalatroSeedOracle/bin/packages/**/*.dmg
-          src/BalatroSeedOracle/bin/packages/**/*.deb
-        draft: false
-        # Mark as pre-release if tag contains -rc, -beta, -alpha, or -preview
-        prerelease: ${{ contains(github.ref, '-rc') || contains(github.ref, '-beta') || contains(github.ref, '-alpha') || contains(github.ref, '-preview') }}
-        generate_release_notes: true
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Install Parcel
+        run: dotnet tool install --global AvaloniaUI.Parcel
+
+      - name: Add dotnet tools to PATH
+        run: echo "$HOME/.dotnet/tools" >> "$GITHUB_PATH"
+
+      - name: Restore dependencies
+        run: dotnet restore src/BalatroSeedOracle/BalatroSeedOracle.csproj
+
+      - name: Package macOS Apple Silicon (osx-arm64)
+        run: |
+          cd src/BalatroSeedOracle
+          parcel pack BalatroSeedOracle.parcel -r osx-arm64 -p dmg -o bin/packages/osx-arm64
+          find bin/packages/osx-arm64 -name "*.dmg" ! -name "*-arm64.dmg" -exec sh -c '
+            for f do mv "$f" "${f%.dmg}-arm64.dmg"; done
+          ' sh {} +
+
+      - name: Package macOS Intel (osx-x64)
+        run: |
+          cd src/BalatroSeedOracle
+          parcel pack BalatroSeedOracle.parcel -r osx-x64 -p dmg -o bin/packages/osx-x64
+          find bin/packages/osx-x64 -name "*.dmg" ! -name "*-x64.dmg" -exec sh -c '
+            for f do mv "$f" "${f%.dmg}-x64.dmg"; done
+          ' sh {} +
+
+      - name: Upload macOS Apple Silicon Bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-arm64-bundle
+          path: src/BalatroSeedOracle/bin/packages/osx-arm64/**/*.dmg
+          if-no-files-found: error
+
+      - name: Upload macOS Intel Bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-x64-bundle
+          path: src/BalatroSeedOracle/bin/packages/osx-x64/**/*.dmg
+          if-no-files-found: error
+
+  publish-release:
+    name: Publish GitHub Release
+    runs-on: ubuntu-latest
+    needs: [package-windows-linux, package-macos]
+    if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'release'
+    steps:
+      - name: Download all release artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release-assets
+
+      - name: Create or Update GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            release-assets/**/*.exe
+            release-assets/**/*.deb
+            release-assets/**/*.dmg
+          draft: false
+          prerelease: ${{ contains(github.ref, '-rc') || contains(github.ref, '-beta') || contains(github.ref, '-alpha') || contains(github.ref, '-preview') }}
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
