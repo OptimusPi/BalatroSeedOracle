@@ -296,6 +296,30 @@
                             Padding="6,4,6,6"
                             Margin="0,0,0,4">
                         <StackPanel Orientation="Horizontal" Spacing="6">
+                            <!-- GPU Device Indicator Pill -->
+                            <Border x:Name="GpuDockPill"
+                                    Background="{StaticResource DarkTealGrey}"
+                                    BorderBrush="{StaticResource DarkBorder}"
+                                    BorderThickness="2"
+                                    CornerRadius="8"
+                                    Height="48"
+                                    Padding="10,0"
+                                    VerticalAlignment="Center"
+                                    Margin="0,0,0,2"
+                                    ToolTip.Tip="{Binding GpuDeviceName}">
+                                <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                    <Path Width="16" Height="16"
+                                          Fill="{StaticResource Gold}"
+                                          Data="M4,6H20V16H4M6,8V14H18V8M2,4H22V18H2M1,20H23V22H1"
+                                          VerticalAlignment="Center"/>
+                                    <TextBlock Text="{Binding GpuStatusText}"
+                                               FontFamily="{StaticResource BalatroFont}"
+                                               FontSize="15"
+                                               Foreground="{StaticResource LightCream}"
+                                               VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Border>
+
                             <!-- Pause/Resume Animation Button (square like language buttons) -->
                             <Button x:Name="AnimationToggleButton"
                                     Classes="btn-purple"

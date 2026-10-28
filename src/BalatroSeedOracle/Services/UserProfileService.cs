@@ -134,6 +134,8 @@ public class UserProfileService
         profile.VisualizerSettings ??= new VisualizerSettings();
         profile.AdvancedMusicSettings ??= new AdvancedMusicSettings();
         profile.HostApiSettings ??= new HostApiSettings();
+        profile.DungmotLakePath ??= @"D:\dungmot";
+        profile.PartyCoordinatorUrl ??= "https://seedfinder.app";
         return profile;
     }
 

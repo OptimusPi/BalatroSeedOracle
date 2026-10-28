@@ -89,4 +89,5 @@ src/.DS_Store
 
 # Local agent worktrees and app runs started from the repo root
 .claude/worktrees/
+.agents/
 UserData/

@@ -37,6 +37,9 @@ namespace BalatroSeedOracle.ViewModels
     {
         private readonly UserProfileService _userProfileService;
         private readonly Func<AnalyzeModalViewModel> _analyzeModalFactory;
+        private readonly IGpuDeviceService _gpuDeviceService;
+        private readonly IDungmotLakeService _dungmotLakeService;
+        private readonly IPartySearchService _partySearchService;
 
         private Motely.IMotelySearch? _search;
         private System.Threading.CancellationTokenSource? _searchCts;
@@ -90,6 +93,7 @@ namespace BalatroSeedOracle.ViewModels
         private bool _isSearching = false;
 
         [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(StartSearchCommand))]
         private JamlConfig? _loadedConfig;
 
         [ObservableProperty]
@@ -244,6 +248,55 @@ namespace BalatroSeedOracle.ViewModels
 
         public int DbListMaxIndex => Math.Max(0, AvailableDbLists.Count - 1);
 
+        // Lake partition rich binding
+        [ObservableProperty]
+        private ObservableCollection<LakePartitionInfo> _availableLakePartitions = new();
+
+        [ObservableProperty]
+        private LakePartitionInfo? _selectedLakePartition;
+
+        // GPU Screaming Mode properties
+        [ObservableProperty]
+        private bool _useGpuSearch = true;
+
+        partial void OnUseGpuSearchChanged(bool value)
+        {
+            _userProfileService.GetProfile().UseGpuSearch = value;
+            _userProfileService.SaveProfile();
+            UpdateGpuStatusProperties(_gpuDeviceService.GetStatus());
+        }
+
+        [ObservableProperty]
+        private string _gpuStatusText = "GPU Ready";
+
+        [ObservableProperty]
+        private string _gpuDeviceName = string.Empty;
+
+        [ObservableProperty]
+        private bool _isGpuAvailable = false;
+
+        // Community Party search properties
+        [ObservableProperty]
+        private string _partyId = string.Empty;
+
+        [ObservableProperty]
+        private string _partyCoordinatorUrl = "https://seedfinder.app";
+
+        partial void OnPartyCoordinatorUrlChanged(string value)
+        {
+            _userProfileService.GetProfile().PartyCoordinatorUrl = value;
+            _userProfileService.SaveProfile();
+        }
+
+        [ObservableProperty]
+        private bool _isPartyWorking = false;
+
+        [ObservableProperty]
+        private string _partyStatusText = "Idle";
+
+        [ObservableProperty]
+        private PartySearchProgress? _partyProgress;
+
         // Search parameters
         [ObservableProperty]
         private int _minScore = 0;
@@ -332,12 +385,22 @@ namespace BalatroSeedOracle.ViewModels
 
         public SearchModalViewModel(
             UserProfileService userProfileService,
-            Func<AnalyzeModalViewModel> analyzeModalFactory
+            Func<AnalyzeModalViewModel> analyzeModalFactory,
+            IGpuDeviceService? gpuDeviceService = null,
+            IDungmotLakeService? dungmotLakeService = null,
+            IPartySearchService? partySearchService = null
         )
         {
             _userProfileService = userProfileService;
             _analyzeModalFactory =
                 analyzeModalFactory ?? throw new ArgumentNullException(nameof(analyzeModalFactory));
+
+            _gpuDeviceService = gpuDeviceService ?? App.GetService<IGpuDeviceService>() ?? new GpuDeviceService();
+            _dungmotLakeService = dungmotLakeService ?? App.GetService<IDungmotLakeService>() ?? new DungmotLakeService(_userProfileService.GetProfile().DungmotLakePath);
+            _partySearchService = partySearchService ?? App.GetService<IPartySearchService>() ?? new PartySearchService();
+
+            _useGpuSearch = _userProfileService.GetProfile().UseGpuSearch;
+            _partyCoordinatorUrl = _userProfileService.GetProfile().PartyCoordinatorUrl;
 
             SearchResults = new ObservableCollection<Models.SearchResult>();
             ConsoleOutput = new ObservableCollection<Models.ConsoleMessage>();
@@ -351,6 +414,136 @@ namespace BalatroSeedOracle.ViewModels
 
             // Initialize control visibility
             UpdateControlVisibility();
+
+            _gpuDeviceService.StatusChanged += OnGpuStatusChanged;
+            UpdateGpuStatusProperties(_gpuDeviceService.GetStatus());
+
+            _partySearchService.ProgressUpdated += OnPartyProgressUpdated;
+            _partySearchService.LogMessageReceived += OnPartyLogReceived;
+
+            LoadLakePartitions();
+        }
+
+        public void LoadLakePartitions()
+        {
+            try
+            {
+                var partitions = _dungmotLakeService.GetAvailablePartitions();
+                AvailableLakePartitions.Clear();
+                AvailableDbLists.Clear();
+
+                foreach (var part in partitions)
+                {
+                    AvailableLakePartitions.Add(part);
+                    AvailableDbLists.Add(part.Name);
+                }
+
+                if (AvailableLakePartitions.Count > 0)
+                {
+                    SelectedDbListIndex = 0;
+                    SelectedLakePartition = AvailableLakePartitions[0];
+                    SelectedDbList = AvailableDbLists[0];
+                }
+                else
+                {
+                    AvailableDbLists.Add("None available");
+                    SelectedDbList = "None available";
+                }
+            }
+            catch (Exception ex)
+            {
+                BsoLogger.LogError("SearchModalViewModel", $"Error loading lake partitions: {ex.Message}");
+            }
+        }
+
+        private void OnGpuStatusChanged(object? sender, GpuDeviceStatus status)
+        {
+            if (Avalonia.Threading.Dispatcher.UIThread.CheckAccess())
+                UpdateGpuStatusProperties(status);
+            else
+                Avalonia.Threading.Dispatcher.UIThread.Post(() => UpdateGpuStatusProperties(status));
+        }
+
+        private void UpdateGpuStatusProperties(GpuDeviceStatus status)
+        {
+            IsGpuAvailable = status.IsAvailable;
+            GpuDeviceName = status.DeviceName;
+            if (!status.IsAvailable)
+                GpuStatusText = "No FP64 GPU";
+            else if (!UseGpuSearch)
+                GpuStatusText = "GPU Off";
+            else if (status.IsActive)
+                GpuStatusText = status.CurrentSeedsPerSecond > 0
+                    ? $"Screaming ({status.CurrentSeedsPerSecond / 1_000_000.0:F1}M/s)"
+                    : "Screaming Mode";
+            else
+                GpuStatusText = "GPU Ready";
+        }
+
+        private void OnPartyProgressUpdated(object? sender, PartySearchProgress p)
+        {
+            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+            {
+                PartyProgress = p;
+                IsPartyWorking = _partySearchService.IsWorking;
+                PartyStatusText = $"{p.Status} ({p.SeedsSearched:N0} seeds, {p.MatchesFound:N0} matches)";
+            });
+        }
+
+        private void OnPartyLogReceived(object? sender, string log)
+        {
+            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+            {
+                AddConsoleMessage($"[Party] {log}");
+            });
+        }
+
+        [RelayCommand]
+        public async Task StartPartySearchAsync()
+        {
+            if (string.IsNullOrWhiteSpace(PartyId))
+            {
+                AddConsoleMessage("Please enter a Party ID to join.");
+                return;
+            }
+
+            if (IsPartyWorking)
+                return;
+
+            IsPartyWorking = true;
+            PartyStatusText = "Connecting...";
+            AddConsoleMessage($"Connecting to Community Party '{PartyId}' at {PartyCoordinatorUrl}...");
+
+            try
+            {
+                var threads = ThreadCount > 0 ? ThreadCount : Environment.ProcessorCount;
+                await _partySearchService.StartPartyWorkerAsync(
+                    PartyCoordinatorUrl,
+                    PartyId,
+                    threads,
+                    UseGpuSearch,
+                    CancellationToken.None
+                );
+            }
+            catch (Exception ex)
+            {
+                IsPartyWorking = false;
+                PartyStatusText = $"Failed: {ex.Message}";
+                AddConsoleMessage($"[Party Error] {ex.Message}");
+            }
+        }
+
+        [RelayCommand]
+        public async Task StopPartySearchAsync()
+        {
+            if (!IsPartyWorking)
+                return;
+
+            PartyStatusText = "Stopping...";
+            AddConsoleMessage("Stopping Community Party search...");
+            await _partySearchService.StopPartyWorkerAsync();
+            IsPartyWorking = false;
+            PartyStatusText = "Stopped";
         }
 
         /// <summary>Creates an AnalyzeModalViewModel via DI factory (no ServiceHelper). Used by ResultsTab to show analyze modal.</summary>
@@ -596,10 +789,24 @@ namespace BalatroSeedOracle.ViewModels
                 return Task.CompletedTask;
             }
 
-            if (SelectedSearchMode is SearchMode.WordList or SearchMode.DbList)
+            if (SelectedSearchMode == SearchMode.WordList)
             {
-                AddConsoleMessage("This mode was removed. Sequential and single-seed only for now.");
+                AddConsoleMessage("Word list mode is not supported. Use sequential, single-seed, or seed lake mode.");
                 return Task.CompletedTask;
+            }
+
+            if (SelectedSearchMode == SearchMode.DbList)
+            {
+                if (SelectedLakePartition == null && AvailableLakePartitions.Count > 0)
+                {
+                    SelectedLakePartition = AvailableLakePartitions[Math.Clamp(SelectedDbListIndex, 0, AvailableLakePartitions.Count - 1)];
+                }
+
+                if (SelectedLakePartition == null)
+                {
+                    AddConsoleMessage("No lake partition selected. Please select a seed lake partition.");
+                    return Task.CompletedTask;
+                }
             }
 
             IsSearching = true;
@@ -617,7 +824,19 @@ namespace BalatroSeedOracle.ViewModels
             var plan = MotelySearchBuilder.CreatePlan(LoadedConfig, MinScore);
             _tallyLabels = plan.TallyLabels.ToArray();
 
-            var settings = MotelySearchBuilder.CreateSettings(LoadedConfig, MinScore);
+            var settings = MotelySearchBuilder.CreateSettings(LoadedConfig, MinScore)
+                .WithSourceConfig(LoadedConfig)
+                .WithGpuSearch(UseGpuSearch);
+
+            if (UseGpuSearch && IsGpuAvailable)
+            {
+                AddConsoleMessage($"GPU Screaming Mode active: {GpuDeviceName}");
+                _gpuDeviceService.SetSearchActive(true);
+            }
+            else if (UseGpuSearch && !IsGpuAvailable)
+            {
+                AddConsoleMessage("GPU Screaming Mode enabled, but no OpenCL FP64 GPU is available. Falling back to CPU SIMD.");
+            }
 
             if (
                 !string.IsNullOrEmpty(DeckSelection)
@@ -647,6 +866,16 @@ namespace BalatroSeedOracle.ViewModels
             if (SelectedSearchMode == SearchMode.SingleSeed)
             {
                 settings = settings.WithSeedList(new[] { SeedInput.Trim() });
+            }
+            else if (SelectedSearchMode == SearchMode.DbList)
+            {
+                var partition = SelectedLakePartition!;
+                AddConsoleMessage($"Streaming seed lake: {partition.Name} ({partition.EstimatedSeeds:N0} estimated seeds)...");
+                var seeds = _dungmotLakeService.StreamSeeds(partition);
+                int count = partition.EstimatedSeeds > 0 && partition.EstimatedSeeds <= int.MaxValue
+                    ? (int)partition.EstimatedSeeds
+                    : -1;
+                settings = settings.WithSeedGenerator(seeds, count);
             }
             else
             {
@@ -774,6 +1003,7 @@ namespace BalatroSeedOracle.ViewModels
         private void OnSearchFinished(bool stopped)
         {
             IsSearching = false;
+            _gpuDeviceService.SetSearchActive(false);
 
             if (stopped)
             {
@@ -1408,6 +1638,10 @@ namespace BalatroSeedOracle.ViewModels
             _search?.Dispose();
             _resultSink?.Dispose();
             _resultSink = null;
+            _gpuDeviceService.SetSearchActive(false);
+            _gpuDeviceService.StatusChanged -= OnGpuStatusChanged;
+            _partySearchService.ProgressUpdated -= OnPartyProgressUpdated;
+            _partySearchService.LogMessageReceived -= OnPartyLogReceived;
         }
 
         [RelayCommand(CanExecute = nameof(CanPauseSearch))]
@@ -1534,6 +1768,11 @@ namespace BalatroSeedOracle.ViewModels
         private void OnProgressUpdated(MotelyProgress e)
         {
             LatestProgress = e;
+
+            if (UseGpuSearch && IsGpuAvailable && IsSearching)
+            {
+                _gpuDeviceService.SetSearchActive(true, e.SeedsPerMillisecond * 1000.0);
+            }
 
             // Log progress to console every 2 seconds so user knows search is working
             var now = DateTime.Now;

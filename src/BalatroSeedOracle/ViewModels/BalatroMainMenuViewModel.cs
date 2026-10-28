@@ -97,11 +97,26 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         public FiltersModalViewModel FiltersModalViewModel { get; }
 
+        private readonly IGpuDeviceService _gpuDeviceService;
+
+        [ObservableProperty]
+        private string _gpuStatusText = "GPU READY";
+
+        [ObservableProperty]
+        private string _gpuDeviceName = string.Empty;
+
+        [ObservableProperty]
+        private bool _isGpuAvailable = false;
+
+        [ObservableProperty]
+        private bool _isGpuActive = false;
+
         public BalatroMainMenuViewModel(
             UserProfileService userProfileService,
             SearchModalViewModel searchModalViewModel,
             FiltersModalViewModel filtersModalViewModel,
-            Func<AnalyzeModalViewModel> analyzeModalFactory
+            Func<AnalyzeModalViewModel> analyzeModalFactory,
+            IGpuDeviceService? gpuDeviceService = null
         )
         {
             _userProfileService = userProfileService;
@@ -109,8 +124,35 @@ namespace BalatroSeedOracle.ViewModels
                 analyzeModalFactory ?? throw new ArgumentNullException(nameof(analyzeModalFactory));
             SearchModalViewModel = searchModalViewModel;
             FiltersModalViewModel = filtersModalViewModel;
+            _gpuDeviceService = gpuDeviceService ?? App.GetService<IGpuDeviceService>() ?? new GpuDeviceService();
+
+            _gpuDeviceService.StatusChanged += OnGpuStatusChanged;
+            UpdateGpuStatus(_gpuDeviceService.GetStatus());
 
             LoadSettings();
+        }
+
+        private void OnGpuStatusChanged(object? sender, GpuDeviceStatus status)
+        {
+            if (Avalonia.Threading.Dispatcher.UIThread.CheckAccess())
+                UpdateGpuStatus(status);
+            else
+                Avalonia.Threading.Dispatcher.UIThread.Post(() => UpdateGpuStatus(status));
+        }
+
+        private void UpdateGpuStatus(GpuDeviceStatus status)
+        {
+            IsGpuAvailable = status.IsAvailable;
+            IsGpuActive = status.IsActive;
+            GpuDeviceName = status.DeviceName;
+            if (!status.IsAvailable)
+                GpuStatusText = "NO GPU";
+            else if (status.IsActive)
+                GpuStatusText = status.CurrentSeedsPerSecond > 0
+                    ? $"GPU {status.CurrentSeedsPerSecond / 1_000_000.0:F1}M/s"
+                    : "GPU ACTIVE";
+            else
+                GpuStatusText = "GPU READY";
         }
 
         /// <summary>Creates an AnalyzeModalViewModel via DI factory (no ServiceHelper). Used by View to show analyze modal.</summary>

@@ -50,6 +50,18 @@ public partial class App : Application
         Register(profile);
         Register(SpriteService.Instance);
 
+        var gpuService = new GpuDeviceService();
+        Register<IGpuDeviceService>(gpuService);
+        Register(gpuService);
+
+        var lakeService = new DungmotLakeService(profile.GetProfile().DungmotLakePath);
+        Register<IDungmotLakeService>(lakeService);
+        Register(lakeService);
+
+        var partyService = new PartySearchService();
+        Register<IPartySearchService>(partyService);
+        Register(partyService);
+
         Func<AnalyzeModalViewModel> analyzeFactory = () =>
             new AnalyzeModalViewModel(SpriteService.Instance, profile);
 
@@ -58,8 +70,8 @@ public partial class App : Application
             profile,
             () => new ViewModels.FilterTabs.ValidateFilterTabViewModel(filtersVM)
         );
-        var searchVM = new SearchModalViewModel(profile, analyzeFactory);
-        var menuVM = new BalatroMainMenuViewModel(profile, searchVM, filtersVM, analyzeFactory);
+        var searchVM = new SearchModalViewModel(profile, analyzeFactory, gpuService, lakeService, partyService);
+        var menuVM = new BalatroMainMenuViewModel(profile, searchVM, filtersVM, analyzeFactory, gpuService);
         var mainMenu = new Views.BalatroMainMenu(menuVM);
         Register(filtersVM);
         Register(searchVM);

@@ -172,7 +172,7 @@
                                                 SpinnerType="default"
                                                 Value="{Binding SelectedSearchMode}"
                                                 Minimum="0"
-                                                Maximum="2"
+                                                Maximum="3"
                                                 ReadOnly="True"
                                                 DisplayValues="{Binding SearchModeDisplayValues}"
                                                 HorizontalAlignment="Stretch"
@@ -215,6 +215,17 @@
                                    HorizontalAlignment="Stretch"/>
 
                         <!-- Mode-Specific Settings -->
+
+                        <!-- GPU Screaming Mode Checkbox -->
+                        <CheckBox Name="GpuScreamingModeCheckBox"
+                                  Content="GPU Screaming Mode"
+                                  IsChecked="{Binding UseGpuSearch}"
+                                  IsEnabled="{Binding IsGpuAvailable}"
+                                  Foreground="{StaticResource Gold}"
+                                  FontFamily="{StaticResource BalatroFont}"
+                                  FontSize="18"
+                                  Margin="0,0,0,8"
+                                  ToolTip.Tip="Accelerates search on host GPU (RTX 4070 SUPER OpenCL FP64)"/>
 
                         <!-- SMART Auto Mode Checkbox -->
                         <CheckBox Name="SmartAutoModeCheckBox"
@@ -284,13 +295,13 @@
                                       Padding="8,4"/>
                         </StackPanel>
 
-                        <!-- DB List Dropdown (DB List only) -->
+                        <!-- DB List / Seed Lake Dropdown (DB List only) -->
                         <StackPanel IsVisible="{Binding IsDbListVisible}"
                                     Margin="0,0,0,8">
-                            <TextBlock Text="DB List"
+                            <TextBlock Text="Seed Lake (dungmot)"
                                        FontFamily="{StaticResource BalatroFont}"
                                        FontSize="18"
-                                       Foreground="{StaticResource MediumGrey}"
+                                       Foreground="{StaticResource Gold}"
                                        HorizontalAlignment="Center"
                                        Margin="0,0,0,4"/>
                             <ComboBox Name="DbListDropdown"
@@ -298,13 +309,48 @@
                                       SelectedIndex="{Binding SelectedDbListIndex}"
                                       HorizontalAlignment="Stretch"
                                       FontFamily="{StaticResource BalatroFont}"
-                                      FontSize="18"
+                                      FontSize="16"
                                       Background="{StaticResource DarkTealGrey}"
                                       Foreground="{StaticResource White}"
                                       BorderBrush="{StaticResource DarkBorder}"
                                       BorderThickness="2"
                                       CornerRadius="4"
                                       Padding="8,4"/>
+                        </StackPanel>
+
+                        <!-- Community Party Section -->
+                        <Rectangle Height="1" Fill="{StaticResource DarkBorder}" Margin="0,4,0,8" HorizontalAlignment="Stretch"/>
+                        <StackPanel Margin="0,0,0,8">
+                            <TextBlock Text="Community Party"
+                                       FontFamily="{StaticResource BalatroFont}"
+                                       FontSize="18"
+                                       Foreground="{StaticResource Gold}"
+                                       HorizontalAlignment="Center"
+                                       Margin="0,0,0,4"/>
+                            <TextBox Text="{Binding PartyId}"
+                                     PlaceholderText="Party ID..."
+                                     FontFamily="{StaticResource BalatroFont}"
+                                     FontSize="15"
+                                     Background="{StaticResource DarkTealGrey}"
+                                     BorderBrush="{StaticResource DarkBorder}"
+                                     BorderThickness="2"
+                                     CornerRadius="4"
+                                     Height="34"
+                                     Margin="0,0,0,4"/>
+                            <Button Content="JOIN PARTY"
+                                    Command="{Binding StartPartySearchCommand}"
+                                    IsVisible="{Binding !IsPartyWorking}"
+                                    Classes="btn-purple"
+                                    FontSize="16"
+                                    Height="36"
+                                    HorizontalAlignment="Stretch"/>
+                            <Button Content="STOP PARTY"
+                                    Command="{Binding StopPartySearchCommand}"
+                                    IsVisible="{Binding IsPartyWorking}"
+                                    Classes="btn-warning"
+                                    FontSize="16"
+                                    Height="36"
+                                    HorizontalAlignment="Stretch"/>
                         </StackPanel>
 
                     </StackPanel>
@@ -390,6 +436,19 @@
                                Foreground="{StaticResource Gold}"
                                HorizontalAlignment="Center"
                                Margin="0,0,0,12"/>
+
+                    <!-- GPU Engine Strip (Cyan) -->
+                    <Border Classes="balatro-stat-strip">
+                        <Grid ColumnDefinitions="*,*">
+                            <Border Grid.Column="0" Classes="strip-label cyan">
+                                <TextBlock Text="GPU" Classes="strip-label-text"/>
+                            </Border>
+                            <Border Grid.Column="1" Classes="strip-value cyan">
+                                <TextBlock Text="{Binding GpuStatusText}"
+                                           Classes="strip-value-text cyan"/>
+                            </Border>
+                        </Grid>
+                    </Border>
 
                     <!-- Progress % Strip (Gold) -->
                     <Border Classes="balatro-stat-strip">

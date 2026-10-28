@@ -62,6 +62,21 @@ namespace BalatroSeedOracle.Models
         /// Host API server settings
         /// </summary>
         public HostApiSettings HostApiSettings { get; set; } = new();
+
+        /// <summary>
+        /// Whether GPU Screaming Mode search is enabled
+        /// </summary>
+        public bool UseGpuSearch { get; set; } = true;
+
+        /// <summary>
+        /// Root directory path for Dungmot seed lakes (default: D:\dungmot)
+        /// </summary>
+        public string DungmotLakePath { get; set; } = @"D:\dungmot";
+
+        /// <summary>
+        /// Community Party coordinator URL (default: https://seedfinder.app)
+        /// </summary>
+        public string PartyCoordinatorUrl { get; set; } = "https://seedfinder.app";
     }
 
     /// <summary>
