@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import path from 'node:path';
 import fs from 'node:fs';
 import { PATHS, exists } from '../helpers/env.mjs';
+import { runDesktopTestsFilter } from '../helpers/runtime_oracle.mjs';
 
 describe('Feature 17: Desktop GPU Screaming Mode (SearchModalViewModel)', () => {
   const vmPath = path.join(PATHS.BalatroSeedOracle, 'src', 'BalatroSeedOracle', 'ViewModels', 'SearchModalViewModel.cs');
@@ -39,8 +40,10 @@ describe('Feature 17: Desktop GPU Screaming Mode (SearchModalViewModel)', () => 
     assert.ok(content.includes('WithBatchCharacterCount'));
   });
 
-  it('F17-6: Result sink captures matched seeds to SearchResults directory', () => {
-    const content = fs.readFileSync(vmPath, 'utf-8');
-    assert.ok(content.includes('SeedLakeSink') || content.includes('SearchResults'));
+  it('F17-6: Live headless Avalonia SearchModalViewModel GPU active-state & JAML cutoff tests pass', () => {
+    const resGpu = runDesktopTestsFilter('FullyQualifiedName~SearchModalViewModel_GpuActiveState_StaysFalse');
+    assert.equal(resGpu.exitCode, 0, `Desktop GPU active-state test failed:\n${resGpu.stderr || resGpu.stdout}`);
+    const resCutoff = runDesktopTestsFilter('FullyQualifiedName~SearchModalViewModel_DefaultZeroMinScore');
+    assert.equal(resCutoff.exitCode, 0, `Desktop JAML cutoff test failed:\n${resCutoff.stderr || resCutoff.stdout}`);
   });
 });

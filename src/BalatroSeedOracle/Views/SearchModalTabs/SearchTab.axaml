@@ -327,6 +327,17 @@
                                        Foreground="{StaticResource Gold}"
                                        HorizontalAlignment="Center"
                                        Margin="0,0,0,4"/>
+                            <TextBox Name="PartyCoordinatorUrlBox"
+                                     Text="{Binding PartyCoordinatorUrl}"
+                                     PlaceholderText="Coordinator URL..."
+                                     FontFamily="{StaticResource BalatroFont}"
+                                     FontSize="14"
+                                     Background="{StaticResource DarkTealGrey}"
+                                     BorderBrush="{StaticResource DarkBorder}"
+                                     BorderThickness="2"
+                                     CornerRadius="4"
+                                     Height="34"
+                                     Margin="0,0,0,4"/>
                             <TextBox Text="{Binding PartyId}"
                                      PlaceholderText="Party ID..."
                                      FontFamily="{StaticResource BalatroFont}"

@@ -39,7 +39,12 @@ describe('Feature 4: Seed Lake Service in Motely (ISeedLakeService)', () => {
     assert.equal(result.valid, true, result.reason);
   });
 
-  it('F04-6: LakeCategory enumeration maps all 7 documented categories', () => {
+  it('F04-6: LakeCategory enumeration in ISeedLakeService.cs maps all 7 categories and passes SeedLakeTests', async () => {
+    const fs = await import('node:fs');
+    const { PATHS } = await import('../helpers/env.mjs');
+    const { runMotelyTestsFilter } = await import('../helpers/runtime_oracle.mjs');
+    const lakeInterface = path.join(PATHS.MotelyJAML, 'Motely', 'Lake', 'ISeedLakeService.cs');
+    const src = fs.readFileSync(lakeInterface, 'utf-8');
     const categories = [
       'Ranks',
       'Suits',
@@ -49,6 +54,10 @@ describe('Feature 4: Seed Lake Service in Motely (ISeedLakeService)', () => {
       'NegativeRare',
       'TripleNegative',
     ];
-    assert.equal(categories.length, 7);
+    for (const cat of categories) {
+      assert.ok(src.includes(cat), `ISeedLakeService.cs must declare LakeCategory.${cat}`);
+    }
+    const res = runMotelyTestsFilter('FullyQualifiedName~SeedLakeTests');
+    assert.equal(res.exitCode, 0, `SeedLakeTests failed:\n${res.stdout}\n${res.stderr}`);
   });
 });

@@ -43,12 +43,28 @@ describe('Feature 16: ErraticDeck.app Daily Ritual & Parquet Lake Fallback', () 
     assert.equal(exists(tensFile), true, 'little_10s.parquet must exist for local queries');
   });
 
-  it('F16-6: DuckDB query response returns JSON array of seed records', () => {
-    const mockDuckDbResult = [
-      { seed: '111S8CHT', category: 'ranks', partition: '10s' },
-      { seed: '2UQ8D22L', category: 'ranks', partition: '10s' },
-    ];
-    assert.equal(mockDuckDbResult.length, 2);
-    assert.equal(mockDuckDbResult[0].partition, '10s');
+  it('F16-6: Real little_10s.parquet Thrift schema & ZSTD rows decode cleanly and match parquetSipQuery.ts contract', async () => {
+    const { readParquetMetadata } = await import('../helpers/parquet_oracle.mjs');
+    const { getMcpServer } = await import('../helpers/runtime_oracle.mjs');
+
+    const tensFile = path.join(DUNGMOT_PATHS.parquetRanks, 'little_10s.parquet');
+    const meta = readParquetMetadata(tensFile);
+    assert.ok(meta.columns.includes('seed'));
+    assert.ok(meta.numRows > 0);
+
+    const sipQuerySrc = fs.readFileSync(path.join(PATHS.ErraticDeckApp, 'lib', 'parquetSipQuery.ts'), 'utf-8');
+    assert.ok(sipQuerySrc.includes('union_by_name = true'), 'parquetSipQuery.ts must support schema-tolerant Parquet reads');
+
+    const mcp = await getMcpServer();
+    const rpc = await mcp.callTool('lake_query', {
+      category: 'Ranks',
+      partition: 'little_10s',
+      limit: 5,
+    });
+    const parsed = JSON.parse(rpc.result.content[0].text);
+    assert.equal(parsed.count, 5);
+    for (const seed of parsed.seeds) {
+      assert.match(seed, /^[1-9A-Z]{1,8}$/);
+    }
   });
 });

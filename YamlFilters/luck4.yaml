@@ -4,50 +4,64 @@ author: pifreak & their pal Cursor AI
 deck: Anaglyph
 stake: White
 
-Must:
-  - soulJoker: Perkeo
-    antes: [1,2,3,4,5,6,7,8]
-Should:
-  - SoulJoker: Perkeo
+must:
+  - legendaryJoker: Perkeo
+    antes: [1, 2, 3, 4, 5, 6, 7, 8]
+
+should:
+  - legendaryJoker: Perkeo
     score: 10
   - joker: OopsAll6s
-    ShopSlots: [2,3,4]
+    sources:
+      shopItems: [2, 3, 4]
     score: 100
   - joker: OopsAll6s
-    ShopSlots: [4,5,6]
+    sources:
+      shopItems: [4, 5, 6]
     score: 100
   - joker: OopsAll6s
-    ShopSlots: [6,7,8]
+    sources:
+      shopItems: [6, 7, 8]
     score: 100
-  - And:
-    Antes: [2]
-    Mode: Max
-    Score: 100
-    clauses:
-    - smallblindtag: NegativeTag
-    - Or:
-      - joker: OopsAll6s
-        ShopSlots: [2,3,4]
-        score: 100
-      - joker: OopsAll6s
-        ShopSlots: [4,5,6]
-        score: 100
-      - joker: OopsAll6s
-        ShopSlots: [6,7,8]
-        score: 100
-  - And:
-    Antes: [3]
-    Mode: Sum
-    Score: 100
-    clauses:
-    - smallblindtag: NegativeTag
-    - Or:
-      - joker: OopsAll6s
-        ShopSlots: [2,3,4]
-        score: 100
-      - joker: OopsAll6s
-        ShopSlots: [4,5,6]
-        score: 100
-      - joker: OopsAll6s
-        ShopSlots: [6,7,8]
-        score: 100
+  - and:
+      - smallBlindTag: NegativeTag
+        antes: [2]
+      - or:
+          - joker: OopsAll6s
+            sources:
+              shopItems: [2, 3, 4]
+            antes: [2]
+            score: 100
+          - joker: OopsAll6s
+            sources:
+              shopItems: [4, 5, 6]
+            antes: [2]
+            score: 100
+          - joker: OopsAll6s
+            sources:
+              shopItems: [6, 7, 8]
+            antes: [2]
+            score: 100
+    mode: Max
+    score: 100
+  - and:
+      - smallBlindTag: NegativeTag
+        antes: [3]
+      - or:
+          - joker: OopsAll6s
+            sources:
+              shopItems: [2, 3, 4]
+            antes: [3]
+            score: 100
+          - joker: OopsAll6s
+            sources:
+              shopItems: [4, 5, 6]
+            antes: [3]
+            score: 100
+          - joker: OopsAll6s
+            sources:
+              shopItems: [6, 7, 8]
+            antes: [3]
+            score: 100
+    mode: Sum
+    score: 100

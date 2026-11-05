@@ -222,11 +222,15 @@ public partial class AnalyzerViewModel : ObservableObject
         }
     }
 
-    public void AddSeed(string seed)
+    public void AddSeed(string? seed)
     {
-        if (!string.IsNullOrWhiteSpace(seed) && !SeedList.Contains(seed))
+        if (seed is null || (seed.Length > 0 && string.IsNullOrWhiteSpace(seed)))
+            return;
+
+        var normalized = MotelyGlobals.NormalizeSeed(seed);
+        if (!SeedList.Contains(normalized))
         {
-            SeedList.Add(seed);
+            SeedList.Add(normalized);
             if (SeedList.Count == 1)
             {
                 CurrentIndex = 0;
@@ -237,7 +241,11 @@ public partial class AnalyzerViewModel : ObservableObject
 
     private async Task AnalyzeCurrentSeedAsync()
     {
-        if (string.IsNullOrWhiteSpace(CurrentSeed))
+        if (
+            CurrentSeed is null
+            || (CurrentSeed.Length == 0 && SeedList.Count == 0)
+            || (CurrentSeed.Length > 0 && string.IsNullOrWhiteSpace(CurrentSeed))
+        )
         {
             CurrentAnalysis = null;
             return;
@@ -247,10 +255,11 @@ public partial class AnalyzerViewModel : ObservableObject
 
         try
         {
+            var normalized = MotelyGlobals.NormalizeSeed(CurrentSeed);
             // Run analyzer on background thread
             var analysis = await Task.Run(() =>
             {
-                var config = new MotelyUnitTestAnalysisConfig(CurrentSeed, SelectedDeck, SelectedStake);
+                var config = new MotelyUnitTestAnalysisConfig(normalized, SelectedDeck, SelectedStake);
                 return MotelyUnitTestAnalyzer.Analyze(config);
             });
 

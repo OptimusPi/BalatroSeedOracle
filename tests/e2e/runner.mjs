@@ -11,36 +11,22 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const e2eDir = __dirname;
 
-function parseArgs() {
-  const args = process.argv.slice(2);
-  const options = {
-    tier: null,
-    feature: null,
-    component: null,
-    verbose: false,
-    help: false,
-  };
+const VALID_TIERS = new Set(['1', '2', '3', '4']);
+const VALID_COMPONENTS = new Set([
+  'dungmot',
+  'motely',
+  'motelyjaml',
+  'jaml-ui',
+  'seedfinder',
+  'seedfinder.app',
+  'erraticdeck',
+  'erraticdeck.app',
+  'desktop',
+  'balatroseedoracle',
+]);
 
-  for (let i = 0; i < args.length; i++) {
-    const arg = args[i];
-    if (arg === '--help' || arg === '-h') {
-      options.help = true;
-    } else if (arg === '--verbose' || arg === '-v') {
-      options.verbose = true;
-    } else if ((arg === '--tier' || arg === '-t') && i + 1 < args.length) {
-      options.tier = args[++i];
-    } else if ((arg === '--feature' || arg === '-f') && i + 1 < args.length) {
-      options.feature = parseInt(args[++i], 10);
-    } else if ((arg === '--component' || arg === '-c') && i + 1 < args.length) {
-      options.component = args[++i].toLowerCase();
-    }
-  }
-
-  return options;
-}
-
-function printUsage() {
-  console.log(`
+function printUsage(stream = console.log) {
+  stream(`
 Balatro Seed Oracle — E2E Test Suite Runner
 
 Usage:
@@ -61,6 +47,67 @@ Examples:
 `);
 }
 
+function parseArgs() {
+  const args = process.argv.slice(2);
+  const options = {
+    tier: null,
+    feature: null,
+    component: null,
+    verbose: false,
+    help: false,
+    error: null,
+  };
+
+  for (let i = 0; i < args.length; i++) {
+    const arg = args[i];
+    if (arg === '--help' || arg === '-h') {
+      options.help = true;
+    } else if (arg === '--verbose' || arg === '-v') {
+      options.verbose = true;
+    } else if (arg === '--tier' || arg === '-t') {
+      if (i + 1 >= args.length) {
+        options.error = 'Missing value for --tier (expected 1, 2, 3, or 4).';
+        return options;
+      }
+      const val = args[++i];
+      if (!VALID_TIERS.has(val)) {
+        options.error = `Invalid --tier '${val}'. Expected one of: 1, 2, 3, 4.`;
+        return options;
+      }
+      options.tier = val;
+    } else if (arg === '--feature' || arg === '-f') {
+      if (i + 1 >= args.length) {
+        options.error = 'Missing value for --feature (expected 1..23).';
+        return options;
+      }
+      const rawFeat = args[++i];
+      const num = Number.parseInt(rawFeat, 10);
+      if (!Number.isInteger(num) || num < 1 || num > 23) {
+        options.error = `Invalid --feature '${rawFeat}'. Expected integer 1..23.`;
+        return options;
+      }
+      options.feature = num;
+    } else if (arg === '--component' || arg === '-c') {
+      if (i + 1 >= args.length) {
+        options.error = 'Missing value for --component.';
+        return options;
+      }
+      const rawComp = args[++i];
+      const comp = rawComp.toLowerCase();
+      if (!VALID_COMPONENTS.has(comp)) {
+        options.error = `Invalid --component '${rawComp}'. Expected one of: ${[...VALID_COMPONENTS].join(', ')}.`;
+        return options;
+      }
+      options.component = comp;
+    } else {
+      options.error = `Unknown CLI flag '${arg}'.`;
+      return options;
+    }
+  }
+
+  return options;
+}
+
 function collectTestFiles(options) {
   const tiers = [
     { name: 'Tier 1: Feature Coverage', dir: path.join(e2eDir, 'tier1_features'), tierNum: '1' },
@@ -69,7 +116,7 @@ function collectTestFiles(options) {
     { name: 'Tier 4: Real-World Scenarios', dir: path.join(e2eDir, 'tier4_scenarios'), tierNum: '4' },
   ];
 
-  let selectedFiles = [];
+  const selectedFiles = [];
 
   for (const tier of tiers) {
     if (options.tier && options.tier !== tier.tierNum) continue;
@@ -77,18 +124,17 @@ function collectTestFiles(options) {
 
     const files = fs.readdirSync(tier.dir)
       .filter(f => f.endsWith('.test.mjs'))
+      .sort()
       .map(f => path.join(tier.dir, f));
 
     for (const file of files) {
       const baseName = path.basename(file);
 
-      // Feature filter
       if (options.feature !== null) {
         const featPrefix = `f${options.feature.toString().padStart(2, '0')}`;
         if (!baseName.startsWith(featPrefix)) continue;
       }
 
-      // Component filter
       if (options.component) {
         const comp = options.component.toLowerCase();
         const content = fs.readFileSync(file, 'utf-8').toLowerCase();
@@ -104,6 +150,12 @@ function collectTestFiles(options) {
 
 async function main() {
   const options = parseArgs();
+
+  if (options.error) {
+    console.error(`Error: ${options.error}`);
+    printUsage(console.error);
+    process.exit(1);
+  }
 
   if (options.help) {
     printUsage();
@@ -124,18 +176,18 @@ async function main() {
   console.log('-'.repeat(78));
 
   const startTime = Date.now();
-  let totalPassed = 0;
-  let totalFailed = 0;
-  let failedSuites = [];
-
   const filePaths = items.map(i => i.file);
 
-  // Invoke node test runner
-  const testProc = spawnSync(process.execPath, ['--test', ...filePaths], {
-    cwd: PATHS.BalatroSeedOracle,
-    encoding: 'utf-8',
-    stdio: options.verbose ? 'inherit' : 'pipe',
-  });
+  const testProc = spawnSync(
+    process.execPath,
+    ['--no-warnings', '--test', '--test-concurrency=1', ...filePaths],
+    {
+      cwd: PATHS.BalatroSeedOracle,
+      encoding: 'utf-8',
+      stdio: options.verbose ? 'inherit' : 'pipe',
+      maxBuffer: 32 * 1024 * 1024,
+    }
+  );
 
   const durationSec = ((Date.now() - startTime) / 1000).toFixed(2);
 

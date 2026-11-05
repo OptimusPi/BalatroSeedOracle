@@ -16,6 +16,6 @@ should:
   - rareJoker: InvisibleJoker
     antes: [1]
     score: 100
-  - commonJoker: Showman
+  - uncommonJoker: Showman
     antes: [1, 2]
     score: 80

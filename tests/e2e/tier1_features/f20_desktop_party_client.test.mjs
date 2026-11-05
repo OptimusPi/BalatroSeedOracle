@@ -36,14 +36,16 @@ describe('Feature 20: Desktop Community Party Client', () => {
     assert.equal(exists(chosen), true);
   });
 
-  it('F20-5: Desktop App registers PartySearchService or handles party search configuration', () => {
-    const appPath = path.join(PATHS.BalatroSeedOracle, 'src', 'BalatroSeedOracle', 'App.axaml.cs');
-    assert.equal(exists(appPath), true);
+  it('F20-5: Desktop App implements PartySearchService and binds PartyCoordinatorUrl in SearchTab.axaml', () => {
+    const svcPath = path.join(PATHS.BalatroSeedOracle, 'src', 'BalatroSeedOracle', 'Services', 'PartySearchService.cs');
+    assert.equal(exists(svcPath), true, 'PartySearchService.cs must exist');
+    const tabPath = path.join(PATHS.BalatroSeedOracle, 'src', 'BalatroSeedOracle', 'Views', 'SearchModalTabs', 'SearchTab.axaml');
+    assert.ok(fs.readFileSync(tabPath, 'utf-8').includes('PartyCoordinatorUrl'));
   });
 
-  it('F20-6: Party worker handles network error retry and lease expiration backoff', () => {
-    const backoffDelaysMs = [1000, 2000, 5000, 10000];
-    assert.ok(backoffDelaysMs[0] >= 1000);
-    assert.ok(backoffDelaysMs[3] <= 15000);
+  it('F20-6: PartySearchService and PartyWorker handle invalid coordinator URLs and network errors cleanly in real tests', async () => {
+    const { runDesktopTestsFilter } = await import('../helpers/runtime_oracle.mjs');
+    const res = runDesktopTestsFilter('FullyQualifiedName~PartySearchService');
+    assert.equal(res.exitCode, 0, `PartySearchService tests failed:\n${res.stdout}\n${res.stderr}`);
   });
 });

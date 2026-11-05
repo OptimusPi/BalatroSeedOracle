@@ -1,9 +1,10 @@
 // tests/e2e/helpers/assertions.mjs
 // Custom assertion utilities for opaque-box test suites
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
 
 export function assertValidSeed(seed, message = '') {
-  assert.match(seed, /^[0-9A-Z]{8}$/, message || `Expected valid 8-char Balatro seed, got '${seed}'`);
+  assert.match(seed, /^[1-9A-Z]{1,8}$/, message || `Expected valid 1-8 char Balatro seed ([1-9A-Z]), got '${seed}'`);
 }
 
 export function assertExitCode(result, expectedCode = 0, message = '') {
@@ -15,8 +16,9 @@ export function assertExitCode(result, expectedCode = 0, message = '') {
 }
 
 export function assertFileExists(filePath, message = '') {
-  assert.ok(
-    import('node:fs').then(fs => fs.existsSync(filePath)),
+  assert.equal(
+    fs.existsSync(filePath),
+    true,
     message || `Expected file to exist at ${filePath}`
   );
 }

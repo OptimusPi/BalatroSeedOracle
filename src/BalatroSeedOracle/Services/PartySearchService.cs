@@ -55,20 +55,108 @@ public sealed class PartySearchService : IPartySearchService, IDisposable
         if (string.IsNullOrWhiteSpace(partyId))
             throw new ArgumentException("Party ID must not be empty.", nameof(partyId));
 
+        var uri = new Uri((coordinatorUrl ?? string.Empty).Trim().TrimEnd('/'));
+
         await StopPartyWorkerAsync().ConfigureAwait(false);
 
-        lock (_sync)
+        var trimmedPartyId = partyId.Trim();
+        var initialProgress = new PartySearchProgress(
+            PartyId: trimmedPartyId,
+            Status: "Connecting...",
+            LeasesCompleted: 0,
+            BlocksCompleted: 0,
+            SeedsSearched: 0,
+            MatchesFound: 0,
+            ConfirmedByServer: 0,
+            SeedsPerSecond: 0,
+            Elapsed: TimeSpan.Zero
+        );
+
+        if (ct.IsCancellationRequested)
         {
-            CurrentPartyId = partyId.Trim();
-            IsWorking = true;
-            _workerCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+            var cancelledProgress = new PartySearchProgress(
+                PartyId: trimmedPartyId,
+                Status: "Cancelled",
+                LeasesCompleted: 0,
+                BlocksCompleted: 0,
+                SeedsSearched: 0,
+                MatchesFound: 0,
+                ConfirmedByServer: 0,
+                SeedsPerSecond: 0,
+                Elapsed: TimeSpan.Zero
+            );
+            lock (_sync)
+            {
+                CurrentPartyId = trimmedPartyId;
+                CurrentProgress = cancelledProgress;
+                IsWorking = false;
+            }
+            ProgressUpdated?.Invoke(this, cancelledProgress);
+            return;
         }
 
-        var uri = new Uri(coordinatorUrl.Trim().TrimEnd('/'));
-        var client = _clientFactory(uri);
+        CancellationToken token;
+        lock (_sync)
+        {
+            if (IsWorking && _workerTask != null)
+                return;
 
-        var token = _workerCts.Token;
-        _workerTask = Task.Run(() => RunWorkerLoopAsync(client, partyId, threads, useGpu, token), token);
+            CurrentPartyId = trimmedPartyId;
+            CurrentProgress = initialProgress;
+            IsWorking = true;
+            _workerCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+            token = _workerCts.Token;
+        }
+
+        try
+        {
+            ProgressUpdated?.Invoke(this, initialProgress);
+
+            var client = _clientFactory(uri);
+
+            lock (_sync)
+            {
+                if (!IsWorking || _workerCts == null || token.IsCancellationRequested)
+                {
+                    IsWorking = false;
+                    CurrentProgress = new PartySearchProgress(
+                        PartyId: trimmedPartyId,
+                        Status: "Cancelled",
+                        LeasesCompleted: 0,
+                        BlocksCompleted: 0,
+                        SeedsSearched: 0,
+                        MatchesFound: 0,
+                        ConfirmedByServer: 0,
+                        SeedsPerSecond: 0,
+                        Elapsed: TimeSpan.Zero
+                    );
+                    return;
+                }
+
+                _workerTask = Task.Run(() => RunWorkerLoopAsync(client, trimmedPartyId, threads, useGpu, token), token);
+                _ = _workerTask.ContinueWith(t =>
+                {
+                    if (t.IsCanceled || t.IsFaulted)
+                    {
+                        lock (_sync)
+                        {
+                            IsWorking = false;
+                        }
+                    }
+                }, TaskScheduler.Default);
+            }
+        }
+        catch
+        {
+            lock (_sync)
+            {
+                _workerCts?.Dispose();
+                _workerCts = null;
+                _workerTask = null;
+                IsWorking = false;
+            }
+            throw;
+        }
     }
 
     /// <inheritdoc/>

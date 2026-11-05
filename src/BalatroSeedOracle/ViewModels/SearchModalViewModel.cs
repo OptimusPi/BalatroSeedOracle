@@ -17,6 +17,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Motely;
 using Motely.Filters;
+using Motely.SeedProviders;
 using BsoLogger = BalatroSeedOracle.Helpers.DebugLogger;
 
 namespace BalatroSeedOracle.ViewModels
@@ -421,7 +422,58 @@ namespace BalatroSeedOracle.ViewModels
             _partySearchService.ProgressUpdated += OnPartyProgressUpdated;
             _partySearchService.LogMessageReceived += OnPartyLogReceived;
 
+            LoadWordLists();
             LoadLakePartitions();
+        }
+
+        private bool _isGpuExecutingCurrentSearch;
+        private readonly Dictionary<string, string> _customWordListFiles = new(StringComparer.OrdinalIgnoreCase);
+
+        public void LoadWordLists()
+        {
+            try
+            {
+                AvailableWordLists.Clear();
+                _customWordListFiles.Clear();
+
+                foreach (var candidateDir in new[]
+                {
+                    Path.Combine(AppContext.BaseDirectory, "WordLists"),
+                    Path.Combine(Directory.GetCurrentDirectory(), "WordLists"),
+                })
+                {
+                    if (!Directory.Exists(candidateDir))
+                        continue;
+
+                    foreach (var file in Directory.GetFiles(candidateDir, "*.txt").OrderBy(f => f, StringComparer.OrdinalIgnoreCase))
+                    {
+                        var label = Path.GetFileNameWithoutExtension(file);
+                        if (!string.IsNullOrWhiteSpace(label) && _customWordListFiles.TryAdd(label, file))
+                        {
+                            AvailableWordLists.Add(label);
+                        }
+                    }
+                }
+
+                foreach (var aesthetic in Enum.GetValues<MotelyAesthetic>())
+                {
+                    var name = aesthetic.ToString();
+                    if (!AvailableWordLists.Contains(name))
+                    {
+                        AvailableWordLists.Add(name);
+                    }
+                }
+
+                if (AvailableWordLists.Count > 0)
+                {
+                    SelectedWordListIndex = 0;
+                    SelectedWordList = AvailableWordLists[0];
+                }
+            }
+            catch (Exception ex)
+            {
+                BsoLogger.LogError("SearchModalViewModel", $"Error loading word lists: {ex.Message}");
+            }
         }
 
         public void LoadLakePartitions()
@@ -554,14 +606,14 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         public void OpenAnalyzeModalForSeed(string? seed)
         {
-            if (string.IsNullOrWhiteSpace(seed) || MainMenu == null)
+            if (seed == null || (seed.Length > 0 && string.IsNullOrWhiteSpace(seed)) || MainMenu == null)
             {
                 return;
             }
 
             var analyzeVm = CreateAnalyzeModalViewModel();
             var analyzeModal = new AnalyzeModal(analyzeVm);
-            analyzeModal.SetSeedAndAnalyze(seed);
+            analyzeModal.SetSeedAndAnalyze(seed.Length == 0 ? "\"\"" : seed);
 
             var modal = new StandardModal("ANALYZE");
             modal.SetContent(analyzeModal);
@@ -789,17 +841,45 @@ namespace BalatroSeedOracle.ViewModels
                 return Task.CompletedTask;
             }
 
+            string[]? customWords = null;
+            MotelyAesthetic? selectedAesthetic = null;
             if (SelectedSearchMode == SearchMode.WordList)
             {
-                AddConsoleMessage("Word list mode is not supported. Use sequential, single-seed, or seed lake mode.");
-                return Task.CompletedTask;
+                if (SelectedWordListIndex >= 0 && SelectedWordListIndex < AvailableWordLists.Count)
+                {
+                    SelectedWordList = AvailableWordLists[SelectedWordListIndex];
+                }
+
+                if (_customWordListFiles.TryGetValue(SelectedWordList, out var wordFile) && File.Exists(wordFile))
+                {
+                    customWords = File.ReadAllLines(wordFile)
+                        .Select(static l => MotelyGlobals.NormalizeSeed(l))
+                        .Where(static l => l.Length is >= 1 and <= 8 && l.All(c => MotelyGlobals.SeedDigits.Contains(c)))
+                        .Distinct(StringComparer.Ordinal)
+                        .ToArray();
+                    if (customWords.Length == 0)
+                    {
+                        AddConsoleMessage($"Word list '{SelectedWordList}' contains no valid 1-8 char Balatro keywords.");
+                        return Task.CompletedTask;
+                    }
+                }
+                else if (MotelyAestheticParser.TryParse(SelectedWordList, out var parsedAesthetic)
+                    || Enum.TryParse(SelectedWordList, ignoreCase: true, out parsedAesthetic))
+                {
+                    selectedAesthetic = parsedAesthetic;
+                }
+                else
+                {
+                    AddConsoleMessage($"Please select a valid word list (got '{SelectedWordList}').");
+                    return Task.CompletedTask;
+                }
             }
 
             if (SelectedSearchMode == SearchMode.DbList)
             {
-                if (SelectedLakePartition == null && AvailableLakePartitions.Count > 0)
+                if (SelectedDbListIndex >= 0 && SelectedDbListIndex < AvailableLakePartitions.Count)
                 {
-                    SelectedLakePartition = AvailableLakePartitions[Math.Clamp(SelectedDbListIndex, 0, AvailableLakePartitions.Count - 1)];
+                    SelectedLakePartition = AvailableLakePartitions[SelectedDbListIndex];
                 }
 
                 if (SelectedLakePartition == null)
@@ -821,21 +901,44 @@ namespace BalatroSeedOracle.ViewModels
             PanelText = $"Searching with '{LoadedConfig.Name}'...";
 
             // Direct engine call: JamlConfig → plan (tally metadata) + settings (search).
-            var plan = MotelySearchBuilder.CreatePlan(LoadedConfig, MinScore);
+            // When the UI MinScore spinner is at its default 0, pass null so LoadedConfig.Cutoff
+            // (or no floor for negative-penalty filters) is respected instead of overridden to 0.
+            int? effectiveCutoff = MinScore > 0
+                ? (LoadedConfig.Cutoff.HasValue ? Math.Max(MinScore, LoadedConfig.Cutoff.Value) : MinScore)
+                : null;
+            var plan = MotelySearchBuilder.CreatePlan(LoadedConfig, effectiveCutoff);
             _tallyLabels = plan.TallyLabels.ToArray();
 
-            var settings = MotelySearchBuilder.CreateSettings(LoadedConfig, MinScore)
-                .WithSourceConfig(LoadedConfig)
-                .WithGpuSearch(UseGpuSearch);
+            bool gpuSupportsMode = SelectedSearchMode == SearchMode.AllSeeds;
+            bool filterHasGpuOps = gpuSupportsMode && Motely.Gpu.GpuFilterProgram.Compile(LoadedConfig).HasSelectiveOps;
+            _isGpuExecutingCurrentSearch = UseGpuSearch && IsGpuAvailable && gpuSupportsMode && filterHasGpuOps;
 
-            if (UseGpuSearch && IsGpuAvailable)
+            var settings = MotelySearchBuilder.CreateSettings(LoadedConfig, effectiveCutoff)
+                .WithSourceConfig(LoadedConfig)
+                .WithGpuSearch(_isGpuExecutingCurrentSearch);
+
+            if (_isGpuExecutingCurrentSearch)
             {
                 AddConsoleMessage($"GPU Screaming Mode active: {GpuDeviceName}");
                 _gpuDeviceService.SetSearchActive(true);
             }
-            else if (UseGpuSearch && !IsGpuAvailable)
+            else
             {
-                AddConsoleMessage("GPU Screaming Mode enabled, but no OpenCL FP64 GPU is available. Falling back to CPU SIMD.");
+                _gpuDeviceService.SetSearchActive(false);
+                if (UseGpuSearch && !IsGpuAvailable)
+                {
+                    AddConsoleMessage("GPU Screaming Mode enabled, but no OpenCL FP64 GPU is available. Falling back to CPU SIMD.");
+                }
+                else if (UseGpuSearch && !gpuSupportsMode)
+                {
+                    GpuStatusText = "CPU SIMD (Provider Mode)";
+                    AddConsoleMessage("Provider search mode runs on CPU SIMD; GPU Screaming Mode inactive for this run.");
+                }
+                else if (UseGpuSearch && !filterHasGpuOps)
+                {
+                    GpuStatusText = "CPU SIMD (No GPU Ops)";
+                    AddConsoleMessage("Filter has no selective GPU pre-filter clauses; running on CPU SIMD.");
+                }
             }
 
             if (
@@ -857,7 +960,7 @@ namespace BalatroSeedOracle.ViewModels
             }
 
             var threads =
-                IsSmartAutoMode && SelectedSearchMode == SearchMode.AllSeeds
+                IsSmartAutoMode && SelectedSearchMode != SearchMode.SingleSeed
                     ? MaxThreadCount
                     : ThreadCount;
             settings = settings.WithThreadCount(threads);
@@ -865,7 +968,21 @@ namespace BalatroSeedOracle.ViewModels
 
             if (SelectedSearchMode == SearchMode.SingleSeed)
             {
-                settings = settings.WithSeedList(new[] { SeedInput.Trim() });
+                settings = settings.WithSeedList(new[] { MotelyGlobals.NormalizeSeed(SeedInput) });
+            }
+            else if (SelectedSearchMode == SearchMode.WordList)
+            {
+                if (customWords is not null)
+                {
+                    AddConsoleMessage($"Searching custom word list '{SelectedWordList}' ({customWords.Length:N0} keywords)...");
+                    settings = settings.WithKeywordSearch(customWords, MotelyGlobals.SeedDigits);
+                }
+                else if (selectedAesthetic.HasValue)
+                {
+                    var aes = selectedAesthetic.Value;
+                    AddConsoleMessage($"Searching word/pattern dictionary: {aes}...");
+                    settings = settings.WithAestheticSearch(aes);
+                }
             }
             else if (SelectedSearchMode == SearchMode.DbList)
             {
@@ -1003,6 +1120,7 @@ namespace BalatroSeedOracle.ViewModels
         private void OnSearchFinished(bool stopped)
         {
             IsSearching = false;
+            _isGpuExecutingCurrentSearch = false;
             _gpuDeviceService.SetSearchActive(false);
 
             if (stopped)
@@ -1055,6 +1173,8 @@ namespace BalatroSeedOracle.ViewModels
             _resultSink?.Dispose();
             _resultSink = null;
             IsSearching = false;
+            _isGpuExecutingCurrentSearch = false;
+            _gpuDeviceService.SetSearchActive(false);
 
             MinimizeToDesktopCommand.NotifyCanExecuteChanged();
             OnPropertyChanged(nameof(CanMinimizeToDesktopVisible));
@@ -1226,6 +1346,10 @@ namespace BalatroSeedOracle.ViewModels
             {
                 SelectedDbList = AvailableDbLists[value];
             }
+            if (value >= 0 && value < AvailableLakePartitions.Count)
+            {
+                SelectedLakePartition = AvailableLakePartitions[value];
+            }
         }
 
         private void UpdateControlVisibility()
@@ -1257,7 +1381,7 @@ namespace BalatroSeedOracle.ViewModels
                     break;
 
                 case SearchMode.DbList:
-                    IsThreadsVisible = false; // DB queries don't need threads
+                    IsThreadsVisible = true; // Seed lake streaming uses multi-threaded SIMD workers
                     IsContinueVisible = false; // DB queries don't support continue
                     IsSeedInputVisible = false;
                     IsWordListVisible = false;
@@ -1461,8 +1585,8 @@ namespace BalatroSeedOracle.ViewModels
         [RelayCommand]
         private async Task CopySeedsAsync()
         {
-            var seeds = string.Join("\n", FilteredResults.Select(r => r.Seed));
-            if (!string.IsNullOrEmpty(seeds) && MainMenu is not null)
+            var seeds = string.Join("\n", FilteredResults.Select(r => r.Seed.Length == 0 ? "\"\"" : r.Seed));
+            if (FilteredResults.Count > 0 && MainMenu is not null)
             {
                 var clipboard = TopLevel.GetTopLevel(MainMenu)?.Clipboard;
                 if (clipboard is not null)
@@ -1514,7 +1638,7 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         private void AddSearchResult(string seed, int score, int[]? scores)
         {
-            if (string.IsNullOrWhiteSpace(seed))
+            if (seed is null || (seed.Length > 0 && string.IsNullOrWhiteSpace(seed)))
                 return;
 
             var result = new Models.SearchResult
@@ -1605,7 +1729,8 @@ namespace BalatroSeedOracle.ViewModels
         private void AddSeedFoundMessage(string seed, int score)
         {
             var timestamp = DateTime.Now.ToString("HH:mm:ss");
-            var formattedMessage = $"[{timestamp}] Found seed: {seed} (Score: {score})";
+            var displaySeed = seed.Length == 0 ? "\"\"" : seed;
+            var formattedMessage = $"[{timestamp}] Found seed: {displaySeed} (Score: {score})";
 
             var consoleMessage = new Models.ConsoleMessage
             {
@@ -1662,7 +1787,7 @@ namespace BalatroSeedOracle.ViewModels
             var sb = new StringBuilder();
             sb.AppendLine("Seed\tScore");
             foreach (var result in SearchResults)
-                sb.AppendLine($"{result.Seed}\t{result.TotalScore}");
+                sb.AppendLine($"{(result.Seed.Length == 0 ? "\"\"" : result.Seed)}\t{result.TotalScore}");
 
             var filePath = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
@@ -1769,7 +1894,7 @@ namespace BalatroSeedOracle.ViewModels
         {
             LatestProgress = e;
 
-            if (UseGpuSearch && IsGpuAvailable && IsSearching)
+            if (_isGpuExecutingCurrentSearch && IsSearching)
             {
                 _gpuDeviceService.SetSearchActive(true, e.SeedsPerMillisecond * 1000.0);
             }

@@ -2,42 +2,64 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import path from 'node:path';
-import fs from 'node:fs';
+import { pathToFileURL } from 'node:url';
 import { PATHS } from '../helpers/env.mjs';
 
-describe('Feature 10: jaml-ui High-Level Re-Exports (src/index.ts)', () => {
-  const indexPath = path.join(PATHS.jamlUi, 'src', 'index.ts');
-  const content = fs.readFileSync(indexPath, 'utf-8');
+describe('Feature 10: jaml-ui High-Level & Core UI Runtime Re-Exports (dist/index.js)', async () => {
+  const distIndexUrl = pathToFileURL(path.join(PATHS.jamlUi, 'dist', 'index.js')).href;
+  const mod = await import(distIndexUrl);
 
-  it('F10-1: Re-exports SeedLab and LiveJamlIde components', () => {
-    assert.ok(content.includes('SeedLab'), 'Must re-export SeedLab');
-    assert.ok(content.includes('LiveJamlIde'), 'Must re-export LiveJamlIde');
+  it('F10-1: Runtime exports SeedLab, LiveJamlIde, and STARTER_JAML', () => {
+    assert.equal(typeof mod.SeedLab, 'function');
+    assert.equal(typeof mod.LiveJamlIde, 'function');
+    assert.equal(typeof mod.STARTER_JAML, 'string');
   });
 
-  it('F10-2: Re-exports JamlIde, ResultsView, and TallyBar', () => {
-    assert.ok(content.includes('JamlIde'), 'Must re-export JamlIde');
-    assert.ok(content.includes('ResultsView'), 'Must re-export ResultsView');
-    assert.ok(content.includes('TallyBar'), 'Must re-export TallyBar');
+  it('F10-2: Runtime exports JamlIde, ResultsView, and TallyBar', () => {
+    assert.equal(typeof mod.JamlIde, 'function');
+    assert.equal(typeof mod.ResultsView, 'function');
+    assert.equal(typeof mod.TallyBar, 'function');
   });
 
-  it('F10-3: Re-exports Jamlyzer, JamlyzerView, and JamlyzerBulk', () => {
-    assert.ok(content.includes('Jamlyzer'), 'Must re-export Jamlyzer');
-    assert.ok(content.includes('JamlyzerView'), 'Must re-export JamlyzerView');
-    assert.ok(content.includes('JamlyzerBulk'), 'Must re-export JamlyzerBulk');
+  it('F10-3: Runtime exports Jamlyzer, JamlyzerView, and JamlyzerBulk', () => {
+    assert.equal(typeof mod.Jamlyzer, 'function');
+    assert.equal(typeof mod.JamlyzerView, 'function');
+    assert.equal(typeof mod.JamlyzerBulk, 'function');
   });
 
-  it('F10-4: Re-exports DailyRitualView and parseRitual helper', () => {
-    assert.ok(content.includes('DailyRitualView'), 'Must re-export DailyRitualView');
-    assert.ok(content.includes('parseRitual'), 'Must re-export parseRitual');
+  it('F10-4: Runtime exports DailyRitualView and parseRitual helper', () => {
+    assert.equal(typeof mod.DailyRitualView, 'function');
+    assert.equal(typeof mod.parseRitual, 'function');
   });
 
-  it('F10-5: Re-exports DeckStakePicker and deck/stake constant arrays', () => {
-    assert.ok(content.includes('DeckStakePicker'), 'Must re-export DeckStakePicker');
-    assert.ok(content.includes('DECK_PICKER_NAMES') || content.includes('DECKS'), 'Must export deck names');
+  it('F10-5: Runtime exports DeckStakePicker and deck/stake constant arrays', () => {
+    assert.equal(typeof mod.DeckStakePicker, 'function');
+    assert.ok(Array.isArray(mod.DECK_PICKER_NAMES) && mod.DECK_PICKER_NAMES.length === 15);
+    assert.ok(Array.isArray(mod.STAKE_PICKER_NAMES) && mod.STAKE_PICKER_NAMES.length === 8);
   });
 
-  it('F10-6: Re-exports JimboBalatroFooter and JamlGameCard / GameCard', () => {
-    assert.ok(content.includes('JimboBalatroFooter'), 'Must re-export JimboBalatroFooter');
-    assert.ok(content.includes('JamlGameCard') || content.includes('GameCard'), 'Must re-export GameCard');
+  it('F10-6: Runtime exports JimboBalatroFooter, JamlGameCard / GameCard, and all Motely.Web UI primitives', () => {
+    for (const sym of [
+      'JimboBalatroFooter',
+      'JamlGameCard',
+      'GameCard',
+      'JimboApp',
+      'JimboBackground',
+      'JimboBadge',
+      'JimboButton',
+      'JimboErrorBlock',
+      'JimboPanel',
+      'JimboRow',
+      'JimboSectionHeader',
+      'JimboStack',
+      'JimboStatusPill',
+      'JimboTabs',
+      'JimboText',
+      'JimboTextInput',
+      'JimboWordmark',
+    ]) {
+      assert.equal(typeof mod[sym], 'function', `dist/index.js must export function ${sym}`);
+    }
   });
 });
+
