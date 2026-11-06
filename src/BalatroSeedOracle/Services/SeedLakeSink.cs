@@ -90,29 +90,14 @@ public sealed class SeedLakeSink : IDisposable
         var commaIndex = trimmed.IndexOf(',');
         if (commaIndex < 0)
         {
-            if (trimmed is "\"\"" or "''")
-            {
-                seed = string.Empty;
-                return true;
-            }
             seed = trimmed;
             return seed.Length > 0;
         }
 
         var parts = trimmed.Split(',');
-        var rawSeed = parts[0].Trim();
-        if (rawSeed is "\"\"" or "''")
-        {
-            seed = string.Empty;
-        }
-        else if (rawSeed.Length == 0)
-        {
+        seed = parts[0].Trim();
+        if (seed.Length == 0)
             return false;
-        }
-        else
-        {
-            seed = rawSeed;
-        }
 
         if (parts.Length >= 2 && int.TryParse(parts[1].Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsedScore))
         {
@@ -145,22 +130,19 @@ public sealed class SeedLakeSink : IDisposable
 
     public void OnScored(in MotelyScoredSeedResult result)
     {
-        if (result.Seed is null)
+        var seed = result.Seed?.Trim();
+        if (string.IsNullOrEmpty(seed))
             return;
-        var seed = result.Seed.Trim();
-        if (result.Seed.Length > 0 && seed.Length == 0)
-            return;
-        var serializedSeed = seed.Length == 0 ? "\"\"" : seed;
 
         var tallies = result.TallyValuesSpan;
         if (result.Score == 0 && tallies.IsEmpty)
         {
-            WriteLine(seed, serializedSeed);
+            WriteLine(seed, seed);
             return;
         }
 
-        var sb = new StringBuilder(serializedSeed.Length + 16);
-        sb.Append(serializedSeed).Append(',').Append(result.Score.ToString(CultureInfo.InvariantCulture));
+        var sb = new StringBuilder(seed.Length + 16);
+        sb.Append(seed).Append(',').Append(result.Score.ToString(CultureInfo.InvariantCulture));
         for (var i = 0; i < tallies.Length; i++)
         {
             sb.Append(',').Append(tallies[i].ToString(CultureInfo.InvariantCulture));
@@ -170,10 +152,10 @@ public sealed class SeedLakeSink : IDisposable
 
     public void OnSeed(string seed)
     {
-        if (seed is null || (seed.Length > 0 && string.IsNullOrWhiteSpace(seed)))
+        if (string.IsNullOrWhiteSpace(seed))
             return;
         var trimmed = seed.Trim();
-        WriteLine(trimmed, trimmed.Length == 0 ? "\"\"" : trimmed);
+        WriteLine(trimmed, trimmed);
     }
 
     private void WriteLine(string seedKey, string formattedLine)

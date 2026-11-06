@@ -2,10 +2,4 @@
   <Project Path="src/BalatroSeedOracle/BalatroSeedOracle.csproj" />
   <Project Path="src/BalatroSeedOracle.Tests/BalatroSeedOracle.Tests.csproj" />
   <Project Path="src/MotelyJAML/Motely/Motely.csproj" />
-  <Project Path="src/MotelyJAML/Motely.CLI/Motely.CLI.csproj" />
-  <Project Path="src/MotelyJAML/Motely.Lsp/Motely.Lsp.csproj" />
-  <Project Path="src/MotelyJAML/Motely.MCP/Motely.MCP.csproj" />
-  <Project Path="src/MotelyJAML/Motely.ServiceDefaults/Motely.ServiceDefaults.csproj" />
-  <Project Path="src/MotelyJAML/Motely.AppHost/Motely.AppHost.csproj" />
-  <Project Path="src/MotelyJAML/Motely.Tests/Motely.Tests.csproj" />
 </Solution>

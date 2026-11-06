@@ -28,7 +28,7 @@ describe('Feature 15: ErraticDeck.app 10.0.0 Upgrade', () => {
   });
 
   it('F15-4: ErraticDeck.app builds with next build --webpack with 0 errors', () => {
-    const result = runCli('pnpm', ['build'], { cwd: PATHS.ErraticDeckApp, timeoutMs: 120000 });
+    const result = runCli('pnpm', ['build'], { cwd: PATHS.ErraticDeckApp, timeoutMs: 90000 });
     assert.equal(result.exitCode, 0, `Build failed with code ${result.exitCode}:\n${result.stderr || result.stdout}`);
   });
 

@@ -155,7 +155,7 @@ namespace BalatroSeedOracle.ViewModels
                 CurrentAnalysis = null;
 
                 // Perform seed analysis
-                var seed = Motely.MotelyGlobals.NormalizeSeed(SeedInput);
+                var seed = SeedInput.Trim();
                 var deck = SelectedDeck;
                 var stake = SelectedStake;
 
@@ -284,7 +284,7 @@ namespace BalatroSeedOracle.ViewModels
             FindStatus = "";
             FindError = "";
 
-            var seed = Motely.MotelyGlobals.NormalizeSeed(SeedInput);
+            var seed = SeedInput.Trim();
             var item = FindInput.Trim();
             var deck = SelectedDeck;
             var stake = SelectedStake;
@@ -376,7 +376,7 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         public void SetSeedAndAnalyze(string seed)
         {
-            SeedInput = seed is { Length: 0 } ? "\"\"" : seed;
+            SeedInput = seed;
             ActiveTab = AnalyzeModalTab.Analyzer;
 
             if (AnalyzeSeedCommand.CanExecute(null))

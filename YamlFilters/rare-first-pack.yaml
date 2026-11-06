@@ -12,8 +12,7 @@ defaults:
 must:
   # First booster pack of the run must hold a Rare joker (any rarity-rare joker).
   - rareJoker: Any
-    sources:
-      boosterPacks: [0]
+    boosterPacks: [0]
 
 should:
   # Score by how many Rare jokers appear anywhere we look (sum mode -> total == count).

@@ -26,7 +26,7 @@ describe('Feature 12: seedfinder.app Curator Integration', () => {
   });
 
   it('F12-3: seedfinder.app builds cleanly via pnpm build with Next.js 16', () => {
-    const result = runCli('pnpm', ['build'], { cwd: PATHS.seedfinderApp, timeoutMs: 120000 });
+    const result = runCli('pnpm', ['build'], { cwd: PATHS.seedfinderApp, timeoutMs: 60000 });
     assert.equal(result.exitCode, 0, `pnpm build failed with code ${result.exitCode}:\n${result.stderr || result.stdout}`);
   });
 

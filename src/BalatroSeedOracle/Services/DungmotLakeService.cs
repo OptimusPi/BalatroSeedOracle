@@ -84,8 +84,6 @@ public sealed class DungmotLakeService : IDungmotLakeService
     public IEnumerable<string> StreamSeeds(LakePartitionInfo partition, int maxSeeds = -1)
     {
         ArgumentNullException.ThrowIfNull(partition);
-        if (maxSeeds == 0)
-            return [];
         return _lakeService.ReadSeeds(partition.Category, partition.PartitionKey, maxSeeds > 0 ? maxSeeds : null);
     }
 

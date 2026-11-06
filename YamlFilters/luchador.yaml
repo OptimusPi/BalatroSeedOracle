@@ -14,34 +14,29 @@ description: |
   Overstock + Reroll Surplus preferred.
 
 must:
-  - joker: Luchador
+  - boss: The Luchador
     antes: [1]
-  - tag: DoubleTag
-    min: 2
-    antes: [1, 2]
-  - tag: [InvestmentTag, NegativeTag, VoucherTag, EconomyTag]
+  - tags: [Investment, Negative, Voucher, Economy]
     antes: [2, 3, 4, 5, 6, 7, 8]
   - voucher: Overstock
     antes: [3, 4, 5, 6, 7, 8]
-  - voucher: RerollSurplus
+  - voucher: Reroll Surplus
     antes: [4, 5, 6, 7, 8]
-  - smallBlindTag: NegativeTag
+  - tag: Small Blind
     antes: [2]
-  - bigBlindTag: BuffoonTag
+    sources:
+      shopSlots: [0, 1]
+      edition: Negative   # free + Negative from Small Blind tag
+  - Big Blind: Buffoon
     antes: [2]
+    # Buffoon = tag that gives a pack (for the big blind one-shot run)
 
 should:
-  - boss: TheHook
-    antes: [2, 3, 4, 5, 6, 7]
+  - boss: The Hook
+    score: 3   # one-shot
+  - boss: The Ox
     score: 3
-  - boss: TheOx
-    antes: [6, 7]
+  - boss: The Wheel
     score: 3
-  - boss: TheWheel
-    antes: [2, 3, 4, 5, 6, 7]
-    score: 3
-  - tag: VoucherTag
-    antes: [3, 4, 5, 6, 7, 8]
-    score: 5
-  - tag: OrbitalTag
-    score: -5
+  - tag: Orbital
+    score: -5   # avoid Orbital

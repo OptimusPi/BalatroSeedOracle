@@ -7,7 +7,7 @@ deck: Red
 stake: White
 
 must:
-  - luckyMoney: [0, 1]
+  - luckMoney: [0, 1]
     min: 2
 
   - joker: OopsAll6s
@@ -17,10 +17,10 @@ must:
     antes: [1, 2]
 
 should:
-  - luckyMoney: [0, 1]
+  - luckMoney: [0, 1]
     min: 2
     score: 100
     label: both_lucky
-  - luckyMoney: [2]
+  - luckMoney: [2]
     score: 25
     label: lucky_hit_3
