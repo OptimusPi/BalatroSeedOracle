@@ -26,7 +26,7 @@ public class JamlCompletionTests
         Assert.DoesNotContain("jokers", labels);
         Assert.DoesNotContain("bosses", labels);
         // Every engine clause type is reachable.
-        var clauseTypes = Motely.Schema.FilterVocabulary.DiscriminatorTable.Select(d => d.ClauseType).Distinct().Count();
+        var clauseTypes = FilterVocabulary.DiscriminatorTable.Select(d => d.ClauseType).Distinct().Count();
         Assert.Equal(clauseTypes, labels.Length);
     }
 

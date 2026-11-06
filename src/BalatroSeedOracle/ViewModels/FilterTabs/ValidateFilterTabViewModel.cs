@@ -106,7 +106,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             }
 
             var text = JamlConfigText.ToJaml(config);
-            if (!Motely.FilterCheck.TryCheck(text, out var checkedConfig, out _, out var error))
+            if (!BalatroSeedOracle.Helpers.FilterCheck.TryCheck(text, out var checkedConfig, out _, out var error))
             {
                 UpdateStatus($"✗ This filter won't search: {error}", true);
                 return;
@@ -115,7 +115,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             var summary =
                 $"✓ Valid: {checkedConfig.Must.Count} must, {checkedConfig.Should.Count} should, "
                 + $"{checkedConfig.MustNot.Count} mustNot; the search plan builds.";
-            var warnings = Motely.FilterCheck.Warnings(checkedConfig);
+            var warnings = BalatroSeedOracle.Helpers.FilterCheck.Warnings(checkedConfig);
             if (warnings.Count == 0)
             {
                 UpdateStatus(summary, false);

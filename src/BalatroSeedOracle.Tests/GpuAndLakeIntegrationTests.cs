@@ -15,8 +15,6 @@ using Motely;
 using Motely.Enums;
 using Motely.Filters;
 using Motely.Gpu;
-using Motely.Lake;
-using Motely.Party;
 using Xunit;
 
 namespace BalatroSeedOracle.Tests;
@@ -114,70 +112,6 @@ public class GpuAndLakeIntegrationTests(HeadlessAvaloniaFixture avalonia)
     }
 
     [Fact]
-    public void DungmotLakeService_EnumeratesRealLakes_WhenPathExists()
-    {
-        string lakePath = @"D:\dungmot";
-        if (!Directory.Exists(lakePath))
-            return; // Skip if on environment without D:\dungmot
-
-        var service = new DungmotLakeService(lakePath);
-        Assert.True(service.IsLakeAvailable);
-
-        var partitions = service.GetAvailablePartitions();
-        Assert.NotEmpty(partitions);
-
-        // Verify curated ranks, suits, or CSV negative partitions exist
-        var curatedRanks = partitions.Where(p => p.Category == LakeCategory.CuratedRanks).ToList();
-        var curatedSuits = partitions.Where(p => p.Category == LakeCategory.CuratedSuits).ToList();
-        var negatives = partitions.Where(p => p.Category is LakeCategory.NegativeUncommon or LakeCategory.TripleNegative).ToList();
-
-        Assert.True(curatedRanks.Count > 0 || curatedSuits.Count > 0 || negatives.Count > 0);
-
-        // Stream first 5 seeds from first available non-empty partition
-        var validPartition = partitions.FirstOrDefault(p => p.EstimatedSeeds > 0);
-        if (validPartition != null)
-        {
-            var seeds = service.StreamSeeds(validPartition, 5).ToList();
-            Assert.NotEmpty(seeds);
-            foreach (var seed in seeds)
-            {
-                Assert.True(SeedRegex.IsMatch(seed), $"Seed '{seed}' did not match standard Balatro seed format.");
-            }
-        }
-    }
-
-    [Fact]
-    public void DungmotLakeService_WorksWithMockDirectory()
-    {
-        string tempDir = Path.Combine(Path.GetTempPath(), "mock-lake-" + Guid.NewGuid().ToString("N"));
-        Directory.CreateDirectory(Path.Combine(tempDir, "ranks"));
-        Directory.CreateDirectory(Path.Combine(tempDir, "suits"));
-
-        try
-        {
-            File.WriteAllLines(Path.Combine(tempDir, "ranks", "Ace_best.txt"), new[] { "SEEDACE1", "SEEDACE2", "SEEDACE3" });
-            File.WriteAllLines(Path.Combine(tempDir, "uncommonss.csv"), new[] { "seed,count", "NEGUNCM1,3", "NEGUNCM2,3" });
-
-            var service = new DungmotLakeService(tempDir);
-            Assert.True(service.IsLakeAvailable);
-
-            var partitions = service.GetAvailablePartitions();
-            Assert.Equal(2, partitions.Count);
-
-            var acePart = partitions.First(p => p.PartitionKey == "Ace");
-            var seeds = service.StreamSeeds(acePart).ToList();
-            Assert.Equal(new[] { "SEEDACE1", "SEEDACE2", "SEEDACE3" }, seeds);
-
-            var provider = service.CreateSeedProvider(acePart);
-            Assert.NotNull(provider);
-        }
-        finally
-        {
-            try { Directory.Delete(tempDir, true); } catch { }
-        }
-    }
-
-    [Fact]
     public void SearchModalViewModel_PersistsGpuSearchToggle_InUserProfile()
     {
         OnUi(() =>
@@ -214,89 +148,6 @@ public class GpuAndLakeIntegrationTests(HeadlessAvaloniaFixture avalonia)
             finally
             {
                 try { Directory.Delete(profileDir, true); } catch { }
-            }
-        });
-    }
-
-    [Fact]
-    public void SearchModalViewModel_DbListMode_PopulatesPartitionsFromLakeService()
-    {
-        OnUi(() =>
-        {
-            EnsureAppResourcesLoaded();
-
-            string tempDir = Path.Combine(Path.GetTempPath(), "bso-lake-test-" + Guid.NewGuid().ToString("N"));
-            Directory.CreateDirectory(Path.Combine(tempDir, "ranks"));
-            File.WriteAllLines(Path.Combine(tempDir, "ranks", "King_best.txt"), new[] { "KING0001", "KING0002" });
-
-            try
-            {
-                var lakeService = new DungmotLakeService(tempDir);
-                var profileService = new UserProfileService();
-                var searchVm = new SearchModalViewModel(
-                    profileService,
-                    () => new AnalyzeModalViewModel(SpriteService.Instance, profileService),
-                    dungmotLakeService: lakeService
-                );
-
-                Assert.NotEmpty(searchVm.AvailableLakePartitions);
-                Assert.NotEmpty(searchVm.AvailableDbLists);
-                Assert.Equal("Curated Rank: King", searchVm.SelectedDbList);
-                Assert.NotNull(searchVm.SelectedLakePartition);
-                Assert.Equal("King", searchVm.SelectedLakePartition.PartitionKey);
-            }
-            finally
-            {
-                try { Directory.Delete(tempDir, true); } catch { }
-            }
-        });
-    }
-
-    [Fact]
-    public void SearchModalViewModel_DbListMode_StreamsSeedsIntoSearch()
-    {
-        OnUi(() =>
-        {
-            EnsureAppResourcesLoaded();
-
-            string tempDir = Path.Combine(Path.GetTempPath(), "bso-lake-stream-" + Guid.NewGuid().ToString("N"));
-            Directory.CreateDirectory(Path.Combine(tempDir, "ranks"));
-            File.WriteAllLines(Path.Combine(tempDir, "ranks", "Queen_best.txt"), new[] { "QUEEN001", "QUEEN002" });
-
-            try
-            {
-                var lakeService = new DungmotLakeService(tempDir);
-                var profileService = new UserProfileService();
-                var searchVm = new SearchModalViewModel(
-                    profileService,
-                    () => new AnalyzeModalViewModel(SpriteService.Instance, profileService),
-                    dungmotLakeService: lakeService
-                );
-
-                searchVm.SelectedSearchMode = SearchMode.DbList;
-                searchVm.LoadedConfig = new JamlConfig
-                {
-                    Name = "TestLakeConfig",
-                    Deck = MotelyDeck.Red,
-                    Stake = MotelyStake.White,
-                };
-
-                // Start search in DbList mode
-                searchVm.StartSearchCommand.Execute(null);
-
-                // Verify search console accepted DbList mode and started streaming
-                Assert.Contains(searchVm.ConsoleOutput, m => m.Text.Contains("Streaming seed lake"));
-                Assert.DoesNotContain(searchVm.ConsoleOutput, m => m.Text.Contains("This mode was removed"));
-
-                // Stop search
-                if (searchVm.IsSearching)
-                {
-                    searchVm.StopSearchCommand.Execute(null);
-                }
-            }
-            finally
-            {
-                try { Directory.Delete(tempDir, true); } catch { }
             }
         });
     }
@@ -346,46 +197,4 @@ public class GpuAndLakeIntegrationTests(HeadlessAvaloniaFixture avalonia)
         });
     }
 
-    [Fact]
-    public async Task PartySearchService_LifecycleAndCancellation()
-    {
-        // Mock HTTP handler for coordinator
-        var handler = new TestPartyHttpMessageHandler();
-        using var httpClient = new HttpClient(handler);
-        using var partyService = new PartySearchService(httpClient: httpClient);
-
-        PartySearchProgress? lastProgress = null;
-        partyService.ProgressUpdated += (_, p) => lastProgress = p;
-
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(3));
-        await partyService.StartPartyWorkerAsync(
-            coordinatorUrl: "http://localhost:3141",
-            partyId: "test-party-123",
-            threads: 1,
-            useGpu: false,
-            ct: cts.Token
-        );
-
-        Assert.True(partyService.IsWorking);
-        Assert.Equal("test-party-123", partyService.CurrentPartyId);
-
-        // Stop the worker
-        await partyService.StopPartyWorkerAsync();
-        Assert.False(partyService.IsWorking);
-        Assert.NotNull(lastProgress);
-    }
-
-    private sealed class TestPartyHttpMessageHandler : HttpMessageHandler
-    {
-        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-        {
-            // Simulate fully leased coordinator response
-            string json = """{"done": true, "reason": "fully leased"}""";
-            var response = new HttpResponseMessage(HttpStatusCode.OK)
-            {
-                Content = new StringContent(json, System.Text.Encoding.UTF8, "application/json")
-            };
-            return Task.FromResult(response);
-        }
-    }
 }

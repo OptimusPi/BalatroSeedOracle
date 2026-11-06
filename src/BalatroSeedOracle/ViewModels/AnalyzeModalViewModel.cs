@@ -161,8 +161,8 @@ namespace BalatroSeedOracle.ViewModels
 
                 var analysisData = await Task.Run(() =>
                 {
-                    var config = new Motely.Analysis.MotelyUnitTestAnalysisConfig(seed, deck, stake);
-                    return Motely.Analysis.MotelyUnitTestAnalyzer.Analyze(config);
+                    var config = new BalatroSeedOracle.Analysis.MotelyUnitTestAnalysisConfig(seed, deck, stake);
+                    return BalatroSeedOracle.Analysis.MotelyUnitTestAnalyzer.Analyze(config);
                 });
 
                 // Map Motely analysis to our models (populate fully BEFORE assigning
@@ -295,7 +295,7 @@ namespace BalatroSeedOracle.ViewModels
             {
                 IsFinding = true;
                 var result = await Task.Run(() =>
-                    Motely.Analysis.MotelySeedLocator.Locate(seed, deck, stake, item, minAnte, maxAnte)
+                    BalatroSeedOracle.Analysis.MotelySeedLocator.Locate(seed, deck, stake, item, minAnte, maxAnte)
                 );
 
                 foreach (var hit in result.Hits)

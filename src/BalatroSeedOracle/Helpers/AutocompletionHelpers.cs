@@ -6,7 +6,6 @@ using Avalonia.Media;
 using AvaloniaEdit.CodeCompletion;
 using AvaloniaEdit.Document;
 using AvaloniaEdit.Editing;
-using Motely.Schema;
 
 namespace BalatroSeedOracle.Helpers;
 

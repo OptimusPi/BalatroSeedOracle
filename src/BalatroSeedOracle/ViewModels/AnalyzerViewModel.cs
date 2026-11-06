@@ -9,7 +9,7 @@ using BalatroSeedOracle.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Motely;
-using Motely.Analysis;
+using BalatroSeedOracle.Analysis;
 
 namespace BalatroSeedOracle.ViewModels;
 

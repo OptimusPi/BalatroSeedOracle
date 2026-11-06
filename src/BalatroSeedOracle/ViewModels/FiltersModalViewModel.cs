@@ -820,7 +820,6 @@ namespace BalatroSeedOracle.ViewModels
                 Stake = SelectedStake,
                 Seeds = loaded is null ? new List<string>() : new List<string>(loaded.Seeds),
                 Cutoff = loaded?.Cutoff,
-                Defaults = loaded?.Defaults,
                 Must = new List<IMotelyClause>(),
                 Should = new List<IMotelyClause>(),
                 MustNot = new List<IMotelyClause>(),

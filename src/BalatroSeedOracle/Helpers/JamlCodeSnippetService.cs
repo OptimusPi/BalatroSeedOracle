@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using AvaloniaEdit;
-using Motely.Schema;
 
 namespace BalatroSeedOracle.Helpers;
 

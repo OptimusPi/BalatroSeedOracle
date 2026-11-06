@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -27,7 +27,6 @@ namespace BalatroSeedOracle.ViewModels
         AllSeeds = 0,
         SingleSeed = 1,
         WordList = 2,
-        DbList = 3,
     }
 
     public partial class SearchModalViewModel
@@ -38,8 +37,6 @@ namespace BalatroSeedOracle.ViewModels
         private readonly UserProfileService _userProfileService;
         private readonly Func<AnalyzeModalViewModel> _analyzeModalFactory;
         private readonly IGpuDeviceService _gpuDeviceService;
-        private readonly IDungmotLakeService _dungmotLakeService;
-        private readonly IPartySearchService _partySearchService;
 
         private Motely.IMotelySearch? _search;
         private System.Threading.CancellationTokenSource? _searchCts;
@@ -196,18 +193,12 @@ namespace BalatroSeedOracle.ViewModels
         [ObservableProperty]
         private ObservableCollection<string> _availableWordLists = new();
 
-        [ObservableProperty]
-        private string _selectedDbList = "None";
-
-        [ObservableProperty]
-        private ObservableCollection<string> _availableDbLists = new();
-
         // Search Mode Properties
         [ObservableProperty]
         private SearchMode _selectedSearchMode = SearchMode.AllSeeds;
 
         public string[] SearchModeDisplayValues { get; } =
-            new[] { "All Seeds", "Single Seed", "Word List", "DB List" };
+            new[] { "All Seeds", "Single Seed", "Word List" };
 
         [ObservableProperty]
         private string _seedInput = string.Empty;
@@ -231,9 +222,6 @@ namespace BalatroSeedOracle.ViewModels
         [ObservableProperty]
         private bool _isWordListVisible = false;
 
-        [ObservableProperty]
-        private bool _isDbListVisible = false;
-
         public bool CanMinimizeToDesktopVisible => _search is not null;
 
         // WordList index properties for SpinnerControl binding
@@ -241,19 +229,6 @@ namespace BalatroSeedOracle.ViewModels
         private int _selectedWordListIndex = 0;
 
         public int WordListMaxIndex => Math.Max(0, AvailableWordLists.Count - 1);
-
-        // DBList index properties for SpinnerControl binding
-        [ObservableProperty]
-        private int _selectedDbListIndex = 0;
-
-        public int DbListMaxIndex => Math.Max(0, AvailableDbLists.Count - 1);
-
-        // Lake partition rich binding
-        [ObservableProperty]
-        private ObservableCollection<LakePartitionInfo> _availableLakePartitions = new();
-
-        [ObservableProperty]
-        private LakePartitionInfo? _selectedLakePartition;
 
         // GPU Screaming Mode properties
         [ObservableProperty]
@@ -274,28 +249,6 @@ namespace BalatroSeedOracle.ViewModels
 
         [ObservableProperty]
         private bool _isGpuAvailable = false;
-
-        // Community Party search properties
-        [ObservableProperty]
-        private string _partyId = string.Empty;
-
-        [ObservableProperty]
-        private string _partyCoordinatorUrl = "https://seedfinder.app";
-
-        partial void OnPartyCoordinatorUrlChanged(string value)
-        {
-            _userProfileService.GetProfile().PartyCoordinatorUrl = value;
-            _userProfileService.SaveProfile();
-        }
-
-        [ObservableProperty]
-        private bool _isPartyWorking = false;
-
-        [ObservableProperty]
-        private string _partyStatusText = "Idle";
-
-        [ObservableProperty]
-        private PartySearchProgress? _partyProgress;
 
         // Search parameters
         [ObservableProperty]
@@ -386,9 +339,7 @@ namespace BalatroSeedOracle.ViewModels
         public SearchModalViewModel(
             UserProfileService userProfileService,
             Func<AnalyzeModalViewModel> analyzeModalFactory,
-            IGpuDeviceService? gpuDeviceService = null,
-            IDungmotLakeService? dungmotLakeService = null,
-            IPartySearchService? partySearchService = null
+            IGpuDeviceService? gpuDeviceService = null
         )
         {
             _userProfileService = userProfileService;
@@ -396,11 +347,8 @@ namespace BalatroSeedOracle.ViewModels
                 analyzeModalFactory ?? throw new ArgumentNullException(nameof(analyzeModalFactory));
 
             _gpuDeviceService = gpuDeviceService ?? App.GetService<IGpuDeviceService>() ?? new GpuDeviceService();
-            _dungmotLakeService = dungmotLakeService ?? App.GetService<IDungmotLakeService>() ?? new DungmotLakeService(_userProfileService.GetProfile().DungmotLakePath);
-            _partySearchService = partySearchService ?? App.GetService<IPartySearchService>() ?? new PartySearchService();
 
             _useGpuSearch = _userProfileService.GetProfile().UseGpuSearch;
-            _partyCoordinatorUrl = _userProfileService.GetProfile().PartyCoordinatorUrl;
 
             SearchResults = new ObservableCollection<Models.SearchResult>();
             ConsoleOutput = new ObservableCollection<Models.ConsoleMessage>();
@@ -417,43 +365,6 @@ namespace BalatroSeedOracle.ViewModels
 
             _gpuDeviceService.StatusChanged += OnGpuStatusChanged;
             UpdateGpuStatusProperties(_gpuDeviceService.GetStatus());
-
-            _partySearchService.ProgressUpdated += OnPartyProgressUpdated;
-            _partySearchService.LogMessageReceived += OnPartyLogReceived;
-
-            LoadLakePartitions();
-        }
-
-        public void LoadLakePartitions()
-        {
-            try
-            {
-                var partitions = _dungmotLakeService.GetAvailablePartitions();
-                AvailableLakePartitions.Clear();
-                AvailableDbLists.Clear();
-
-                foreach (var part in partitions)
-                {
-                    AvailableLakePartitions.Add(part);
-                    AvailableDbLists.Add(part.Name);
-                }
-
-                if (AvailableLakePartitions.Count > 0)
-                {
-                    SelectedDbListIndex = 0;
-                    SelectedLakePartition = AvailableLakePartitions[0];
-                    SelectedDbList = AvailableDbLists[0];
-                }
-                else
-                {
-                    AvailableDbLists.Add("None available");
-                    SelectedDbList = "None available";
-                }
-            }
-            catch (Exception ex)
-            {
-                BsoLogger.LogError("SearchModalViewModel", $"Error loading lake partitions: {ex.Message}");
-            }
         }
 
         private void OnGpuStatusChanged(object? sender, GpuDeviceStatus status)
@@ -478,72 +389,6 @@ namespace BalatroSeedOracle.ViewModels
                     : "Screaming Mode";
             else
                 GpuStatusText = "GPU Ready";
-        }
-
-        private void OnPartyProgressUpdated(object? sender, PartySearchProgress p)
-        {
-            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
-            {
-                PartyProgress = p;
-                IsPartyWorking = _partySearchService.IsWorking;
-                PartyStatusText = $"{p.Status} ({p.SeedsSearched:N0} seeds, {p.MatchesFound:N0} matches)";
-            });
-        }
-
-        private void OnPartyLogReceived(object? sender, string log)
-        {
-            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
-            {
-                AddConsoleMessage($"[Party] {log}");
-            });
-        }
-
-        [RelayCommand]
-        public async Task StartPartySearchAsync()
-        {
-            if (string.IsNullOrWhiteSpace(PartyId))
-            {
-                AddConsoleMessage("Please enter a Party ID to join.");
-                return;
-            }
-
-            if (IsPartyWorking)
-                return;
-
-            IsPartyWorking = true;
-            PartyStatusText = "Connecting...";
-            AddConsoleMessage($"Connecting to Community Party '{PartyId}' at {PartyCoordinatorUrl}...");
-
-            try
-            {
-                var threads = ThreadCount > 0 ? ThreadCount : Environment.ProcessorCount;
-                await _partySearchService.StartPartyWorkerAsync(
-                    PartyCoordinatorUrl,
-                    PartyId,
-                    threads,
-                    UseGpuSearch,
-                    CancellationToken.None
-                );
-            }
-            catch (Exception ex)
-            {
-                IsPartyWorking = false;
-                PartyStatusText = $"Failed: {ex.Message}";
-                AddConsoleMessage($"[Party Error] {ex.Message}");
-            }
-        }
-
-        [RelayCommand]
-        public async Task StopPartySearchAsync()
-        {
-            if (!IsPartyWorking)
-                return;
-
-            PartyStatusText = "Stopping...";
-            AddConsoleMessage("Stopping Community Party search...");
-            await _partySearchService.StopPartyWorkerAsync();
-            IsPartyWorking = false;
-            PartyStatusText = "Stopped";
         }
 
         /// <summary>Creates an AnalyzeModalViewModel via DI factory (no ServiceHelper). Used by ResultsTab to show analyze modal.</summary>
@@ -795,20 +640,6 @@ namespace BalatroSeedOracle.ViewModels
                 return Task.CompletedTask;
             }
 
-            if (SelectedSearchMode == SearchMode.DbList)
-            {
-                if (SelectedLakePartition == null && AvailableLakePartitions.Count > 0)
-                {
-                    SelectedLakePartition = AvailableLakePartitions[Math.Clamp(SelectedDbListIndex, 0, AvailableLakePartitions.Count - 1)];
-                }
-
-                if (SelectedLakePartition == null)
-                {
-                    AddConsoleMessage("No lake partition selected. Please select a seed lake partition.");
-                    return Task.CompletedTask;
-                }
-            }
-
             IsSearching = true;
 
             // Fresh search is on-screen by definition.
@@ -866,16 +697,6 @@ namespace BalatroSeedOracle.ViewModels
             if (SelectedSearchMode == SearchMode.SingleSeed)
             {
                 settings = settings.WithSeedList(new[] { SeedInput.Trim() });
-            }
-            else if (SelectedSearchMode == SearchMode.DbList)
-            {
-                var partition = SelectedLakePartition!;
-                AddConsoleMessage($"Streaming seed lake: {partition.Name} ({partition.EstimatedSeeds:N0} estimated seeds)...");
-                var seeds = _dungmotLakeService.StreamSeeds(partition);
-                int count = partition.EstimatedSeeds > 0 && partition.EstimatedSeeds <= int.MaxValue
-                    ? (int)partition.EstimatedSeeds
-                    : -1;
-                settings = settings.WithSeedGenerator(seeds, count);
             }
             else
             {
@@ -1220,14 +1041,6 @@ namespace BalatroSeedOracle.ViewModels
             }
         }
 
-        partial void OnSelectedDbListIndexChanged(int value)
-        {
-            if (value >= 0 && value < AvailableDbLists.Count)
-            {
-                SelectedDbList = AvailableDbLists[value];
-            }
-        }
-
         private void UpdateControlVisibility()
         {
             switch (SelectedSearchMode)
@@ -1237,7 +1050,6 @@ namespace BalatroSeedOracle.ViewModels
                     IsContinueVisible = true;
                     IsSeedInputVisible = false;
                     IsWordListVisible = false;
-                    IsDbListVisible = false;
                     break;
 
                 case SearchMode.SingleSeed:
@@ -1245,7 +1057,6 @@ namespace BalatroSeedOracle.ViewModels
                     IsContinueVisible = false;
                     IsSeedInputVisible = true;
                     IsWordListVisible = false;
-                    IsDbListVisible = false;
                     break;
 
                 case SearchMode.WordList:
@@ -1253,21 +1064,10 @@ namespace BalatroSeedOracle.ViewModels
                     IsContinueVisible = false; // Wordlists don't support continue
                     IsSeedInputVisible = false;
                     IsWordListVisible = true;
-                    IsDbListVisible = false;
-                    break;
-
-                case SearchMode.DbList:
-                    IsThreadsVisible = false; // DB queries don't need threads
-                    IsContinueVisible = false; // DB queries don't support continue
-                    IsSeedInputVisible = false;
-                    IsWordListVisible = false;
-                    IsDbListVisible = true;
                     break;
             }
 
-            // Notify property changed for WordListMaxIndex and DbListMaxIndex
             OnPropertyChanged(nameof(WordListMaxIndex));
-            OnPropertyChanged(nameof(DbListMaxIndex));
         }
 
         public async Task LoadFilterAsync(string configPath)
@@ -1640,8 +1440,6 @@ namespace BalatroSeedOracle.ViewModels
             _resultSink = null;
             _gpuDeviceService.SetSearchActive(false);
             _gpuDeviceService.StatusChanged -= OnGpuStatusChanged;
-            _partySearchService.ProgressUpdated -= OnPartyProgressUpdated;
-            _partySearchService.LogMessageReceived -= OnPartyLogReceived;
         }
 
         [RelayCommand(CanExecute = nameof(CanPauseSearch))]
