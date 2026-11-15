@@ -10,8 +10,6 @@ deck: Anaglyph
 stake: White
 
 # mode defaults to `sum`: aggregated score = sum(count * score) over should clauses.
-defaults:
-  antes: [1, 2]
 
 must:
   # Negative Tag on a small blind, ante 1 -> the Negative-joker setup.
@@ -34,8 +32,10 @@ must:
 should:
   # Score by how many Oops! All 6s show up (sum mode -> total == the count).
   - joker: OopsAll6s
+    antes: [1, 2]
     score: 1
 
   # A little credit for grabbing Perkeo early.
   - legendaryJoker: Perkeo
+    antes: [1, 2]
     score: 5

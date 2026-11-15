@@ -50,22 +50,21 @@ should:
     score: 10
     label: bs
   - or:
-      clauses:
-        - joker: OopsAll6s
-          antes: [4]
-          sources:
-            shopItems: [2, 3, 4, 5, 6, 7]
-          score: 100
-        - joker: OopsAll6s
-          antes: [5]
-          sources:
-            shopItems: [0, 1, 2, 3]
-          score: 100
-        - joker: OopsAll6s
-          antes: [6]
-          sources:
-            shopItems: [0, 1]
-          score: 100
+      - joker: OopsAll6s
+        antes: [4]
+        sources:
+          shopItems: [2, 3, 4, 5, 6, 7]
+        score: 100
+      - joker: OopsAll6s
+        antes: [5]
+        sources:
+          shopItems: [0, 1, 2, 3]
+        score: 100
+      - joker: OopsAll6s
+        antes: [6]
+        sources:
+          shopItems: [0, 1]
+        score: 100
     label: oops_window
 
 # Proven must-hits. CUM* from --keyword CUM --collect (full pad).

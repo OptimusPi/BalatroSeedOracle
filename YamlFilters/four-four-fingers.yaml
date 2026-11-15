@@ -9,18 +9,18 @@ author: pifreak
 deck: Painted
 stake: White
 
-defaults:
-  antes: [1, 2, 3, 4]
-
 must:
   # Showman: without it the game blocks duplicate jokers, so 4x Four Fingers is impossible.
   - joker: Showman
+    antes: [1, 2, 3, 4]
 
   # The main event. Four of them. Four. Of them.
   - joker: FourFingers
+    antes: [1, 2, 3, 4]
     min: 4
 
 should:
   # "Score" by how many Four Fingers we find. The number means nothing. It's beautiful.
   - joker: FourFingers
+    antes: [1, 2, 3, 4]
     score: 1
