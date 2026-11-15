@@ -38,7 +38,7 @@ public static class JamlConfigText
         ArgumentNullException.ThrowIfNull(config);
 
         var root = new JsonObject();
-        if (config.Id is not null)
+        if (!string.IsNullOrEmpty(config.Id))
             root["id"] = config.Id;
         if (config.Name is not null)
             root["name"] = config.Name;
@@ -46,10 +46,12 @@ public static class JamlConfigText
             root["description"] = config.Description;
         if (config.Author is not null)
             root["author"] = config.Author;
+        if (!string.IsNullOrEmpty(config.DateCreated))
+            root["dateCreated"] = config.DateCreated;
         root["deck"] = config.Deck.ToString();
         root["stake"] = config.Stake.ToString();
-        if (config.Seeds.Count > 0)
-            root["seeds"] = new JsonArray(config.Seeds.Select(seed => (JsonNode)seed).ToArray());
+        if (config.Seeds is { Count: > 0 } seeds)
+            root["seeds"] = new JsonArray(seeds.Select(seed => (JsonNode)seed).ToArray());
         if (config.Cutoff is { } cutoff)
             root["cutoff"] = cutoff;
         root["must"] = ClauseArray(config.Must);

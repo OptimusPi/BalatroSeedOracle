@@ -1,49 +1,59 @@
 name: luck5
-description: testing YAML anchors with full scenario pattern template
+description: NegativeTag skip reward + OopsAll6s shop cluster scenario across Antes 2 (Max) and 3 (Sum)
 author: pifreak & their pal Cursor AI
 deck: Anaglyph
 stake: White
 
-# ===== PARAMETERS =====
-# Define reusable values as anchors (the "parameter" trick!)
-desired_joker: &desired_joker OopsAll6s
-score_per_joker: &score_per_joker 100
+must:
+  - legendaryJoker: Perkeo
+    antes: [1, 2, 3, 4, 5, 6, 7, 8]
 
-Must:
-  - soulJoker: Perkeo
-    antes: [1,2,3,4,5,6,7,8]
-
-Should:
-  - SoulJoker: Perkeo
+should:
+  - legendaryJoker: Perkeo
     score: 10
-  
-# ===== SCENARIO PATTERN TEMPLATE =====
-# Define the COMPLETE scenario: NegativeTag + Joker Cluster
-# Uses the joker anchor as a "parameter"!
-negative_tag_joker_scenario_clauses: &negative_tag_joker_scenario_clauses
-  - smallblindtag: NegativeTag  # Inherits Antes from parent And clause automatically
-  - Or:
-      - joker: *desired_joker  # Use the joker "parameter"!
-        ShopSlots: [2,3,4]
-        score: *score_per_joker
-      - joker: *desired_joker  # Same joker, different slots
-        ShopSlots: [4,5,6]
-        score: *score_per_joker
-      - joker: *desired_joker  # Same joker, different slots
-        ShopSlots: [6,7,8]
-        score: *score_per_joker
 
-# ===== USE THE SCENARIO PATTERN =====
-# Ante 2 - Score based on NegativeTag Skip Reward + Desired jokers in shop cluster
-  - And:
-    Antes: [2]  # Parent antes - children inherit automatically!
-    Mode: Max
-    Score: 100
-    clauses: *negative_tag_joker_scenario_clauses  # Use the scenario pattern
+  # Ante 2 - Score based on NegativeTag Skip Reward + Desired jokers in shop cluster
+  - and:
+      - smallBlindTag: NegativeTag
+        antes: [2]
+      - or:
+          - joker: OopsAll6s
+            antes: [2]
+            sources:
+              shopItems: [2, 3, 4]
+            score: 100
+          - joker: OopsAll6s
+            antes: [2]
+            sources:
+              shopItems: [4, 5, 6]
+            score: 100
+          - joker: OopsAll6s
+            antes: [2]
+            sources:
+              shopItems: [6, 7, 8]
+            score: 100
+    mode: Max
+    score: 100
 
-# Ante 3 - Same scenario, different mode
-  - And:
-    Antes: [3]  # Parent antes - children inherit automatically!
-    Mode: Sum
-    Score: 100
-    clauses: *negative_tag_joker_scenario_clauses  # Use the same scenario pattern
+  # Ante 3 - Same scenario, different mode
+  - and:
+      - smallBlindTag: NegativeTag
+        antes: [3]
+      - or:
+          - joker: OopsAll6s
+            antes: [3]
+            sources:
+              shopItems: [2, 3, 4]
+            score: 100
+          - joker: OopsAll6s
+            antes: [3]
+            sources:
+              shopItems: [4, 5, 6]
+            score: 100
+          - joker: OopsAll6s
+            antes: [3]
+            sources:
+              shopItems: [6, 7, 8]
+            score: 100
+    mode: Sum
+    score: 100

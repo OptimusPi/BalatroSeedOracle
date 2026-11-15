@@ -30,9 +30,9 @@ public class BuilderRoundTripTests(HeadlessAvaloniaFixture avalonia, ITestOutput
     private static string FindRepoRoot()
     {
         for (var dir = new DirectoryInfo(AppContext.BaseDirectory); dir is not null; dir = dir.Parent)
-            if (Directory.Exists(Path.Combine(dir.FullName, "src", "MotelyJAML", "Filters")))
+            if (Directory.Exists(Path.Combine(dir.FullName, "src", "JimbosAnteMarkupLanguage", "Filters")))
                 return dir.FullName;
-        throw new DirectoryNotFoundException("src/MotelyJAML/Filters not found above the test output.");
+        throw new DirectoryNotFoundException("src/JimbosAnteMarkupLanguage/Filters not found above the test output.");
     }
 
     /// <summary>Every engine filter: the shipped Filters and the engine tests' JamlFilters.</summary>
@@ -47,7 +47,7 @@ public class BuilderRoundTripTests(HeadlessAvaloniaFixture avalonia, ITestOutput
     private static List<string> CorpusFiles()
     {
         var data = new List<string>();
-        foreach (var root in new[] { Path.Combine("src", "MotelyJAML", "Filters"), Path.Combine("src", "MotelyJAML", "Motely.Tests", "JamlFilters") })
+        foreach (var root in new[] { Path.Combine("src", "JimbosAnteMarkupLanguage", "Filters"), Path.Combine("src", "JimbosAnteMarkupLanguage", "Motely.Tests", "JamlFilters") })
         {
             var dir = Path.Combine(RepoRoot, root);
             foreach (var file in Directory.EnumerateFiles(dir, "*", SearchOption.AllDirectories)

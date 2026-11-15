@@ -818,7 +818,7 @@ namespace BalatroSeedOracle.ViewModels
                 DateCreated = loaded?.DateCreated,
                 Deck = SelectedDeck,
                 Stake = SelectedStake,
-                Seeds = loaded is null ? new List<string>() : new List<string>(loaded.Seeds),
+                Seeds = loaded?.Seeds is { } loadedSeeds ? new List<string>(loadedSeeds) : new List<string>(),
                 Cutoff = loaded?.Cutoff,
                 Must = new List<IMotelyClause>(),
                 Should = new List<IMotelyClause>(),

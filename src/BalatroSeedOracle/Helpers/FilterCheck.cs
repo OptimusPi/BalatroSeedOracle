@@ -51,23 +51,34 @@ public static class FilterCheck
         Scan(config.MustNot, "mustNot");
         return warnings;
 
-        void Scan(List<IMotelyClause> clauses, string section)
+        void Scan(IEnumerable<IMotelyClause> clauses, string section)
         {
-            foreach (var (blind, antes) in clauses.OfType<BossClause>().SelectMany(c => c.Bosses.Select(b => (b, c.Antes))))
+            foreach (var clause in clauses)
             {
-                var impossible = antes.Where(a => !CanAppear(blind, a)).ToArray();
-                if (impossible.Length == 0)
+                if (clause is LogicClause logic)
+                {
+                    Scan(logic.Clauses, section);
                     continue;
+                }
+                if (clause is not BossClause bossClause)
+                    continue;
+                foreach (var blind in bossClause.Bosses)
+                {
+                    var antes = bossClause.Antes;
+                    var impossible = antes.Where(a => !CanAppear(blind, a)).ToArray();
+                    if (impossible.Length == 0)
+                        continue;
 
-                var rule = blind.GetBossType() == MotelyBossBlindType.Finisher
-                    ? "a showdown boss appears only in antes 8, 16, ..."
-                    : $"{blind} first appears in ante {Math.Max(1, blind.GetBossMinAnte())}, and never in antes 8, 16, ...";
-                warnings.Add(
-                    impossible.Length == antes.Length
-                        ? $"{section} boss {blind}: antes [{string.Join(", ", antes)}] are all impossible ({rule}); "
-                            + (section == "must" ? "the filter can never match." : "this clause never counts.")
-                        : $"{section} boss {blind}: ante(s) {string.Join(", ", impossible)} can never hold it ({rule})."
-                );
+                    var rule = blind.GetBossType() == MotelyBossBlindType.Finisher
+                        ? "a showdown boss appears only in antes 8, 16, ..."
+                        : $"{blind} first appears in ante {Math.Max(1, blind.GetBossMinAnte())}, and never in antes 8, 16, ...";
+                    warnings.Add(
+                        impossible.Length == antes.Length
+                            ? $"{section} boss {blind}: antes [{string.Join(", ", antes)}] are all impossible ({rule}); "
+                                + (section == "must" ? "the filter can never match." : "this clause never counts.")
+                            : $"{section} boss {blind}: ante(s) {string.Join(", ", impossible)} can never hold it ({rule})."
+                    );
+                }
             }
         }
 

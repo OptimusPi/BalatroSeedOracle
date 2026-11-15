@@ -5,12 +5,12 @@
 			"path": "../../.."
 		},
 		{
-			"name": "MotelyJAML",
-			"path": "../../../../JammySeedFinder/src/MotelyJAML"
+			"name": "JimbosAnteMarkupLanguage",
+			"path": "../../JimbosAnteMarkupLanguage"
 		}
 	],
 	"settings": {
-		"dotnet.defaultSolution": "BalatroSeedOracle.sln",
+		"dotnet.defaultSolution": "BalatroSeedOracle.slnx",
 		"omnisharp.enableEditorConfigSupport": true,
 		"dotnet.formatting.organizeImportsOnFormat": true
 	}
