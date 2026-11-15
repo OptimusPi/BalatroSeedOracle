@@ -1,0 +1,4 @@
+[submodule "src/JimbosAnteMarkupLanguage"]
+	path = src/JimbosAnteMarkupLanguage
+	url = https://github.com/OptimusPi/JimbosAnteMarkupLanguage.git
+	branch = main

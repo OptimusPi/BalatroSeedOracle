@@ -25,7 +25,7 @@ cd BalatroSeedOracle
 dotnet run --project src/BalatroSeedOracle
 ```
 
-The engine is the `src/MotelyJAML` submodule: Motely 32, from
+The engine is the `src/JimbosAnteMarkupLanguage` submodule: Motely 32, from
 [JimbosAnteMarkupLanguage](https://github.com/OptimusPi/JimbosAnteMarkupLanguage). After pulling,
 `git submodule update --init` keeps it in step.
 
@@ -79,7 +79,7 @@ dotnet test src/BalatroSeedOracle.Tests
 
 `.mcp.json` registers the Avalonia DevTools MCP (`avdt mcp`) for inspecting and driving the
 running app, and the Avalonia docs MCP. Start the agent in this directory so they load. The
-engine's own MCP server (seed search, filter validation, seed analysis) is in MotelyJAML.
+engine's own MCP server (seed search, filter validation, seed analysis) is in `src/JimbosAnteMarkupLanguage`.
 
 ## License
 

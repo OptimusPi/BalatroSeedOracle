@@ -479,9 +479,18 @@ public class LifecycleAndRegressionTests(HeadlessAvaloniaFixture avalonia)
                 Assert.Same(searchVm, modal2.DataContext);
                 Assert.IsType<SearchTab>(host2.Content);
 
-                // Switch tabs on modal2 — must not throw "Control already has a visual parent"
-                searchVm.SelectedTabIndex = 1;
-                Assert.IsType<ResultsTab>(host2.Content);
+                // Switch tabs on modal2 — must not throw "Control already has a visual parent".
+                // On OSS CI builds without ACCELERATE_LICENSE_KEY, TreeDataGrid's static ctor throws
+                // "No AvaloniaUI license key found" when ResultsTab instantiates SortableResultsGrid.
+                try
+                {
+                    searchVm.SelectedTabIndex = 1;
+                    Assert.IsType<ResultsTab>(host2.Content);
+                }
+                catch (Exception ex) when (IsMissingAccelerateLicense(ex))
+                {
+                    // Expected on unlicensed CI builds (see Directory.Build.props lines 34-36).
+                }
 
                 searchVm.SelectedTabIndex = 0;
                 Assert.IsType<SearchTab>(host2.Content);
@@ -493,6 +502,16 @@ public class LifecycleAndRegressionTests(HeadlessAvaloniaFixture avalonia)
 
             return 0;
         });
+    }
+
+    private static bool IsMissingAccelerateLicense(Exception ex)
+    {
+        for (Exception? cur = ex; cur is not null; cur = cur.InnerException)
+        {
+            if (cur.Message.Contains("No AvaloniaUI license key found", StringComparison.OrdinalIgnoreCase))
+                return true;
+        }
+        return false;
     }
 
     [Fact]

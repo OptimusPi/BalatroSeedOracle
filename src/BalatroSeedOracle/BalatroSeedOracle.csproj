@@ -45,7 +45,7 @@
     <PackageReference Include="NVorbis" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\MotelyJAML\Motely\Motely.csproj" />
+    <ProjectReference Include="..\JimbosAnteMarkupLanguage\Motely\Motely.csproj" />
   </ItemGroup>
   <ItemGroup>
     <TrimmerRootDescriptor Include="TrimmerRoots.xml" />

@@ -337,10 +337,10 @@ public class JamlConfigTextTests
     private static string FiltersDir()
     {
         var dir = new DirectoryInfo(AppContext.BaseDirectory);
-        while (dir is not null && !Directory.Exists(Path.Combine(dir.FullName, "src", "MotelyJAML", "Filters")))
+        while (dir is not null && !Directory.Exists(Path.Combine(dir.FullName, "src", "JimbosAnteMarkupLanguage", "Filters")))
             dir = dir.Parent;
         Assert.NotNull(dir);
-        return Path.Combine(dir!.FullName, "src", "MotelyJAML", "Filters");
+        return Path.Combine(dir!.FullName, "src", "JimbosAnteMarkupLanguage", "Filters");
     }
 
     public static TheoryData<string> EngineFilters()
@@ -373,6 +373,60 @@ public class JamlConfigTextTests
         Assert.Contains("- boss: TheEye", text);
         Assert.DoesNotContain("score:", text);
         Assert.DoesNotContain("bosses", text);
+        Assert.DoesNotContain("id:", text);
+    }
+
+    [Fact]
+    public void PreservesDateCreated_AndNonEmptyId()
+    {
+        var config = JamlConfigLoader.FromJaml("id: my-id\ndateCreated: 2026-06-19\nname: t\nmust:\n  - joker: Blueprint\n    antes: [1]\n");
+        var text = JamlConfigText.ToJaml(config);
+        var reloaded = JamlConfigLoader.FromJaml(text);
+        Assert.Equal("my-id", reloaded.Id);
+        Assert.Equal("2026-06-19", reloaded.DateCreated);
+    }
+
+    [Fact]
+    public void Warnings_CatchImpossibleBossInsideLogicGroup()
+    {
+        var config = JamlConfigLoader.FromJaml("must:\n  - or:\n      - boss: TheEye\n        antes: [1]\n      - joker: Blueprint\n        antes: [1]\n");
+        var warnings = FilterCheck.Warnings(config);
+        Assert.Single(warnings);
+        Assert.Contains("TheEye", warnings[0]);
+    }
+
+    private static string ShippedYamlFiltersDir()
+    {
+        var dir = new DirectoryInfo(AppContext.BaseDirectory);
+        while (dir is not null && !Directory.Exists(Path.Combine(dir.FullName, "YamlFilters")))
+            dir = dir.Parent;
+        Assert.NotNull(dir);
+        return Path.Combine(dir!.FullName, "YamlFilters");
+    }
+
+    public static TheoryData<string> ShippedYamlFilters()
+    {
+        var data = new TheoryData<string>();
+        foreach (var file in Directory.EnumerateFiles(ShippedYamlFiltersDir())
+                     .Where(Services.FilterFiles.IsFilterFile)
+                     .OrderBy(f => f, StringComparer.Ordinal))
+            data.Add(Path.GetFileName(file));
+        return data;
+    }
+
+    [Theory]
+    [MemberData(nameof(ShippedYamlFilters))]
+    public void AllShippedYamlFilters_LoadPlanAndRoundTrip(string file)
+    {
+        var raw = File.ReadAllText(Path.Combine(ShippedYamlFiltersDir(), file));
+        Assert.True(FilterCheck.TryCheck(raw, out var original, out _, out var error), $"{file}: {error}");
+
+        var text = JamlConfigText.ToJaml(original!);
+        Assert.True(FilterCheck.TryCheck(text, out var reloaded, out _, out var reloadError), $"{file} round-trip: {reloadError}\n---\n{text}");
+        Assert.Equal(text, JamlConfigText.ToJaml(reloaded!));
+        Assert.Equal(original!.Must.Count, reloaded!.Must.Count);
+        Assert.Equal(original.Should.Count, reloaded.Should.Count);
+        Assert.Equal(original.MustNot.Count, reloaded.MustNot.Count);
     }
 }
 

@@ -1,7 +1,6 @@
 name: 2Ethereal4u
 author: Opus 4.6 and pi
 must:
-must:
   - legendaryJoker: any
     sources:
       spectralPacks: [0]
