@@ -15,23 +15,25 @@ using CommunityToolkit.Mvvm.Input;
 namespace BalatroSeedOracle.ViewModels.Controls
 {
     /// <summary>
-    /// Simple, debounced results grid - collects results in background, updates UI periodically
+    /// The results grid's data: results collect in a buffer, and the rows on show are rebuilt from
+    /// it at most once per <see cref="RefreshIntervalMs"/> while results keep arriving.
     /// </summary>
     public partial class SortableResultsGridViewModel : ObservableObject
     {
         public event EventHandler<string>? CopyToClipboardRequested;
         private const int MaxDisplayResults = 1000;
-        private const int DebounceDelayMs = 300;
+        private const int RefreshIntervalMs = 300;
 
         // Background storage (thread-safe)
         private readonly List<SearchResult> _backingResults = new();
         private readonly object _lock = new();
 
-        // Debounce timer
-        private CancellationTokenSource? _debounceTokenSource;
-        private Task? _debounceTask;
+        // The one refresh that is waiting to run, if any. Results that arrive while it waits ride
+        // along with it, so a search that never pauses still shows its seeds.
+        private CancellationTokenSource? _pendingRefresh;
+        private Task? _refreshTask;
 
-        // UI-bound collection - ONLY updated via debounced refresh
+        // UI-bound collection - ONLY updated by a refresh
         [ObservableProperty]
         private ObservableCollection<SearchResult> _displayedResults = new();
 
@@ -150,7 +152,7 @@ namespace BalatroSeedOracle.ViewModels.Controls
         }
 
         /// <summary>
-        /// Add a single result - triggers debounced UI refresh
+        /// Add a single result. It shows on the next refresh.
         /// </summary>
         public void AddResult(SearchResult result)
         {
@@ -160,12 +162,26 @@ namespace BalatroSeedOracle.ViewModels.Controls
                 TotalResultCount = _backingResults.Count;
             }
 
-            // Debounce the UI update
-            ScheduleDebouncedRefresh();
+            ScheduleRefresh();
         }
 
         /// <summary>
-        /// Add multiple results at once - triggers single debounced UI refresh
+        /// Drop a single result, as when the live window slides past its cap. It goes on the next
+        /// refresh; nothing is reloaded.
+        /// </summary>
+        public void RemoveResult(SearchResult result)
+        {
+            lock (_lock)
+            {
+                _backingResults.Remove(result);
+                TotalResultCount = _backingResults.Count;
+            }
+
+            ScheduleRefresh();
+        }
+
+        /// <summary>
+        /// Add multiple results at once. A bulk load shows at once, a handful on the next refresh.
         /// </summary>
         public void AddResults(IEnumerable<SearchResult> results)
         {
@@ -183,7 +199,7 @@ namespace BalatroSeedOracle.ViewModels.Controls
             );
 
             // For bulk additions (like loading saved results), use immediate refresh
-            // For single additions (like real-time search), use debounced refresh
+            // For single additions (like real-time search), use the scheduled refresh
             if (resultsArray.Length > 10)
             {
                 DebugLogger.Log(
@@ -194,7 +210,7 @@ namespace BalatroSeedOracle.ViewModels.Controls
             }
             else
             {
-                ScheduleDebouncedRefresh();
+                ScheduleRefresh();
             }
         }
 
@@ -218,39 +234,61 @@ namespace BalatroSeedOracle.ViewModels.Controls
         }
 
         /// <summary>
-        /// Force immediate refresh (bypass debounce)
+        /// Refresh now, in place of any refresh that is waiting.
         /// </summary>
         public void ForceRefresh()
         {
-            _debounceTokenSource?.Cancel();
+            lock (_lock)
+            {
+                _pendingRefresh?.Cancel();
+                _pendingRefresh = null;
+            }
+
             RefreshDisplayedResults();
         }
 
-        private void ScheduleDebouncedRefresh()
+        /// <summary>
+        /// Schedule a refresh one interval from now, unless one is already waiting. The wait is
+        /// not restarted by each result: restarting it meant a search that found seeds faster
+        /// than the interval never showed any until it stopped.
+        /// </summary>
+        private void ScheduleRefresh()
         {
-            // Cancel previous debounce
-            _debounceTokenSource?.Cancel();
-            _debounceTokenSource = new CancellationTokenSource();
-            var token = _debounceTokenSource.Token;
+            CancellationTokenSource mine;
+            lock (_lock)
+            {
+                if (_pendingRefresh is not null)
+                    return;
+                mine = _pendingRefresh = new CancellationTokenSource();
+            }
 
-            // Track debounce task properly - no fire-and-forget!
-            _debounceTask = DebouncedRefreshAsync(token);
+            _refreshTask = RefreshAfterIntervalAsync(mine);
         }
 
-        private async Task DebouncedRefreshAsync(CancellationToken cancellationToken)
+        private async Task RefreshAfterIntervalAsync(CancellationTokenSource mine)
         {
             try
             {
-                await Task.Delay(DebounceDelayMs, cancellationToken);
-                if (!cancellationToken.IsCancellationRequested)
-                {
-                    RefreshDisplayedResults();
-                }
+                await Task.Delay(RefreshIntervalMs, mine.Token);
             }
             catch (TaskCanceledException)
             {
-                // Expected when debounce is reset
+                // ForceRefresh ran in its place.
+                mine.Dispose();
+                return;
             }
+
+            bool stillMine;
+            lock (_lock)
+            {
+                stillMine = ReferenceEquals(_pendingRefresh, mine);
+                if (stillMine)
+                    _pendingRefresh = null;
+            }
+
+            mine.Dispose();
+            if (stillMine)
+                RefreshDisplayedResults();
         }
 
         private void RefreshDisplayedResults()
@@ -339,21 +377,26 @@ namespace BalatroSeedOracle.ViewModels.Controls
             // Update UI on dispatcher thread
             Dispatcher.UIThread.Post(() =>
             {
-                DisplayedResults.Clear();
-                foreach (var result in top1000)
+                // Sorted by score, a long search mostly finds seeds that miss the top rows. The rows
+                // are rebuilt only when they change, so the grid keeps its scroll place and selection.
+                if (!DisplayedResults.SequenceEqual(top1000))
                 {
-                    DisplayedResults.Add(result);
+                    DisplayedResults.Clear();
+                    foreach (var result in top1000)
+                    {
+                        DisplayedResults.Add(result);
+                    }
+
+                    DebugLogger.Log(
+                        "SortableResultsGridVM",
+                        $"Refreshed: {TotalResultCount} total, showing {DisplayedResults.Count}"
+                    );
                 }
 
                 // Rebuild grid source if labels changed
                 RebuildGridSourceIfNeeded();
 
                 UpdateStatsText();
-
-                DebugLogger.Log(
-                    "SortableResultsGridVM",
-                    $"Refreshed: {TotalResultCount} total, showing {DisplayedResults.Count}"
-                );
             });
         }
 

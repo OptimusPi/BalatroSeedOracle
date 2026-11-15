@@ -268,11 +268,14 @@ public partial class SortableResultsGrid : UserControl
                 break;
 
             case NotifyCollectionChangedAction.Remove:
-                // Rebuild from source
-                ViewModel.ClearResults();
-                if (ItemsSource != null)
+                // Past its cap the live window drops its oldest result for every new one.
+                // Drop just that one: reloading the whole window per match floods the UI thread.
+                if (e.OldItems != null)
                 {
-                    ViewModel.AddResults(ItemsSource);
+                    foreach (SearchResult item in e.OldItems)
+                    {
+                        ViewModel.RemoveResult(item);
+                    }
                 }
                 break;
         }
