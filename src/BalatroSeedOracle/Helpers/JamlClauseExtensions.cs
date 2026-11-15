@@ -65,6 +65,47 @@ public static class JamlClauseExtensions
     }
 
     /// <summary>
+    /// The builder's "Any …" cards: the name and type the palette gives each one, and the builder
+    /// type whose clause it is (every one saves as that clause naming <c>any</c>:
+    /// <c>commonJoker: any</c>, <c>tarotCard: any</c>). The rarity cards sit in the palette as
+    /// plain "Joker" cards, so the name, not the type, says which clause they are. Read in both
+    /// directions: card → clause on build, clause → card on load.
+    /// </summary>
+    private static readonly (string Name, string PaletteType, string ClauseType)[] Wildcards =
+    [
+        ("Wildcard_Joker", "Joker", "Joker"),
+        ("Wildcard_JokerCommon", "Joker", "CommonJoker"),
+        ("Wildcard_JokerUncommon", "Joker", "UncommonJoker"),
+        ("Wildcard_JokerRare", "Joker", "RareJoker"),
+        ("Wildcard_JokerLegendary", "SoulJoker", "SoulJoker"),
+        ("Wildcard_Tarot", "Tarot", "Tarot"),
+        ("Wildcard_Planet", "Planet", "Planet"),
+        ("Wildcard_Spectral", "Spectral", "Spectral"),
+    ];
+
+    /// <summary>The builder type whose clause a wildcard card (<c>Wildcard_JokerRare</c>) saves as, or null when the name is not one of the cards.</summary>
+    public static string? WildcardClauseType(string itemName)
+    {
+        foreach (var (name, _, clauseType) in Wildcards)
+            if (name.Equals(itemName, StringComparison.OrdinalIgnoreCase))
+                return clauseType;
+        return null;
+    }
+
+    /// <summary>
+    /// The wildcard card (name and palette type) that an <c>any</c> clause of this builder type
+    /// ("RareJoker", "Tarot") loads back as, or null when the palette has no card for it
+    /// (<c>voucher: any</c>, <c>tag: any</c>).
+    /// </summary>
+    public static (string Name, string Type)? WildcardCardFor(string clauseBuilderType)
+    {
+        foreach (var (name, paletteType, clauseType) in Wildcards)
+            if (clauseType.Equals(clauseBuilderType, StringComparison.OrdinalIgnoreCase))
+                return (name, paletteType);
+        return null;
+    }
+
+    /// <summary>
     /// Build the engine clause for a visual-builder item (e.g. type "Joker", value "LuckyCat"
     /// or the wildcard value "any"). The value is handed to the engine's own JAML loader,
     /// which understands enum names and "any" wildcards.

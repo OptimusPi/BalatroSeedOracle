@@ -131,15 +131,30 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         #region Command Implementations
 
         [RelayCommand(CanExecute = nameof(CanSave))]
-        private void SaveCurrentFilter()
+        private void SaveCurrentFilter() => TrySaveCurrentFilter();
+
+        /// <summary>
+        /// Save the filter as it stands; false when it was not saved, with the reason in the
+        /// status line (the engine's own message when the filter doesn't build).
+        /// </summary>
+        private bool TrySaveCurrentFilter()
         {
             if (string.IsNullOrWhiteSpace(FilterName))
             {
                 UpdateStatus("Please enter a filter name", true);
-                return;
+                return false;
             }
 
-            var config = BuildConfigFromCurrentState();
+            JamlConfig config;
+            try
+            {
+                config = BuildConfigFromCurrentState();
+            }
+            catch (Exception ex)
+            {
+                UpdateStatus($"✗ Not saved: {ex.Message}", true);
+                return false;
+            }
 
             // The file that was opened, not a path built from the name: "The Waterbear" opened from
             // waterbear.yaml would otherwise be written beside it as a second filter.
@@ -149,18 +164,23 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 && !Path.GetFileName(opened).StartsWith("_UNSAVED_", StringComparison.OrdinalIgnoreCase)
                     ? opened
                     : FilterFiles.Resolve(FilterName.Trim());
-            FilterFiles.Save(config, filePath);
+            if (!FilterFiles.Save(config, filePath))
+            {
+                UpdateStatus($"✗ Not saved: couldn't write {Path.GetFileName(filePath)}", true);
+                return false;
+            }
 
             CurrentFileName = Path.GetFileName(filePath);
             LastModified = DateTime.Now.ToString("yyyy-MM-dd HH:mm");
             UpdateStatus($"✓ Filter saved: {CurrentFileName}", false);
             DebugLogger.Log("ValidateFilterTab", $"Filter saved to: {filePath}");
+            return true;
         }
 
         [RelayCommand(CanExecute = nameof(CanSave))]
         private void SaveAs()
         {
-            SaveCurrentFilter();
+            TrySaveCurrentFilter();
         }
 
         [RelayCommand]
@@ -173,8 +193,16 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         [RelayCommand]
         private void CopyJson()
         {
-            var config = BuildConfigFromCurrentState();
-            var yaml = JamlConfigText.ToJaml(config);
+            string yaml;
+            try
+            {
+                yaml = JamlConfigText.ToJaml(BuildConfigFromCurrentState());
+            }
+            catch (Exception ex)
+            {
+                UpdateStatus($"✗ Not copied: {ex.Message}", true);
+                return;
+            }
 
             // Copy to clipboard via event
             CopyToClipboardRequested?.Invoke(this, yaml);
@@ -186,8 +214,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         [RelayCommand(CanExecute = nameof(CanSave))]
         private void GoToSearch()
         {
-            // Save the filter first
-            SaveCurrentFilter();
+            // Save the filter first; a filter that didn't save is not searched (the reason is
+            // in the status line).
+            if (!TrySaveCurrentFilter())
+                return;
 
             // Get the filter filename to pass to search modal
             var filterFileName = CurrentFileName;
@@ -209,14 +239,25 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         [RelayCommand(CanExecute = nameof(CanSave))]
         private async Task ExportFilter()
         {
-            var config = BuildConfigFromCurrentState();
+            JamlConfig config;
+            string yaml;
+            try
+            {
+                config = BuildConfigFromCurrentState();
+                yaml = JamlConfigText.ToJaml(config);
+            }
+            catch (Exception ex)
+            {
+                UpdateStatus($"✗ Not exported: {ex.Message}", true);
+                return;
+            }
+
             if (string.IsNullOrWhiteSpace(config.Name))
             {
                 UpdateStatus("Please enter a filter name before exporting", true);
                 return;
             }
 
-            var yaml = JamlConfigText.ToJaml(config);
             var exportFileName = $"{config.Name}_{DateTime.Now:yyyyMMdd_HHmmss}.yaml";
 
             var topLevel = TopLevelHelper.GetTopLevel();

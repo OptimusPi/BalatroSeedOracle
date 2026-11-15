@@ -324,9 +324,30 @@ namespace BalatroSeedOracle.ViewModels
 
         // ===== COMMANDS (using [RelayCommand] source generator) =====
 
+        /// <summary>
+        /// Why the last <see cref="SaveCurrentFilterCommand"/> did not save (the engine's message
+        /// when the filter doesn't build), or null when it saved.
+        /// </summary>
+        [ObservableProperty]
+        private string? _saveError;
+
         [RelayCommand]
         private void SaveCurrentFilter()
         {
+            // Build before anything is touched: a filter the engine refuses is reported, and the
+            // current path, loaded config and files are left as they were.
+            JamlConfig config;
+            try
+            {
+                config = BuildConfigFromCurrentState();
+            }
+            catch (Exception ex)
+            {
+                SaveError = ex.Message;
+                BsoLogger.LogError("FiltersModalViewModel", $"Filter not saved: {ex.Message}");
+                return;
+            }
+
             // If we're creating a new filter (or currently pointing at an _UNSAVED_ temp file),
             // and the user has provided a name, save to a real filter file name so it shows up
             // in the filter picker (which excludes _UNSAVED_ files).
@@ -343,8 +364,14 @@ namespace BalatroSeedOracle.ViewModels
                 );
             }
 
-            var config = BuildConfigFromCurrentState();
-            FilterFiles.Save(config, CurrentFilterPath);
+            if (!FilterFiles.Save(config, CurrentFilterPath))
+            {
+                SaveError = $"Couldn't write {Path.GetFileName(CurrentFilterPath)}";
+                BsoLogger.LogError("FiltersModalViewModel", $"Filter not saved: {SaveError}");
+                CurrentFilterPath = originalPath;
+                return;
+            }
+            SaveError = null;
             LoadedConfig = config;
             BsoLogger.Log("FiltersModalViewModel", $"✅ Filter saved: {CurrentFilterPath}");
 
@@ -804,7 +831,7 @@ namespace BalatroSeedOracle.ViewModels
             var author = _userProfileService?.GetAuthorName() ?? "Unknown";
 
             // A loaded filter keeps what the designer has no control for: its id, date, seed
-            // list, cutoff and clause defaults. A new filter gets a fresh id.
+            // list and cutoff. A new filter gets a fresh id.
             var loaded = LoadedConfig;
             var config = new JamlConfig
             {
@@ -921,7 +948,8 @@ namespace BalatroSeedOracle.ViewModels
                 {
                     ApplyBuilderEdits(copy, filterItem);
                 }
-                return copy;
+                // A group emptied in the builder is left out (see below).
+                return copy is LogicClause { Clauses.Length: 0 } ? null : copy;
             }
 
             // Handle FilterOperatorItem (OR/AND clauses)
@@ -939,22 +967,28 @@ namespace BalatroSeedOracle.ViewModels
                     if (childClause is not null)
                         children.Add(childClause);
                 }
+                // The engine refuses an and/or with no clauses ("needs at least one clause"), so
+                // a group with nothing in it is left out of the config. Children are converted
+                // first, so a group holding only empty groups goes too, at any depth.
+                if (children.Count == 0)
+                    return null;
                 logic.Clauses = children.ToArray();
                 logic.Label = operatorItem.DisplayName;
                 return logic;
             }
 
-            // Convert wildcard names to Motely-compatible values
+            // An "Any …" card is its category's clause naming `any`. Which clause comes from the
+            // card's name: the rarity cards are typed plain "Joker" in the palette, and
+            // Wildcard_JokerRare must save as `rareJoker: any`, not `joker: anyrare`.
+            string clauseType = filterItem.Type;
             string clauseValue = filterItem.Name;
             if (filterItem.Name.StartsWith("Wildcard_", StringComparison.OrdinalIgnoreCase))
             {
-                if (filterItem.Type == "SoulJoker")
-                    clauseValue = "Any";
-                else
-                    clauseValue = filterItem.Name.Replace("Wildcard_Joker", "any", StringComparison.OrdinalIgnoreCase).ToLowerInvariant();
+                clauseType = JamlClauseExtensions.WildcardClauseType(filterItem.Name) ?? filterItem.Type;
+                clauseValue = "any";
             }
 
-            var clause = JamlClauseExtensions.CreateClauseForDiscriminator(filterItem.Type, clauseValue);
+            var clause = JamlClauseExtensions.CreateClauseForDiscriminator(clauseType, clauseValue);
 
             if (filterItem.Antes?.Any() == true)
                 clause.SetAntes(filterItem.Antes.ToArray());
@@ -1139,13 +1173,17 @@ namespace BalatroSeedOracle.ViewModels
                 return operatorConfig;
             }
 
+            // A category `any` the palette has a card for loads back as that card, name and
+            // type (`rareJoker: any` is the "Joker"-typed Wildcard_JokerRare card); the item keeps
+            // its clause, and the name says which clause it is when it is built again.
             string itemName = clause.GetValueName() ?? "";
             if (
                 itemName.Equals("Any", StringComparison.OrdinalIgnoreCase)
-                && normalizedType == "SoulJoker"
+                && JamlClauseExtensions.WildcardCardFor(normalizedType) is { } wildcard
             )
             {
-                itemName = "Wildcard_JokerLegendary";
+                itemName = wildcard.Name;
+                normalizedType = wildcard.Type;
             }
 
             var itemConfig = new ItemConfig

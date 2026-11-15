@@ -352,4 +352,296 @@ public class BuilderRoundTripTests(HeadlessAvaloniaFixture avalonia, ITestOutput
         var built = OnUi(() => Open(path).Vm.BuildConfigFromCurrentState());
         Assert.Equal(before.OrderBy(kv => kv.Key), Run(built, CorpusSeeds).OrderBy(kv => kv.Key));
     }
+
+    // ── 5. the "Any …" wildcards ──
+
+    /// <summary>The wildcard cards the builder offers: name, the type the palette gives it, the clause key it saves as.</summary>
+    public static TheoryData<string, string, string> Wildcards() =>
+        new()
+        {
+            { "Wildcard_Joker", "Joker", "joker" },
+            { "Wildcard_JokerCommon", "Joker", "commonJoker" },
+            { "Wildcard_JokerUncommon", "Joker", "uncommonJoker" },
+            { "Wildcard_JokerRare", "Joker", "rareJoker" },
+            { "Wildcard_JokerLegendary", "SoulJoker", "legendaryJoker" },
+            { "Wildcard_Tarot", "Tarot", "tarotCard" },
+            { "Wildcard_Planet", "Planet", "planetCard" },
+            { "Wildcard_Spectral", "Spectral", "spectralCard" },
+        };
+
+    private static readonly (string Name, string Type)[] WildcardCards =
+    [
+        ("Wildcard_Joker", "Joker"),
+        ("Wildcard_JokerCommon", "Joker"),
+        ("Wildcard_JokerUncommon", "Joker"),
+        ("Wildcard_JokerRare", "Joker"),
+        ("Wildcard_JokerLegendary", "SoulJoker"),
+        ("Wildcard_Tarot", "Tarot"),
+        ("Wildcard_Planet", "Planet"),
+        ("Wildcard_Spectral", "Spectral"),
+    ];
+
+    private static string SaveToTempFilter(JamlConfig config)
+    {
+        var path = Path.Combine(TestDataRoot.NewDir(), "filter.yaml");
+        Assert.True(Services.FilterFiles.Save(config, path), "the filter didn't save");
+        return path;
+    }
+
+    [Fact]
+    public void Palette_OffersTheEightWildcards_AsTheTestsNameThem()
+    {
+        var offered = OnUi(() =>
+        {
+            var vm = new FiltersModalViewModel();
+            return new VisualBuilderTabViewModel(vm).AllWildcards.Select(w => (w.Name, w.Type)).ToArray();
+        });
+        Assert.Equal(WildcardCards, offered);
+    }
+
+    [Theory]
+    [MemberData(nameof(Wildcards))]
+    public void Wildcard_FromThePalette_BuildsSavesAndLoadsBackAsTheSameWildcard(string name, string paletteType, string clauseKey)
+    {
+        var (built, text, reopenedName, reopenedType, rebuilt) = OnUi(() =>
+        {
+            var vm = new FiltersModalViewModel();
+            var visual = new VisualBuilderTabViewModel(vm);
+            vm.VisualBuilderTab = visual;
+            // The palette's own card, dropped in MUST: no loaded clause behind it.
+            var card = visual.AllWildcards.Single(w => w.Name == name);
+            Assert.Equal(paletteType, card.Type);
+            visual.SelectedMust.Add(card);
+
+            var first = vm.BuildConfigFromCurrentState();
+            var designer = Open(SaveToTempFilter(first));
+            var item = designer.Visual.SelectedMust.Single();
+            return (first, JamlConfigText.ToJaml(first), item.Name, item.Type, designer.Vm.BuildConfigFromCurrentState());
+        });
+
+        var clause = Assert.Single(built.Must);
+        Assert.Equal(clauseKey, JamlConfigText.ClauseKeyFor(clause.GetType()));
+        Assert.Equal("Any", clause.GetValueName());
+        Assert.True(FilterCheck.TryCheck(text, out var loaded, out _, out var error), $"{name}: the engine refuses the saved filter: {error}");
+
+        Assert.Equal(name, reopenedName);
+        Assert.Equal(paletteType, reopenedType);
+        AssertSameFilter(loaded, rebuilt, $"{name}: reopened and built again");
+    }
+
+    [Fact]
+    public void Wildcards_AddedThroughBuilderState_InZonesAndInsideAnOr_AllBuildAndLoadBack()
+    {
+        var (built, text, reopenedShould, reopenedOr, rebuilt) = OnUi(() =>
+        {
+            var vm = new FiltersModalViewModel();
+            var visual = new VisualBuilderTabViewModel(vm);
+            vm.VisualBuilderTab = visual;
+            // What AddToShould / SyncOperatorToParent write: the palette card's type and name.
+            var n = 0;
+            foreach (var (name, type) in WildcardCards)
+            {
+                var key = $"item_{++n}";
+                vm.ItemConfigs[key] = new ItemConfig { ItemKey = key, ItemType = type, ItemName = name };
+                vm.SelectedShould.Add(key);
+            }
+            vm.ItemConfigs["item_or"] = new ItemConfig
+            {
+                ItemKey = "item_or",
+                ItemType = "Operator",
+                ItemName = "OR",
+                OperatorType = "OR",
+                Children = WildcardCards.Select(w => new ItemConfig { ItemType = w.Type, ItemName = w.Name }).ToList(),
+            };
+            vm.SelectedMust.Add("item_or");
+            visual.LoadFromParentCollections();
+
+            var first = vm.BuildConfigFromCurrentState();
+            var designer = Open(SaveToTempFilter(first));
+            var or = Assert.IsType<FilterOperatorItem>(designer.Visual.SelectedMust.Single());
+            return (
+                first,
+                JamlConfigText.ToJaml(first),
+                designer.Visual.SelectedShould.Select(i => (i.Name, i.Type)).ToArray(),
+                or.Children.Select(i => (i.Name, i.Type)).ToArray(),
+                designer.Vm.BuildConfigFromCurrentState()
+            );
+        });
+
+        Assert.Equal(WildcardCards.Length, built.Should.Count);
+        Assert.Equal(WildcardCards.Length, Assert.IsType<OrClause>(Assert.Single(built.Must)).Clauses.Length);
+        Assert.True(FilterCheck.TryCheck(text, out var loaded, out _, out var error), $"the engine refuses the saved filter: {error}");
+        Assert.Equal(WildcardCards, reopenedShould);
+        Assert.Equal(WildcardCards, reopenedOr);
+        AssertSameFilter(loaded, rebuilt, "reopened and built again");
+    }
+
+    // ── 6. an and/or with nothing in it is not saved ──
+
+    private static FilterItem Card(string type, string name) => new() { Type = type, Name = name };
+
+    private static FilterOperatorItem Group(string operatorType, params FilterItem[] children)
+    {
+        var group = new FilterOperatorItem(operatorType);
+        foreach (var child in children)
+            group.Children.Add(child);
+        return group;
+    }
+
+    [Fact]
+    public void EmptyGroups_AreLeftOut_AtEveryLevel()
+    {
+        var (built, text) = OnUi(() =>
+        {
+            var vm = new FiltersModalViewModel();
+            var visual = new VisualBuilderTabViewModel(vm);
+            vm.VisualBuilderTab = visual;
+
+            // MUST: an empty OR alone, then a group holding only an empty group.
+            visual.SelectedMust.Add(Group("OR"));
+            visual.SelectedMust.Add(Group("AND", Group("OR", Group("AND"))));
+            // SHOULD: a card beside an empty AND, and a group that keeps one real child.
+            visual.SelectedShould.Add(Card("Joker", "Blueprint"));
+            visual.SelectedShould.Add(Group("AND"));
+            visual.SelectedShould.Add(Group("OR", Card("Joker", "Brainstorm"), Group("AND"), Group("OR", Group("OR"))));
+
+            var config = vm.BuildConfigFromCurrentState();
+            return (config, JamlConfigText.ToJaml(config));
+        });
+
+        Assert.Empty(built.Must);
+        Assert.Equal(2, built.Should.Count);
+        Assert.Equal("Blueprint", built.Should[0].GetValueName());
+        var kept = Assert.IsType<OrClause>(built.Should[1]);
+        Assert.Equal("Brainstorm", Assert.Single(kept.Clauses).GetValueName());
+        Assert.True(FilterCheck.TryCheck(text, out _, out _, out var error), $"the engine refuses the saved filter: {error}\n{text}");
+    }
+
+    [Fact]
+    public void LoadedGroup_EmptiedInTheBuilder_IsLeftOut()
+    {
+        const string Jaml = """
+            name: Emptied
+            deck: Red
+            stake: White
+            must:
+              - voucher: Hieroglyph
+              - or:
+                  - joker: Blueprint
+                  - and:
+                      - joker: Brainstorm
+                      - joker: Baron
+            should:
+              - and:
+                  - joker: Mime
+                  - joker: Baron
+                score: 5
+            """;
+        var path = Path.Combine(TestDataRoot.NewDir(), "emptied.yaml");
+        File.WriteAllText(path, Jaml);
+
+        var (untouched, built, text) = OnUi(() =>
+        {
+            var designer = Open(path);
+            var before = designer.Vm.BuildConfigFromCurrentState();
+
+            // Everything dragged out of the nested AND, then the remaining card out of the OR;
+            // and both cards out of the SHOULD group.
+            var or = designer.Visual.SelectedMust.OfType<FilterOperatorItem>().Single();
+            or.Children.OfType<FilterOperatorItem>().Single().Children.Clear();
+            or.Children.Remove(or.Children.First(c => c is not FilterOperatorItem));
+            designer.Visual.SelectedShould.OfType<FilterOperatorItem>().Single().Children.Clear();
+
+            var config = designer.Vm.BuildConfigFromCurrentState();
+            return (before, config, JamlConfigText.ToJaml(config));
+        });
+
+        Assert.Equal(2, untouched.Must.Count); // the groups load, and are kept while they hold something
+        Assert.Single(untouched.Should);
+
+        Assert.Equal("Hieroglyph", Assert.Single(built.Must).GetValueName());
+        Assert.Empty(built.Should);
+        Assert.True(FilterCheck.TryCheck(text, out _, out _, out var error), $"the engine refuses the saved filter: {error}\n{text}");
+    }
+
+    // ── 7. an explicit save of a filter that doesn't build says why, and goes no further ──
+
+    [Fact]
+    public void ExplicitSave_OfAFilterTheEngineRefuses_ReportsTheEnginesMessage_AndNeitherClosesNorSearches()
+    {
+        var (status, closed, navigated, saveError, pathAfter) = OnUi(() =>
+        {
+            var vm = new FiltersModalViewModel();
+            var visual = new VisualBuilderTabViewModel(vm);
+            vm.VisualBuilderTab = visual;
+            vm.FilterName = "Refused";
+            visual.SelectedMust.Add(Card("Joker", "NotAJoker"));
+            var closedCount = 0;
+            var navigatedCount = 0;
+            vm.RequestClose = () => closedCount++;
+            vm.RequestNavigateToSearch = _ => navigatedCount++;
+
+            // The Validate tab's Save and Search buttons (the bound, live save).
+            var validate = new ValidateFilterTabViewModel(vm);
+            validate.SaveCurrentFilterCommand.Execute(null);
+            var afterSave = validate.StatusMessage;
+            validate.GoToSearchCommand.Execute(null);
+
+            // The modal's own save command.
+            vm.SaveCurrentFilterCommand.Execute(null);
+            return (afterSave, closedCount, navigatedCount, vm.SaveError, vm.CurrentFilterPath);
+        });
+
+        Assert.StartsWith("✗ Not saved:", status);
+        Assert.Contains("'NotAJoker' is not a joker name", status);
+        Assert.Equal(0, closed);
+        Assert.Equal(0, navigated);
+        Assert.Contains("'NotAJoker' is not a joker name", saveError);
+        Assert.Null(pathAfter); // not moved to a file name for a save that didn't happen
+    }
+
+    [Fact]
+    public void LoadedGroup_WithANestedGroupEmptied_KeepsItsCard_AndTheSavedTextReadsBackSo()
+    {
+        const string Jaml = """
+            name: Half emptied
+            deck: Red
+            stake: White
+            must:
+              - or:
+                  - joker: Blueprint
+                  - and:
+                      - joker: Brainstorm
+                      - joker: Baron
+                score: 7
+            """;
+        var path = Path.Combine(TestDataRoot.NewDir(), "half.yaml");
+        File.WriteAllText(path, Jaml);
+
+        var text = OnUi(() =>
+        {
+            var designer = Open(path);
+            var or = designer.Visual.SelectedMust.OfType<FilterOperatorItem>().Single();
+            or.Children.OfType<FilterOperatorItem>().Single().Children.Clear();
+            return JamlConfigText.ToJaml(designer.Vm.BuildConfigFromCurrentState());
+        });
+
+        // What the engine reads from the saved text, not the config in memory.
+        Assert.True(FilterCheck.TryCheck(text, out var saved, out _, out var error), $"the engine refuses the saved filter: {error}\n{text}");
+        var kept = Assert.IsType<OrClause>(Assert.Single(saved.Must));
+        Assert.Equal("Blueprint", Assert.Single(kept.Clauses).GetValueName());
+        Assert.Equal(7, kept.Score); // the loaded group keeps what it carried
+    }
+
+    [Fact]
+    public void Engine_AcceptsANegativeScore()
+    {
+        // Why SearchModalViewModel's untouched Min Score hands the engine no floor rather than 0:
+        // recorded here so the difference (negative totals are reported) is a known one.
+        Assert.True(
+            JamlConfigLoader.TryLoad("should:\n  - joker: Blueprint\n    score: -1\n", out var config, out var error),
+            error
+        );
+        Assert.Equal(-1, config.Should[0].Score);
+    }
 }

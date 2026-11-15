@@ -31,7 +31,7 @@ namespace BalatroSeedOracle.Analysis;
 /// <b>Ante list</b>: numbers and inclusive ranges (<c>1-3</c>) separated by commas, <c>or</c> or
 /// <c>and</c>, after <c>in ante</c>/<c>in antes</c>. The antes come out ascending, without repeats.
 /// Without them the line is its mapping twin with no <c>antes</c> key: the clause's own default
-/// antes, or the filter's <c>defaults:</c>. <b>Score</b>: a trailing <c>score N</c> is
+/// antes. <b>Score</b>: a trailing <c>score N</c> is
 /// <c>score: N</c>. Every other key keeps its default (min 1, default sources); anything more
 /// needs the mapping form.
 /// </para>
@@ -75,8 +75,7 @@ internal static class JamlShorthand
 
     /// <summary>
     /// One shorthand clause read: the clause, and whether the line stated its antes and its score
-    /// (a key the line leaves out is the mapping twin's omitted key: the clause default, or the
-    /// filter's <c>defaults:</c>).
+    /// (a key the line leaves out is the mapping twin's omitted key: the clause default).
     /// </summary>
     internal readonly record struct Reading(IMotelyClause Clause, bool StatesAntes, bool StatesScore);
 

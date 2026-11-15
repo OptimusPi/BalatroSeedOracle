@@ -124,7 +124,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         [RelayCommand(CanExecute = nameof(CanSave))]
         private void GoToSearch()
         {
-            SaveCurrentFilter();
+            if (!TrySaveCurrentFilter())
+                return;
 
             // Close the filters modal and open search modal with this filter
             if (!string.IsNullOrWhiteSpace(CurrentFileName))
@@ -139,7 +140,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         [RelayCommand(CanExecute = nameof(CanSave))]
         private void SaveAndClose()
         {
-            SaveCurrentFilter();
+            if (!TrySaveCurrentFilter())
+                return;
             _parentViewModel.RequestClose?.Invoke();
         }
 
@@ -164,18 +166,37 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         #region Command Implementations
 
         [RelayCommand(CanExecute = nameof(CanSave))]
-        private void SaveCurrentFilter()
+        private void SaveCurrentFilter() => TrySaveCurrentFilter();
+
+        /// <summary>
+        /// Save the filter as it stands; false when it was not saved, with the reason in the
+        /// status line (the engine's own message when the filter doesn't build).
+        /// </summary>
+        private bool TrySaveCurrentFilter()
         {
             if (string.IsNullOrWhiteSpace(FilterName))
             {
                 UpdateStatus("Please enter a filter name", true);
-                return;
+                return false;
             }
 
-            var config = BuildConfigFromCurrentState();
+            JamlConfig config;
+            try
+            {
+                config = BuildConfigFromCurrentState();
+            }
+            catch (Exception ex)
+            {
+                UpdateStatus($"✗ Not saved: {ex.Message}", true);
+                return false;
+            }
 
             var filePath = FilterFiles.Resolve(NormalizeFilterName(FilterName));
-            FilterFiles.Save(config, filePath);
+            if (!FilterFiles.Save(config, filePath))
+            {
+                UpdateStatus($"✗ Not saved: couldn't write {Path.GetFileName(filePath)}", true);
+                return false;
+            }
 
             CurrentFileName = Path.GetFileName(filePath);
             LastModified = DateTime.Now.ToString("yyyy-MM-dd HH:mm");
@@ -185,25 +206,37 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             // Sync back to parent ViewModel so it knows the filter is saved
             _parentViewModel.LoadedConfig = config;
             _parentViewModel.CurrentFilterPath = filePath;
+            return true;
         }
 
         [RelayCommand(CanExecute = nameof(CanSave))]
         private void SaveAs()
         {
-            SaveCurrentFilter();
+            TrySaveCurrentFilter();
         }
 
         [RelayCommand(CanExecute = nameof(CanSave))]
         private async Task ExportFilter()
         {
-            var config = BuildConfigFromCurrentState();
+            JamlConfig config;
+            string yaml;
+            try
+            {
+                config = BuildConfigFromCurrentState();
+                yaml = JamlConfigText.ToJaml(config);
+            }
+            catch (Exception ex)
+            {
+                UpdateStatus($"✗ Not exported: {ex.Message}", true);
+                return;
+            }
+
             if (string.IsNullOrWhiteSpace(config.Name))
             {
                 UpdateStatus("Please enter a filter name before exporting", true);
                 return;
             }
 
-            var yaml = JamlConfigText.ToJaml(config);
             var exportFileName = $"{NormalizeFilterName(config.Name ?? "filter")}.yaml";
 
             var topLevel = TopLevelHelper.GetTopLevel();

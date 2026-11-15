@@ -230,8 +230,19 @@ namespace BalatroSeedOracle.ViewModels
         public int WordListMaxIndex => Math.Max(0, AvailableWordLists.Count - 1);
 
         // Search parameters
+        /// <summary>
+        /// The Min Score spinner. -1 is the spinner's "Auto" (SpinnerControl, AllowAuto): the user
+        /// has set no minimum, which is how a search starts. 0 and up is a minimum the user set.
+        /// </summary>
         [ObservableProperty]
-        private int _minScore = 0;
+        private int _minScore = -1;
+
+        /// <summary>
+        /// The score floor handed to the engine. Null while Min Score is on Auto, so the engine
+        /// takes the filter's own <c>cutoff:</c> (no floor when it has none); otherwise the
+        /// Min Score the user set, which wins over the filter's.
+        /// </summary>
+        public int? EngineCutoff => MinScore < 0 ? null : MinScore;
 
         [ObservableProperty]
         private bool _isDebugMode = false;
@@ -599,10 +610,11 @@ namespace BalatroSeedOracle.ViewModels
             PanelText = $"Searching with '{LoadedConfig.Name}'...";
 
             // Direct engine call: JamlConfig → plan (tally metadata) + settings (search).
-            var plan = MotelySearchBuilder.CreatePlan(LoadedConfig, MinScore);
+            var engineCutoff = EngineCutoff;
+            var plan = MotelySearchBuilder.CreatePlan(LoadedConfig, engineCutoff);
             _tallyLabels = plan.TallyLabels.ToArray();
 
-            var settings = MotelySearchBuilder.CreateSettings(LoadedConfig, MinScore);
+            var settings = MotelySearchBuilder.CreateSettings(LoadedConfig, engineCutoff);
 
             if (
                 !string.IsNullOrEmpty(DeckSelection)

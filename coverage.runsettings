@@ -10,7 +10,7 @@
           <Format>cobertura</Format>
           <!-- Engine assemblies are measured by Motely.Tests; excluding them here keeps the
                merged report from crediting Motely code to the app's 2 test files. -->
-          <Exclude>[Motely]*,[Motely.DataLake]*,[Motely.Lsp]*,[Motely.Lsp.Core]*,[xunit.*]*</Exclude>
+          <Exclude>[Motely]*,[xunit.*]*</Exclude>
           <!-- Avalonia XAML codegen and views have no headless test harness yet (matrix row A4). -->
           <ExcludeByFile>**/*.axaml.cs,**/*.g.cs,**/obj/**/*.cs</ExcludeByFile>
           <ExcludeByAttribute>GeneratedCodeAttribute,CompilerGeneratedAttribute,ExcludeFromCodeCoverageAttribute</ExcludeByAttribute>

@@ -77,9 +77,11 @@ dotnet test src/BalatroSeedOracle.Tests
 
 ## For agents
 
-`.mcp.json` registers the Avalonia DevTools MCP (`avdt mcp`) for inspecting and driving the
-running app, and the Avalonia docs MCP. Start the agent in this directory so they load. The
-engine's own MCP server (seed search, filter validation, seed analysis) is in `src/JimbosAnteMarkupLanguage`.
+`.mcp.json` registers three MCP servers: the Avalonia DevTools MCP (`avdt mcp`) for inspecting
+and driving the running app, the Avalonia docs MCP, and `parcel` (`parcel mcp`) for packaging.
+Start the agent in this directory so they load. The engine submodule (`src/JimbosAnteMarkupLanguage`)
+has no MCP server project; what it has is browser WebMCP tools for its web app, in
+`Motely.Web/src/webmcp-tools.ts`.
 
 ## License
 
