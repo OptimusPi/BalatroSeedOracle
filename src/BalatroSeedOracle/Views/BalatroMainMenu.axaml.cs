@@ -600,8 +600,9 @@ namespace BalatroSeedOracle.Views
                 var modal = new StandardModal("🎨 Filter Designer");
                 modal.SetContent(filtersModal);
                 modal.BackClicked += (s, e) => HideModalContent();
-                // Keep backdrop visible during transition to prevent flicker
-                ShowModalContent(modal, keepBackdrop: true);
+                // Keep backdrop visible during transition to prevent flicker.
+                // The title is passed, or the heading above keeps saying "Select Filter".
+                ShowModalContent(modal, "🎨 Filter Designer", keepBackdrop: true);
             }
             catch (Exception ex)
             {

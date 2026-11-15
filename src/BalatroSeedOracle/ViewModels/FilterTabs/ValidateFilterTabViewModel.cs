@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Avalonia.Media;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
+using BalatroSeedOracle.Constants;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -38,7 +39,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         private string _statusMessage = "Ready to validate filter";
 
         [ObservableProperty]
-        private IBrush _statusColor = Brushes.Gray;
+        private IBrush _statusColor = UIColors.StatusIdle;
 
         public ValidateFilterTabViewModel(FiltersModalViewModel parentViewModel)
         {
@@ -123,7 +124,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             }
 
             StatusMessage = summary + "\n" + string.Join("\n", warnings.Select(w => "⚠ " + w));
-            StatusColor = Brushes.Orange;
+            StatusColor = UIColors.StatusWarn;
             DebugLogger.Log("ValidateFilterTab", $"Status: {StatusMessage}");
         }
 
@@ -282,7 +283,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         private void UpdateStatus(string message, bool isError)
         {
             StatusMessage = message;
-            StatusColor = isError ? Brushes.Red : Brushes.Green;
+            StatusColor = isError ? UIColors.StatusBad : UIColors.StatusGood;
             DebugLogger.Log("ValidateFilterTab", $"Status: {message} (Error: {isError})");
         }
 

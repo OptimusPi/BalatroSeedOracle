@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Input.Platform;
 using Avalonia.Media;
+using BalatroSeedOracle.Constants;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Services;
@@ -34,7 +35,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         private bool _hasError = false;
 
         [ObservableProperty]
-        private IBrush _validationStatusColor = Brushes.Gray;
+        private IBrush _validationStatusColor = UIColors.StatusIdle;
 
         [ObservableProperty]
         private ObservableCollection<FilterItem> _previewItems = new();
@@ -102,7 +103,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             if (string.IsNullOrWhiteSpace(YamlContent))
             {
                 ValidationStatus = "Empty";
-                ValidationStatusColor = Brushes.Gray;
+                ValidationStatusColor = UIColors.StatusIdle;
                 ErrorMessage = "";
                 HasError = false;
                 PreviewItems.Clear();
@@ -125,7 +126,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     );
 
                     ValidationStatus = "✗ Invalid JAML syntax";
-                    ValidationStatusColor = Brushes.Red;
+                    ValidationStatusColor = UIColors.StatusBad;
                     ErrorMessage = loadError ?? "Invalid JAML syntax";
                     HasError = true;
                     HasErrors = true;
@@ -140,14 +141,14 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 if (ValidationErrors.Count == 0)
                 {
                     ValidationStatus = "✓ JAML is valid";
-                    ValidationStatusColor = Brushes.Green;
+                    ValidationStatusColor = UIColors.StatusGood;
                     ErrorMessage = "";
                     HasError = false;
                 }
                 else
                 {
                     ValidationStatus = $"✗ {ValidationErrors.Count} issue(s) found";
-                    ValidationStatusColor = Brushes.Orange;
+                    ValidationStatusColor = UIColors.StatusWarn;
                     HasError = true;
                     HasErrors = true;
                     ErrorCount = ValidationErrors.Count;
@@ -169,7 +170,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 );
 
                 ValidationStatus = "✗ Error";
-                ValidationStatusColor = Brushes.Red;
+                ValidationStatusColor = UIColors.StatusBad;
                 ErrorMessage = ex.Message;
                 HasError = true;
                 HasErrors = true;
@@ -410,7 +411,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 if (!JamlConfigLoader.TryLoad(YamlContent, out var config, out var loadError) || config is null)
                 {
                     ValidationStatus = $"✗ Sync failed: {loadError ?? "Invalid JAML"}";
-                    ValidationStatusColor = Brushes.Red;
+                    ValidationStatusColor = UIColors.StatusBad;
                     ErrorMessage = loadError ?? "Invalid JAML";
                     HasError = true;
                     return;
@@ -436,7 +437,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             catch (Exception ex)
             {
                 ValidationStatus = "✗ Sync failed";
-                ValidationStatusColor = Brushes.Red;
+                ValidationStatusColor = UIColors.StatusBad;
                 ErrorMessage = $"Sync error: {ex.Message}";
                 HasError = true;
                 DebugLogger.LogError("YAMLEditorTab", $"Sync error: {ex.Message}");
@@ -460,13 +461,13 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 else
                 {
                     ValidationStatus = "✗ Cannot format invalid JAML";
-                    ValidationStatusColor = Brushes.Red;
+                    ValidationStatusColor = UIColors.StatusBad;
                 }
             }
             catch (Exception ex)
             {
                 ValidationStatus = "✗ Format failed";
-                ValidationStatusColor = Brushes.Red;
+                ValidationStatusColor = UIColors.StatusBad;
                 ErrorMessage = ex.Message;
                 HasError = true;
             }
@@ -521,7 +522,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 if (HasError)
                 {
                     ValidationStatus = $"✗ Invalid JAML: {ErrorMessage}";
-                    ValidationStatusColor = Brushes.Red;
+                    ValidationStatusColor = UIColors.StatusBad;
                     DebugLogger.LogError(
                         "YAMLEditorTab",
                         $"Generated invalid YAML: {ErrorMessage}"
@@ -533,7 +534,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     var totalItems = (config.Must?.Count ?? 0) + (config.Should?.Count ?? 0);
                     ValidationStatus =
                         totalItems > 0 ? $"Auto-synced ({totalItems} items)" : "Ready";
-                    ValidationStatusColor = Brushes.Gray;
+                    ValidationStatusColor = UIColors.StatusIdle;
 
                     DebugLogger.Log(
                         "YAMLEditorTab",
@@ -544,7 +545,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             catch (Exception ex)
             {
                 ValidationStatus = $"✗ Error generating JAML: {ex.Message}";
-                ValidationStatusColor = Brushes.Red;
+                ValidationStatusColor = UIColors.StatusBad;
                 ErrorMessage = ex.Message;
                 HasError = true;
                 DebugLogger.LogError(

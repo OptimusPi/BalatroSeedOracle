@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Avalonia.Media;
 using Avalonia.Platform.Storage;
+using BalatroSeedOracle.Constants;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -70,7 +71,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         private string _statusMessage = "Ready to save filter";
 
         [ObservableProperty]
-        private IBrush _statusColor = Brushes.Gray;
+        private IBrush _statusColor = UIColors.StatusIdle;
 
         // Expose parent's deck/stake properties for binding
         public int SelectedDeckIndex
@@ -264,7 +265,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         private void UpdateStatus(string message, bool isError)
         {
             StatusMessage = message;
-            StatusColor = isError ? Brushes.Red : Brushes.Green;
+            StatusColor = isError ? UIColors.StatusBad : UIColors.StatusGood;
 
             DebugLogger.Log("SaveFilterTab", $"Status: {message} (Error: {isError})");
         }

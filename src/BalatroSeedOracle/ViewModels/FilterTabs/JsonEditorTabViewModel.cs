@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Media;
+using BalatroSeedOracle.Constants;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Services;
@@ -25,7 +26,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         private string _validationStatus = "Ready";
 
         [ObservableProperty]
-        private IBrush _validationStatusColor = Brushes.Gray;
+        private IBrush _validationStatusColor = UIColors.StatusIdle;
 
         /// <summary>
         /// Returns the current filter name from the parent ViewModel for display in the editor header
@@ -80,7 +81,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             // Silent status update (no user-visible message)
             var totalItems = config.Must.Count + config.Should.Count;
             ValidationStatus = totalItems > 0 ? $"Auto-synced ({totalItems} items)" : "Ready";
-            ValidationStatusColor = Brushes.Gray;
+            ValidationStatusColor = UIColors.StatusIdle;
 
             DebugLogger.Log(
                 "JsonEditorTab",
@@ -94,7 +95,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             if (_parentViewModel?.VisualBuilderTab is not VisualBuilderTabViewModel)
             {
                 ValidationStatus = "Visual builder not available";
-                ValidationStatusColor = Brushes.Red;
+                ValidationStatusColor = UIColors.StatusBad;
                 return;
             }
 
@@ -103,7 +104,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
             ValidationStatus =
                 $"✓ Generated from visual ({config.Must.Count + config.Should.Count} items)";
-            ValidationStatusColor = Brushes.Green;
+            ValidationStatusColor = UIColors.StatusGood;
         }
 
         [RelayCommand]
@@ -115,14 +116,14 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 if (!ValidateJsonSyntax())
                 {
                     ValidationStatus = "Invalid JSON - cannot apply to visual";
-                    ValidationStatusColor = Brushes.Red;
+                    ValidationStatusColor = UIColors.StatusBad;
                     return;
                 }
 
                 if (_parentViewModel?.VisualBuilderTab is null)
                 {
                     ValidationStatus = "Visual builder not available";
-                    ValidationStatusColor = Brushes.Red;
+                    ValidationStatusColor = UIColors.StatusBad;
                     return;
                 }
 
@@ -130,7 +131,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 if (visualTab is null)
                 {
                     ValidationStatus = "Visual builder not initialized";
-                    ValidationStatusColor = Brushes.Red;
+                    ValidationStatusColor = UIColors.StatusBad;
                     return;
                 }
 
@@ -138,14 +139,14 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 if (!JamlConfigLoader.TryLoad(JsonContent, out var config, out var loadError))
                 {
                     ValidationStatus = $"Failed to parse JAML: {loadError}";
-                    ValidationStatusColor = Brushes.Red;
+                    ValidationStatusColor = UIColors.StatusBad;
                     return;
                 }
 
                 if (config is null)
                 {
                     ValidationStatus = "Failed to parse JSON";
-                    ValidationStatusColor = Brushes.Red;
+                    ValidationStatusColor = UIColors.StatusBad;
                     return;
                 }
 
@@ -193,7 +194,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 // No separate MustNot collection exists anymore
 
                 ValidationStatus = $"✓ Applied to visual ({itemsAdded} items)";
-                ValidationStatusColor = Brushes.Green;
+                ValidationStatusColor = UIColors.StatusGood;
 
                 DebugLogger.Log(
                     "JsonEditorTab",
@@ -203,7 +204,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             catch (Exception ex)
             {
                 ValidationStatus = $"Error applying JSON: {ex.Message}";
-                ValidationStatusColor = Brushes.Red;
+                ValidationStatusColor = UIColors.StatusBad;
                 DebugLogger.LogError("JsonEditorTab", $"Error applying JSON: {ex.Message}");
             }
         }
@@ -214,12 +215,12 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             if (ValidateJsonSyntax())
             {
                 ValidationStatus = "✓ Valid YAML";
-                ValidationStatusColor = Brushes.Green;
+                ValidationStatusColor = UIColors.StatusGood;
             }
             else
             {
                 ValidationStatus = "✗ Invalid YAML syntax";
-                ValidationStatusColor = Brushes.Red;
+                ValidationStatusColor = UIColors.StatusBad;
             }
         }
 
@@ -232,18 +233,18 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 {
                     JsonContent = JamlConfigText.ToJaml(config);
                     ValidationStatus = "✓ YAML formatted";
-                    ValidationStatusColor = Brushes.Green;
+                    ValidationStatusColor = UIColors.StatusGood;
                 }
                 else
                 {
                     ValidationStatus = "Cannot format invalid YAML";
-                    ValidationStatusColor = Brushes.Red;
+                    ValidationStatusColor = UIColors.StatusBad;
                 }
             }
             catch (Exception ex)
             {
                 ValidationStatus = $"Format error: {ex.Message}";
-                ValidationStatusColor = Brushes.Red;
+                ValidationStatusColor = UIColors.StatusBad;
             }
         }
 
@@ -255,12 +256,12 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 CopyToClipboardRequested?.Invoke(this, JsonContent);
 
                 ValidationStatus = "✓ JSON copied to clipboard";
-                ValidationStatusColor = Brushes.Green;
+                ValidationStatusColor = UIColors.StatusGood;
             }
             catch (Exception ex)
             {
                 ValidationStatus = $"Copy error: {ex.Message}";
-                ValidationStatusColor = Brushes.Red;
+                ValidationStatusColor = UIColors.StatusBad;
             }
         }
 
