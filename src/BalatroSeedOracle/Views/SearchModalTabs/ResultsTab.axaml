@@ -117,9 +117,11 @@
         </Border>
 
         <!-- SortableResultsGrid with all features: sorting, pagination, export, copy -->
+        <!-- The grid sets its own DataContext, so a plain {Binding SearchResults} would be read
+             from the grid's view model and stay empty. Read it from this tab's instead. -->
         <controls:SortableResultsGrid Grid.Row="1"
                                       x:Name="ResultsGrid"
-                                      ItemsSource="{Binding SearchResults}"
+                                      ItemsSource="{Binding $parent[UserControl].((vm:SearchModalViewModel)DataContext).SearchResults}"
                                       Margin="0"/>
 
         <!-- Loading overlay (shown when searching with 0 results) -->

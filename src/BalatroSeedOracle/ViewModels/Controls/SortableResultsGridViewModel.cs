@@ -89,6 +89,9 @@ namespace BalatroSeedOracle.ViewModels.Controls
             private set => SetProperty(ref _gridSource, value);
         }
 
+        /// <summary>The tally column labels of the results on show, in column order.</summary>
+        public IReadOnlyList<string> TallyLabels => _currentLabels ?? [];
+
         // Commands
         public IAsyncRelayCommand<string> CopySeedCommand { get; }
         public IRelayCommand ExportAllCommand { get; }
@@ -412,16 +415,18 @@ namespace BalatroSeedOracle.ViewModels.Controls
                     var index = i;
                     var label = _currentLabels[i];
 
-                    source.WithTextColumn<SearchResult, string>(
+                    // The column reads this expression as a binding path, so it must be a
+                    // plain member/index chain: a conditional or a method call throws
+                    // ExpressionParseException. Typed int, the column also sorts as numbers.
+                    source.WithTextColumn<SearchResult, int>(
                         label.ToUpperInvariant(),
-                        x => (x.Scores != null && index < x.Scores.Length)
-                            ? x.Scores[index].ToString()
-                            : "-",
+                        x => x.Scores![index],
                         o => o.Width = new GridLength(70));
                 }
             }
 
             GridSource = source;
+            OnPropertyChanged(nameof(TallyLabels));
 
             DebugLogger.Log(
                 "SortableResultsGridVM",
