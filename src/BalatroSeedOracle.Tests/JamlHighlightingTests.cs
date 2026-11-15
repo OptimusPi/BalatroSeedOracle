@@ -9,19 +9,24 @@ using Xunit;
 namespace BalatroSeedOracle.Tests;
 
 /// <summary>The JAML editor's colors: which color each piece of a filter line gets.</summary>
-public class JamlHighlightingTests
+[Collection(HeadlessAvaloniaCollection.Name)]
+public class JamlHighlightingTests(HeadlessAvaloniaFixture avalonia)
 {
-    /// <summary>Each colored piece of <paramref name="line"/> with its color's name.</summary>
-    private static List<(string Text, string Color)> Colors(string line)
-    {
-        var document = new TextDocument(line);
-        var highlighter = new DocumentHighlighter(document, JamlHighlighting.Definition);
-        return highlighter
-            .HighlightLine(1)
-            .Sections.Where(section => section.Color?.Name is not null)
-            .Select(section => (document.GetText(section.Offset, section.Length), section.Color!.Name!))
-            .ToList();
-    }
+    /// <summary>
+    /// Each colored piece of <paramref name="line"/> with its color's name. AvaloniaEdit's
+    /// highlighter checks it is on the UI thread, so this runs there.
+    /// </summary>
+    private List<(string Text, string Color)> Colors(string line) =>
+        avalonia.Run(() =>
+        {
+            var document = new TextDocument(line);
+            var highlighter = new DocumentHighlighter(document, JamlHighlighting.Definition);
+            return highlighter
+                .HighlightLine(1)
+                .Sections.Where(section => section.Color?.Name is not null)
+                .Select(section => (document.GetText(section.Offset, section.Length), section.Color!.Name!))
+                .ToList();
+        });
 
     [Theory]
     [InlineData("must:", "must", "Must")]
