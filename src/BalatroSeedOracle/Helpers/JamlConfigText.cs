@@ -16,7 +16,7 @@ namespace BalatroSeedOracle.Helpers;
 /// <para>
 /// Clause shape is the one every engine filter uses: a flat mapping whose discriminator key holds
 /// the clause's names (<c>- boss: TheEye</c> then <c>antes: [3]</c> as a sibling); and/or carry
-/// their children in a <c>clauses:</c> payload. Keys and their spelling come from
+/// their children as a list under the key. Keys and their spelling come from
 /// <see cref="FilterVocabulary"/> (the loader's binding table), and properties still at their
 /// default are left out, so the text reads like a hand-written filter and loads back to the same
 /// config.
@@ -74,7 +74,7 @@ public static class JamlConfigText
             );
 
         if (clause is LogicClause logic)
-            return new JsonObject { [key] = LogicPayload(logic) };
+            return LogicNode(key, logic);
 
         var node = new JsonObject();
         var valueProperty = FilterVocabulary.ValuePropertyFor(key);
@@ -125,20 +125,22 @@ public static class JamlConfigText
         }
     }
 
-    private static JsonObject LogicPayload(LogicClause logic)
+    /// <summary>
+    /// An and/or as engine 32 reads it: the child list under the key, its own settings beside it.
+    /// The engine takes no <c>max</c> on either.
+    /// </summary>
+    private static JsonObject LogicNode(string key, LogicClause logic)
     {
-        var payload = new JsonObject { ["clauses"] = ClauseArray(logic.Clauses) };
+        var node = new JsonObject { [key] = ClauseArray(logic.Clauses) };
         if (logic.Mode != LogicScoreMode.Sum)
-            payload["mode"] = logic.Mode.ToString();
+            node["mode"] = logic.Mode.ToString();
         if (logic.Min != 1)
-            payload["min"] = logic.Min;
-        if (logic.Max is { } max)
-            payload["max"] = max;
+            node["min"] = logic.Min;
         if (logic.Score != 1)
-            payload["score"] = logic.Score;
+            node["score"] = logic.Score;
         if (logic.Label is { } label)
-            payload["label"] = label;
-        return payload;
+            node["label"] = label;
+        return node;
     }
 
     private static bool IsDefault(PropertyInfo property, object defaults, JsonNode walked)

@@ -101,9 +101,17 @@ public class JamlCompletionTests
     }
 
     [Fact]
-    public void InsideOrClauses_ListItem_OffersClauseKeys()
+    public void InsideOrList_ListItem_OffersClauseKeys()
     {
-        var labels = Labels("must:\n  - or:\n      clauses:\n        - ");
+        var labels = Labels("must:\n  - or:\n      - ");
+        Assert.Contains("joker", labels);
+        Assert.Contains("tag", labels);
+    }
+
+    [Fact]
+    public void InsideOrClausesBesideTheKey_ListItem_OffersClauseKeys()
+    {
+        var labels = Labels("must:\n  - or:\n    clauses:\n      - ");
         Assert.Contains("joker", labels);
         Assert.Contains("tag", labels);
     }
@@ -329,10 +337,10 @@ public class JamlConfigTextTests
     private static string FiltersDir()
     {
         var dir = new DirectoryInfo(AppContext.BaseDirectory);
-        while (dir is not null && !Directory.Exists(Path.Combine(dir.FullName, "src", "MotelyJAML", "JamlFilters")))
+        while (dir is not null && !Directory.Exists(Path.Combine(dir.FullName, "src", "MotelyJAML", "Filters")))
             dir = dir.Parent;
         Assert.NotNull(dir);
-        return Path.Combine(dir!.FullName, "src", "MotelyJAML", "JamlFilters");
+        return Path.Combine(dir!.FullName, "src", "MotelyJAML", "Filters");
     }
 
     public static TheoryData<string> EngineFilters()

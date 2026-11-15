@@ -25,8 +25,9 @@ cd BalatroSeedOracle
 dotnet run --project src/BalatroSeedOracle
 ```
 
-The engine is the `src/MotelyJAML` submodule ([MotelyJAML](https://github.com/OptimusPi/MotelyJAML)).
-After pulling, `git submodule update --init` keeps it in step.
+The engine is the `src/MotelyJAML` submodule: Motely 32, from
+[JimbosAnteMarkupLanguage](https://github.com/OptimusPi/JimbosAnteMarkupLanguage). After pulling,
+`git submodule update --init` keeps it in step.
 
 ## Where your things live
 
@@ -42,8 +43,8 @@ After pulling, `git submodule update --init` keeps it in step.
 nearest folder at or above the exe that does; else the launch directory.
 
 A filter that doesn't load is still listed in the filter browser, marked as broken, with the
-engine's one-line reason and fix (for example, "'luckMoney' is not a clause key; did you mean
-`luckyMoney`?"). Open it with **Edit this Filter** to fix it.
+engine's one-line reason (for example, "JAML line 3: Property 'luckMoney' not found on type
+'Motely.Filters.JokerClause'."). Open it with **Edit this Filter** to fix it.
 
 ## JAML in one screen
 
@@ -52,16 +53,20 @@ name: Perkeo with Black Hole
 deck: Red
 stake: White
 must:
-  - Perkeo in ante 1 or 2
+  - legendaryJoker: Perkeo
+    antes: [1, 2]
 should:
-  - Black Hole in antes 1-4 score 80
+  - spectralCard: BlackHole
+    antes: [1, 2, 3, 4]
+    score: 80
   - uncommonJoker: Constellation
     antes: [1, 2, 3]
     score: 60
 ```
 
-Clauses can be shorthand lines or mappings, mixed freely. The full language (sources, editions,
-`defaults:`, and/or, events) is documented in the engine's README.
+Every clause is a mapping with a clause key. Engine 32 no longer reads shorthand lines
+(`- Perkeo in ante 1 or 2`) or a top-level `defaults:`. The full language (sources, editions,
+and/or, events) is documented in the engine's README.
 
 ## Build and test
 

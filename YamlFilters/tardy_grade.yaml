@@ -1,7 +1,8 @@
 name: Waterbear cares a tun
 author: Waterbear #0027
 must:
-  - GrosMichel in ante 1
+  - commonJoker: GrosMichel
+    antes: [1]
   - GrosMichelExtinct: [0] # break banana on first shot
 should:
   - jokers: [Cavendish, Blueprint, Brainstorm]

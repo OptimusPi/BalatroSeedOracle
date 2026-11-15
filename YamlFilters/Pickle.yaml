@@ -4,7 +4,8 @@ description: Invisible Joker rare duplicates a random joker after 4 rounds
 deck: Red
 stake: White
 must:
-  - Blueprint in Ante 1
+  - rareJoker: Blueprint
+    antes: [1]
 
 seeds:
   - 2PICKLEB
