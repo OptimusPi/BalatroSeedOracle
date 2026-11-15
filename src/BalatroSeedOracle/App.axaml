@@ -208,6 +208,8 @@
         <!-- Commented out to prevent Avalonia 11/12 skewed assembly startup crash -->
         <!-- <StyleInclude Source="avares://IconPacks.Avalonia.FeatherIcons/FeatherIcons.axaml" /> -->
         <!-- <StyleInclude Source="avares://IconPacks.Avalonia.Material/Material.axaml" /> -->
+        <!-- DataGrid draws nothing without its theme. -->
+        <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml" />
         <!-- Avalonia Accelerate Components -->
         <StyleInclude Source="avares://Avalonia.Controls.TreeDataGrid/Themes/Fluent.axaml" />
         <!-- DISABLED FOR WASM BUILD: <StyleInclude Source="avares://Avalonia.Controls.Markdown/Themes/Fluent.axaml" /> -->
@@ -539,6 +541,7 @@
 
         <Style Selector="DataGridColumnHeader">
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
+            <Setter Property="FontSize" Value="16" />
             <Setter Property="Background" Value="{StaticResource DarkBackground}" />
             <Setter Property="Foreground" Value="{StaticResource White}" />
             <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}" />

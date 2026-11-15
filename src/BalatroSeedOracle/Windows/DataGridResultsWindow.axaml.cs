@@ -509,7 +509,7 @@ LIMIT 50;",
                     {
                         Header = "Total Score",
                         Binding = new Binding(nameof(DataGridResultItem.TotalScore)),
-                        Width = new DataGridLength(110),
+                        Width = new DataGridLength(130),
                     }
                 );
 
@@ -533,7 +533,9 @@ LIMIT 50;",
                                 Binding = new Binding(
                                     $"{nameof(DataGridResultItem.TallyScores)}[{i}]"
                                 ),
-                                Width = new DataGridLength(100),
+                                // Wide enough for the clause's name, which is the header.
+                                Width = DataGridLength.Auto,
+                                MinWidth = 100,
                             }
                         );
                     }

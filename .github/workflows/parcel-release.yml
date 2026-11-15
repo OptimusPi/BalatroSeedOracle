@@ -93,6 +93,8 @@ jobs:
       - name: Package macOS Apple Silicon (osx-arm64)
         run: |
           cd src/BalatroSeedOracle
+          # Parcel refuses an output directory that does not exist yet.
+          mkdir -p bin/packages/osx-arm64
           parcel pack BalatroSeedOracle.parcel -r osx-arm64 -p dmg -o bin/packages/osx-arm64
           find bin/packages/osx-arm64 -name "*.dmg" ! -name "*-arm64.dmg" -exec sh -c '
             for f do mv "$f" "${f%.dmg}-arm64.dmg"; done
@@ -101,6 +103,7 @@ jobs:
       - name: Package macOS Intel (osx-x64)
         run: |
           cd src/BalatroSeedOracle
+          mkdir -p bin/packages/osx-x64
           parcel pack BalatroSeedOracle.parcel -r osx-x64 -p dmg -o bin/packages/osx-x64
           find bin/packages/osx-x64 -name "*.dmg" ! -name "*-x64.dmg" -exec sh -c '
             for f do mv "$f" "${f%.dmg}-x64.dmg"; done

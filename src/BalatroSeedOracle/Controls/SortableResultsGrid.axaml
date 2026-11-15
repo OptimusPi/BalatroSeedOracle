@@ -2,7 +2,6 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:BalatroSeedOracle.ViewModels.Controls"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:treeDataGrid="clr-namespace:Avalonia.Controls;assembly=Avalonia.Controls.TreeDataGrid"
              x:Class="BalatroSeedOracle.Controls.SortableResultsGrid"
              x:DataType="vm:SortableResultsGridViewModel"
              d:DataContext="{d:DesignInstance Type=vm:SortableResultsGridViewModel}">
@@ -62,13 +61,11 @@
             </Grid>
         </Border>
 
-        <!-- TreeDataGrid - MVVM binding to Source -->
-        <treeDataGrid:TreeDataGrid Grid.Row="1"
-                                   x:Name="ResultsTreeDataGrid"
-                                   Source="{Binding GridSource}"
-                                   CanUserSortColumns="True"
-                                   CanUserResizeColumns="True"
-                                   Background="{StaticResource DarkBackground}"
-                                   Foreground="White"/>
+        <!-- The grid itself is built in code: TreeDataGrid when this build carries an Avalonia
+             Accelerate key, the free DataGrid when it does not. See SortableResultsGrid.axaml.cs. -->
+        <ContentControl Grid.Row="1"
+                        x:Name="GridHost"
+                        HorizontalContentAlignment="Stretch"
+                        VerticalContentAlignment="Stretch"/>
     </Grid>
 </UserControl>

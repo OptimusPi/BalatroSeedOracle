@@ -423,7 +423,7 @@ public class LifecycleAndRegressionTests(HeadlessAvaloniaFixture avalonia)
         });
     }
 
-    private static void EnsureAppResourcesLoaded()
+    internal static void EnsureAppResourcesLoaded()
     {
         var app = Application.Current!;
         if (app.Resources.ContainsKey("BalatroFont"))
