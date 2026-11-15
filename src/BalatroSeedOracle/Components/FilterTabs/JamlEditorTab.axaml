@@ -91,7 +91,6 @@
             <AvaloniaEdit:TextEditor Grid.Row="1"
                                     Grid.Column="0"
                                     x:Name="YAMLEditor"
-                                    SyntaxHighlighting="YAML"
                                     ShowLineNumbers="True"
                                     FontFamily="Cascadia Code,Consolas,Menlo,Courier New,monospace"
                                     FontSize="18"

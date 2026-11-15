@@ -1,3 +1,6 @@
+using Avalonia.Media;
+using Avalonia.Media.Immutable;
+
 namespace BalatroSeedOracle.Constants
 {
     /// <summary>
@@ -33,5 +36,13 @@ namespace BalatroSeedOracle.Constants
         public const string ShouldHaveColor = Blue; // Blue for optional items
         public const string BannedColor = Orange; // Orange for banned items
         public const string InfoColor = Gold; // Gold for info/stats
+
+        // Status lines on the dark panels. The system Green (#008000) and Gray (#808080) are
+        // too dark to read there, so these come from the app's own palette.
+        public const string BrightGreen = "#35bd86";
+        public static readonly IBrush StatusGood = new ImmutableSolidColorBrush(Color.Parse(BrightGreen));
+        public static readonly IBrush StatusBad = new ImmutableSolidColorBrush(Color.Parse(Red));
+        public static readonly IBrush StatusWarn = new ImmutableSolidColorBrush(Color.Parse(Orange));
+        public static readonly IBrush StatusIdle = new ImmutableSolidColorBrush(Color.Parse(LightTextGrey));
     }
 }

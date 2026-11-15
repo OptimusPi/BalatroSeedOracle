@@ -1,8 +1,6 @@
 using System;
-using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-using System.Xml;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
@@ -10,8 +8,6 @@ using AvaloniaEdit;
 using AvaloniaEdit.CodeCompletion;
 using AvaloniaEdit.Document;
 using AvaloniaEdit.Folding;
-using AvaloniaEdit.Highlighting;
-using AvaloniaEdit.Highlighting.Xshd;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.ViewModels.FilterTabs;
 
@@ -358,46 +354,8 @@ namespace BalatroSeedOracle.Components.FilterTabs
             if (YAMLEditor == null)
                 return;
 
-            try
-            {
-                // Load custom YAML dark mode syntax highlighting (uses YAML highlighting since YAML is YAML-based)
-                var xshdPath = Path.Combine(AppContext.BaseDirectory, "Resources", "YAMLDark.xshd");
-
-                if (!File.Exists(xshdPath))
-                {
-                    xshdPath = Path.Combine(AppContext.BaseDirectory, "Resources", "YamlDark.xshd");
-                }
-
-                if (File.Exists(xshdPath))
-                {
-                    using (var reader = new XmlTextReader(xshdPath))
-                    {
-                        var definition = HighlightingLoader.Load(
-                            reader,
-                            HighlightingManager.Instance
-                        );
-                        YAMLEditor.SyntaxHighlighting = definition;
-                    }
-                    DebugLogger.Log(
-                        "YAMLEditorTab",
-                        "Custom YAML dark mode syntax highlighting loaded"
-                    );
-                }
-                else
-                {
-                    DebugLogger.LogError(
-                        "YAMLEditorTab",
-                        $"YAMLDark.xshd not found at {xshdPath}, using default"
-                    );
-                }
-            }
-            catch (Exception ex)
-            {
-                DebugLogger.LogError(
-                    "YAMLEditorTab",
-                    $"Failed to load custom syntax highlighting: {ex.Message}"
-                );
-            }
+            // Built in code from the engine's clause keys; there is no highlighting file to ship.
+            YAMLEditor.SyntaxHighlighting = JamlHighlighting.Definition;
         }
 
         private void InstallCodeFolding()
