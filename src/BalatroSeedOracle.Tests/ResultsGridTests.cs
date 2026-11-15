@@ -1,4 +1,7 @@
+using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using Avalonia.Controls;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
@@ -135,6 +138,89 @@ public class ResultsGridTests(HeadlessAvaloniaFixture avalonia)
             {
                 window.Close();
             }
+            return 0;
+        });
+    }
+
+    [Fact]
+    public void AResultDroppedFromTheLiveWindow_IsDroppedAlone_WithNoReload()
+    {
+        avalonia.Run(() =>
+        {
+            LifecycleAndRegressionTests.EnsureAppResourcesLoaded();
+            var live = new ObservableCollection<SearchResult>(
+                Enumerable.Range(0, 50).Select(i => Found($"SEED{i:D4}", i, i, 0))
+            );
+            var results = new SortableResultsGrid { ItemsSource = live };
+            Show(results.ViewModel);
+            Assert.Equal(50, results.ViewModel.DisplayedResults.Count);
+
+            var rowChanges = 0;
+            results.ViewModel.DisplayedResults.CollectionChanged += (_, _) => rowChanges++;
+
+            // What a search past its cap does on every match: one in, the oldest out.
+            live.Add(Found("NEWEST", 99, 9, 9));
+            live.RemoveAt(0);
+            Dispatcher.UIThread.RunJobs();
+
+            // The buffer follows at once; the rows wait for the next refresh.
+            Assert.Equal(50, results.ViewModel.TotalResultCount);
+            Assert.Equal(0, rowChanges);
+
+            Show(results.ViewModel);
+            var seeds = results.ViewModel.DisplayedResults.Select(r => r.Seed).ToList();
+            Assert.Contains("NEWEST", seeds);
+            Assert.DoesNotContain("SEED0000", seeds);
+            return 0;
+        });
+    }
+
+    [Fact]
+    public void ResultsThatKeepArriving_ShowWhileTheyArrive()
+    {
+        avalonia.Run(() =>
+        {
+            var grid = new SortableResultsGridViewModel();
+
+            // One result every 50 ms for a second: faster than the 300 ms refresh interval, so a
+            // timer that restarts on each result would show nothing until the stream stopped.
+            var clock = Stopwatch.StartNew();
+            var sent = 0;
+            while (clock.ElapsedMilliseconds < 1000)
+            {
+                grid.AddResult(Found($"SEED{sent++:D4}", sent, sent, 0));
+                Thread.Sleep(50);
+                Dispatcher.UIThread.RunJobs();
+            }
+
+            Assert.NotEmpty(grid.DisplayedResults);
+            return 0;
+        });
+    }
+
+    [Fact]
+    public void ARefreshThatChangesNoRow_LeavesTheRowsAlone()
+    {
+        avalonia.Run(() =>
+        {
+            var grid = new SortableResultsGridViewModel();
+            grid.AddResults(Enumerable.Range(0, 1200).Select(i => Found($"SEED{i:D4}", 1000 + i, i, 0)));
+            Show(grid);
+            Assert.Equal(1000, grid.DisplayedResults.Count);
+
+            var rowChanges = 0;
+            grid.DisplayedResults.CollectionChanged += (_, _) => rowChanges++;
+
+            // Scores below every row on show: the top 1000 are the same seeds as before.
+            grid.AddResult(Found("LOWEST", 1, 0, 0));
+            Show(grid);
+            Assert.Equal(0, rowChanges);
+            Assert.Equal(1201, grid.TotalResultCount);
+
+            // A new best seed does change the rows.
+            grid.AddResult(Found("BEST", 99999, 9, 9));
+            Show(grid);
+            Assert.Equal("BEST", grid.DisplayedResults[0].Seed);
             return 0;
         });
     }
