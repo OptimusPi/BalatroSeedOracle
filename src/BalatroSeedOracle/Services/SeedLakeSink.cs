@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Text;
 using Microsoft.Extensions.Logging;
 using Motely;
@@ -66,8 +67,10 @@ public sealed class SeedLakeSink : IDisposable
     /// <summary>The lake file for a search id (same answer for instance and static callers).</summary>
     public static string SeedFilePath(ILogger? logger, string searchId)
     {
+        // Windows' set, spelled out: Path.GetInvalidFileNameChars() is only '/' and NUL on Linux and
+        // macOS, so the same search id would name a different file there.
         var safe = string.Concat(
-            (searchId ?? string.Empty).Split(Path.GetInvalidFileNameChars(), StringSplitOptions.RemoveEmptyEntries)
+            (searchId ?? string.Empty).Where(c => c >= ' ' && !"<>:\"/\\|?*".Contains(c))
         );
         if (string.IsNullOrWhiteSpace(safe))
             safe = "search";

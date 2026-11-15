@@ -50,10 +50,6 @@ public partial class App : Application
         Register(profile);
         Register(SpriteService.Instance);
 
-        var gpuService = new GpuDeviceService();
-        Register<IGpuDeviceService>(gpuService);
-        Register(gpuService);
-
         Func<AnalyzeModalViewModel> analyzeFactory = () =>
             new AnalyzeModalViewModel(SpriteService.Instance, profile);
 
@@ -62,8 +58,8 @@ public partial class App : Application
             profile,
             () => new ViewModels.FilterTabs.ValidateFilterTabViewModel(filtersVM)
         );
-        var searchVM = new SearchModalViewModel(profile, analyzeFactory, gpuService);
-        var menuVM = new BalatroMainMenuViewModel(profile, searchVM, filtersVM, analyzeFactory, gpuService);
+        var searchVM = new SearchModalViewModel(profile, analyzeFactory);
+        var menuVM = new BalatroMainMenuViewModel(profile, searchVM, filtersVM, analyzeFactory);
         var mainMenu = new Views.BalatroMainMenu(menuVM);
         Register(filtersVM);
         Register(searchVM);

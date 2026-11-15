@@ -74,10 +74,14 @@ public static class JamlClauseExtensions
         var clauseKey = ClauseKeyForBuilderType(type)
             ?? throw new InvalidOperationException($"Visual builder produced unknown filter item type '{type}'.");
 
+        // The engine refuses an and/or with no clauses, so a new empty group is made directly.
+        if (clauseKey is "and")
+            return new AndClause();
+        if (clauseKey is "or")
+            return new OrClause();
+
         var escaped = clauseValue.Replace("\\", "\\\\").Replace("\"", "\\\"");
-        var jaml = clauseKey is "and" or "or"
-            ? $"must:\n  - {clauseKey}:\n      clauses: []\n"
-            : $"must:\n  - {clauseKey}: \"{escaped}\"\n";
+        var jaml = $"must:\n  - {clauseKey}: \"{escaped}\"\n";
         var config = JamlConfigLoader.FromJaml(jaml);
         return config.Must[0];
     }

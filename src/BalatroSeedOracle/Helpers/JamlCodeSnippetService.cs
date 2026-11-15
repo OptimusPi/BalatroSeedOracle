@@ -10,7 +10,7 @@ namespace BalatroSeedOracle.Helpers;
 /// <item><c>filter</c> at column 0 → a whole filter skeleton (name, deck, stake, must, should);</item>
 /// <item><c>must</c> / <c>should</c> / <c>mustNot</c> at column 0 → the section with its first item;</item>
 /// <item>any clause key (<c>joker</c>, <c>boss</c>, <c>or</c>, …) as a list item → the clause with
-/// the keys it takes (<c>antes:</c> for ante-scoped clauses, <c>clauses:</c> for and/or).</item>
+/// the keys it takes (<c>antes:</c> for ante-scoped clauses, a child list for and/or).</item>
 /// </list>
 /// Clause keys come from the engine (<see cref="FilterVocabulary"/>), so new clauses expand too.
 /// Anything else returns false and Tab indents as usual.
@@ -90,7 +90,7 @@ public class JamlCodeSnippetService
         int caret;
         if (word is "and" or "or")
         {
-            snippet = $"{word}:\n{childIndent}  clauses:\n{childIndent}    - ";
+            snippet = $"{word}:\n{childIndent}  - ";
             caret = snippet.Length;
         }
         else

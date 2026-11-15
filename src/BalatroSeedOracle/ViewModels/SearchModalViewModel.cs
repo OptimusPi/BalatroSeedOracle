@@ -36,7 +36,6 @@ namespace BalatroSeedOracle.ViewModels
     {
         private readonly UserProfileService _userProfileService;
         private readonly Func<AnalyzeModalViewModel> _analyzeModalFactory;
-        private readonly IGpuDeviceService _gpuDeviceService;
 
         private Motely.IMotelySearch? _search;
         private System.Threading.CancellationTokenSource? _searchCts;
@@ -230,26 +229,6 @@ namespace BalatroSeedOracle.ViewModels
 
         public int WordListMaxIndex => Math.Max(0, AvailableWordLists.Count - 1);
 
-        // GPU Screaming Mode properties
-        [ObservableProperty]
-        private bool _useGpuSearch = true;
-
-        partial void OnUseGpuSearchChanged(bool value)
-        {
-            _userProfileService.GetProfile().UseGpuSearch = value;
-            _userProfileService.SaveProfile();
-            UpdateGpuStatusProperties(_gpuDeviceService.GetStatus());
-        }
-
-        [ObservableProperty]
-        private string _gpuStatusText = "GPU Ready";
-
-        [ObservableProperty]
-        private string _gpuDeviceName = string.Empty;
-
-        [ObservableProperty]
-        private bool _isGpuAvailable = false;
-
         // Search parameters
         [ObservableProperty]
         private int _minScore = 0;
@@ -338,17 +317,12 @@ namespace BalatroSeedOracle.ViewModels
 
         public SearchModalViewModel(
             UserProfileService userProfileService,
-            Func<AnalyzeModalViewModel> analyzeModalFactory,
-            IGpuDeviceService? gpuDeviceService = null
+            Func<AnalyzeModalViewModel> analyzeModalFactory
         )
         {
             _userProfileService = userProfileService;
             _analyzeModalFactory =
                 analyzeModalFactory ?? throw new ArgumentNullException(nameof(analyzeModalFactory));
-
-            _gpuDeviceService = gpuDeviceService ?? App.GetService<IGpuDeviceService>() ?? new GpuDeviceService();
-
-            _useGpuSearch = _userProfileService.GetProfile().UseGpuSearch;
 
             SearchResults = new ObservableCollection<Models.SearchResult>();
             ConsoleOutput = new ObservableCollection<Models.ConsoleMessage>();
@@ -362,33 +336,6 @@ namespace BalatroSeedOracle.ViewModels
 
             // Initialize control visibility
             UpdateControlVisibility();
-
-            _gpuDeviceService.StatusChanged += OnGpuStatusChanged;
-            UpdateGpuStatusProperties(_gpuDeviceService.GetStatus());
-        }
-
-        private void OnGpuStatusChanged(object? sender, GpuDeviceStatus status)
-        {
-            if (Avalonia.Threading.Dispatcher.UIThread.CheckAccess())
-                UpdateGpuStatusProperties(status);
-            else
-                Avalonia.Threading.Dispatcher.UIThread.Post(() => UpdateGpuStatusProperties(status));
-        }
-
-        private void UpdateGpuStatusProperties(GpuDeviceStatus status)
-        {
-            IsGpuAvailable = status.IsAvailable;
-            GpuDeviceName = status.DeviceName;
-            if (!status.IsAvailable)
-                GpuStatusText = "No FP64 GPU";
-            else if (!UseGpuSearch)
-                GpuStatusText = "GPU Off";
-            else if (status.IsActive)
-                GpuStatusText = status.CurrentSeedsPerSecond > 0
-                    ? $"Screaming ({status.CurrentSeedsPerSecond / 1_000_000.0:F1}M/s)"
-                    : "Screaming Mode";
-            else
-                GpuStatusText = "GPU Ready";
         }
 
         /// <summary>Creates an AnalyzeModalViewModel via DI factory (no ServiceHelper). Used by ResultsTab to show analyze modal.</summary>
@@ -655,19 +602,7 @@ namespace BalatroSeedOracle.ViewModels
             var plan = MotelySearchBuilder.CreatePlan(LoadedConfig, MinScore);
             _tallyLabels = plan.TallyLabels.ToArray();
 
-            var settings = MotelySearchBuilder.CreateSettings(LoadedConfig, MinScore)
-                .WithSourceConfig(LoadedConfig)
-                .WithGpuSearch(UseGpuSearch);
-
-            if (UseGpuSearch && IsGpuAvailable)
-            {
-                AddConsoleMessage($"GPU Screaming Mode active: {GpuDeviceName}");
-                _gpuDeviceService.SetSearchActive(true);
-            }
-            else if (UseGpuSearch && !IsGpuAvailable)
-            {
-                AddConsoleMessage("GPU Screaming Mode enabled, but no OpenCL FP64 GPU is available. Falling back to CPU SIMD.");
-            }
+            var settings = MotelySearchBuilder.CreateSettings(LoadedConfig, MinScore);
 
             if (
                 !string.IsNullOrEmpty(DeckSelection)
@@ -824,7 +759,6 @@ namespace BalatroSeedOracle.ViewModels
         private void OnSearchFinished(bool stopped)
         {
             IsSearching = false;
-            _gpuDeviceService.SetSearchActive(false);
 
             if (stopped)
             {
@@ -1438,8 +1372,6 @@ namespace BalatroSeedOracle.ViewModels
             _search?.Dispose();
             _resultSink?.Dispose();
             _resultSink = null;
-            _gpuDeviceService.SetSearchActive(false);
-            _gpuDeviceService.StatusChanged -= OnGpuStatusChanged;
         }
 
         [RelayCommand(CanExecute = nameof(CanPauseSearch))]
@@ -1566,11 +1498,6 @@ namespace BalatroSeedOracle.ViewModels
         private void OnProgressUpdated(MotelyProgress e)
         {
             LatestProgress = e;
-
-            if (UseGpuSearch && IsGpuAvailable && IsSearching)
-            {
-                _gpuDeviceService.SetSearchActive(true, e.SeedsPerMillisecond * 1000.0);
-            }
 
             // Log progress to console every 2 seconds so user knows search is working
             var now = DateTime.Now;

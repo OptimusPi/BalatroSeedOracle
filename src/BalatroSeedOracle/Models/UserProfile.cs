@@ -64,11 +64,6 @@ namespace BalatroSeedOracle.Models
         public HostApiSettings HostApiSettings { get; set; } = new();
 
         /// <summary>
-        /// Whether GPU Screaming Mode search is enabled
-        /// </summary>
-        public bool UseGpuSearch { get; set; } = true;
-
-        /// <summary>
         /// Root directory path for Dungmot seed lakes (default: D:\dungmot)
         /// </summary>
         public string DungmotLakePath { get; set; } = @"D:\dungmot";

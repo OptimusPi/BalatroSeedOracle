@@ -216,17 +216,6 @@
 
                         <!-- Mode-Specific Settings -->
 
-                        <!-- GPU Screaming Mode Checkbox -->
-                        <CheckBox Name="GpuScreamingModeCheckBox"
-                                  Content="GPU Screaming Mode"
-                                  IsChecked="{Binding UseGpuSearch}"
-                                  IsEnabled="{Binding IsGpuAvailable}"
-                                  Foreground="{StaticResource Gold}"
-                                  FontFamily="{StaticResource BalatroFont}"
-                                  FontSize="18"
-                                  Margin="0,0,0,8"
-                                  ToolTip.Tip="Accelerates search on host GPU (RTX 4070 SUPER OpenCL FP64)"/>
-
                         <!-- SMART Auto Mode Checkbox -->
                         <CheckBox Name="SmartAutoModeCheckBox"
                                   Content="SMART Auto Mode"
@@ -378,19 +367,6 @@
                                Foreground="{StaticResource Gold}"
                                HorizontalAlignment="Center"
                                Margin="0,0,0,12"/>
-
-                    <!-- GPU Engine Strip (Cyan) -->
-                    <Border Classes="balatro-stat-strip">
-                        <Grid ColumnDefinitions="*,*">
-                            <Border Grid.Column="0" Classes="strip-label cyan">
-                                <TextBlock Text="GPU" Classes="strip-label-text"/>
-                            </Border>
-                            <Border Grid.Column="1" Classes="strip-value cyan">
-                                <TextBlock Text="{Binding GpuStatusText}"
-                                           Classes="strip-value-text cyan"/>
-                            </Border>
-                        </Grid>
-                    </Border>
 
                     <!-- Progress % Strip (Gold) -->
                     <Border Classes="balatro-stat-strip">
