@@ -1,0 +1,14 @@
+id: "3f238efe37844b0aa3b8f499ba0ee0d2"
+name: Power Play
+description: Created with visual filter builder
+author: pifreak
+deck: Red
+stake: White
+must:
+  - legendaryJoker: Perkeo
+  - joker: Baron
+should:
+  - legendaryJoker: Triboulet
+  - legendaryJoker: Canio
+  - legendaryJoker: Perkeo
+mustNot: []

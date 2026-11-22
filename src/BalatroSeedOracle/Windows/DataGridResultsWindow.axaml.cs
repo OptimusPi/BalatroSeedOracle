@@ -574,7 +574,12 @@ LIMIT 50;",
                     {
                         var analyzeVm = mainMenu.ViewModel.CreateAnalyzeModalViewModel();
                         var analyzeModal = new Views.Modals.AnalyzeModal(analyzeVm);
-                        analyzeModal.SetSeedAndAnalyze(item.Seed);
+                        // The grid's sorted view, so Left/Right follow the rows as shown.
+                        var seeds = ((_resultsGrid.CollectionView as System.Collections.IEnumerable) ?? _filteredResults)
+                            .OfType<DataGridResultItem>()
+                            .Select(r => r.Seed)
+                            .ToList();
+                        analyzeModal.SetSeedsAndAnalyze(item.Seed, seeds);
 
                         var modal = new Views.Modals.StandardModal("ANALYZE");
                         modal.SetContent(analyzeModal);

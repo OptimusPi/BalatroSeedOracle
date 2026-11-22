@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using BalatroSeedOracle.Components;
@@ -36,6 +38,28 @@ namespace BalatroSeedOracle.Views.Modals
         {
             DataContext = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
             InitializeComponent();
+            Focusable = true;
+            KeyDown += OnKeyDown;
+        }
+
+        // Left/Right step through the result list the modal was opened from. A focused TextBox
+        // handles its own arrow keys first, so typing a seed still moves the caret.
+        private void OnKeyDown(object? sender, KeyEventArgs e)
+        {
+            if (ViewModel is not { HasSeedList: true } vm || e.KeyModifiers != KeyModifiers.None)
+                return;
+
+            var delta = e.Key switch
+            {
+                Key.Left => -1,
+                Key.Right => 1,
+                _ => 0,
+            };
+            if (delta == 0)
+                return;
+
+            vm.StepSeed(delta);
+            e.Handled = true;
         }
 
         private void AttachSelectorAndViewModel()
@@ -124,6 +148,7 @@ namespace BalatroSeedOracle.Views.Modals
         {
             base.OnLoaded(e);
             AttachSelectorAndViewModel();
+            Focus();
         }
 
         protected override void OnUnloaded(RoutedEventArgs e)
@@ -161,13 +186,23 @@ namespace BalatroSeedOracle.Views.Modals
         /// Programmatically set the seed, switch to analyzer tab, and run analysis.
         /// Safe to call after control construction; will defer execution until Loaded if needed.
         /// </summary>
-        public void SetSeedAndAnalyze(string seed)
+        public void SetSeedAndAnalyze(string seed) =>
+            RunWhenLoaded(vm => vm.SetSeedAndAnalyze(seed));
+
+        /// <summary>
+        /// Like <see cref="SetSeedAndAnalyze"/>, and remembers the result list (in on-screen order)
+        /// so Left/Right step through it.
+        /// </summary>
+        public void SetSeedsAndAnalyze(string seed, IReadOnlyList<string> seeds) =>
+            RunWhenLoaded(vm => vm.SetSeedsAndAnalyze(seed, seeds));
+
+        private void RunWhenLoaded(Action<AnalyzeModalViewModel> action)
         {
             void Execute()
             {
                 if (ViewModel != null)
                 {
-                    ViewModel.SetSeedAndAnalyze(seed);
+                    action(ViewModel);
                 }
                 else
                 {

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -16,6 +17,11 @@ namespace BalatroSeedOracle.ViewModels
     {
         private readonly SpriteService _spriteService;
         private readonly UserProfileService _userProfileService;
+
+        // The results the modal was opened from, in on-screen order, for Left/Right paging.
+        private string[] _seedList = [];
+        private int _seedListIndex;
+        private bool _analyzeQueued;
 
         [ObservableProperty]
         [NotifyCanExecuteChangedFor(nameof(AnalyzeSeedCommand))]
@@ -107,8 +113,13 @@ namespace BalatroSeedOracle.ViewModels
             CurrentAnalysis is not null && string.IsNullOrEmpty(CurrentAnalysis.Error);
         public string AnalysisHeader =>
             CurrentAnalysis is not null
-                ? $"Seed: {CurrentAnalysis.Seed} | Deck: {CurrentAnalysis.Deck} | Stake: {CurrentAnalysis.Stake}"
+                ? $"Seed: {CurrentAnalysis.Seed} | Deck: {CurrentAnalysis.Deck} | Stake: {CurrentAnalysis.Stake}{SeedListPosition}"
                 : "";
+
+        private string SeedListPosition =>
+            _seedList.Length > 1 ? $" | {_seedListIndex + 1} of {_seedList.Length} (Left/Right)" : "";
+
+        public bool HasSeedList => _seedList.Length > 1;
 
         public ObservableCollection<AnteAnalysisModel> Antes { get; }
 
@@ -268,6 +279,12 @@ namespace BalatroSeedOracle.ViewModels
             finally
             {
                 IsAnalyzing = false;
+                if (_analyzeQueued)
+                {
+                    // A held arrow key moved past this seed mid-analysis: show the latest one.
+                    _analyzeQueued = false;
+                    Avalonia.Threading.Dispatcher.UIThread.Post(() => _ = AnalyzeSeedCommand.ExecuteAsync(null));
+                }
             }
         }
 
@@ -383,6 +400,46 @@ namespace BalatroSeedOracle.ViewModels
             {
                 _ = AnalyzeSeedCommand.ExecuteAsync(null);
             }
+        }
+
+        /// <summary>
+        /// Analyze <paramref name="seed"/> and remember <paramref name="seeds"/> (the result list it
+        /// came from, in on-screen order) so Left/Right can step through its neighbours.
+        /// </summary>
+        public void SetSeedsAndAnalyze(string seed, IReadOnlyList<string> seeds)
+        {
+            var index = -1;
+            for (var i = 0; i < seeds.Count; i++)
+            {
+                if (seeds[i] == seed)
+                {
+                    index = i;
+                    break;
+                }
+            }
+            _seedList = index >= 0 ? [.. seeds] : [seed];
+            _seedListIndex = Math.Max(index, 0);
+            OnPropertyChanged(nameof(HasSeedList));
+            SetSeedAndAnalyze(seed);
+        }
+
+        /// <summary>Move to the previous (-1) or next (+1) seed in the result list.</summary>
+        public void StepSeed(int delta)
+        {
+            var next = _seedListIndex + delta;
+            if (next < 0 || next >= _seedList.Length)
+                return;
+
+            _seedListIndex = next;
+            SeedInput = _seedList[next];
+            ActiveTab = AnalyzeModalTab.Analyzer;
+
+            if (IsAnalyzing)
+            {
+                _analyzeQueued = true;
+                return;
+            }
+            _ = AnalyzeSeedCommand.ExecuteAsync(null);
         }
 
         /// <summary>

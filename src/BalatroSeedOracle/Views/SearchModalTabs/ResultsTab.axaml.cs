@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Avalonia.Controls;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Models;
 using BalatroSeedOracle.ViewModels;
+using BalatroSeedOracle.ViewModels.Controls;
 
 namespace BalatroSeedOracle.Views.SearchModalTabs
 {
@@ -63,7 +65,11 @@ namespace BalatroSeedOracle.Views.SearchModalTabs
         {
             if (DataContext is SearchModalViewModel vm)
             {
-                vm.OpenAnalyzeModalForSeed(result?.Seed);
+                var seeds = (sender as SortableResultsGridViewModel)
+                    ?.GetDisplayedResults()
+                    .Select(r => r.Seed)
+                    .ToList();
+                vm.OpenAnalyzeModalForSeed(result?.Seed, seeds);
             }
         }
 

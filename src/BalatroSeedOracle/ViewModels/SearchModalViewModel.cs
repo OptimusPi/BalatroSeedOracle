@@ -355,7 +355,8 @@ namespace BalatroSeedOracle.ViewModels
         /// <summary>
         /// Open the analyze modal pre-loaded with the given seed. Called from ResultsTab grid event.
         /// </summary>
-        public void OpenAnalyzeModalForSeed(string? seed)
+        /// <param name="seeds">The result list in on-screen order, for Left/Right paging.</param>
+        public void OpenAnalyzeModalForSeed(string? seed, IReadOnlyList<string>? seeds = null)
         {
             if (string.IsNullOrWhiteSpace(seed) || MainMenu == null)
             {
@@ -364,7 +365,10 @@ namespace BalatroSeedOracle.ViewModels
 
             var analyzeVm = CreateAnalyzeModalViewModel();
             var analyzeModal = new AnalyzeModal(analyzeVm);
-            analyzeModal.SetSeedAndAnalyze(seed);
+            if (seeds is { Count: > 1 })
+                analyzeModal.SetSeedsAndAnalyze(seed, seeds);
+            else
+                analyzeModal.SetSeedAndAnalyze(seed);
 
             var modal = new StandardModal("ANALYZE");
             modal.SetContent(analyzeModal);

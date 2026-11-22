@@ -1,0 +1,52 @@
+name: Cola Faucet 100 Negatives
+description: Perkeo ante 1, Ankh off the shelf by ante 2, hold Diet Cola. Bank Ankhs every shop through ante 7 (Showman = 2 per shop), sell Ankh-cloned Colas for Double Tags, detonate on the ante 8 Negative small blind tag. Scores the reroll economy, since money runs out before tags.
+author: pifreak
+deck: Ghost
+stake: White
+must:
+  - joker: Perkeo
+    antes: [1]
+  - spectralCard: Ankh
+    antes: [1, 2]
+    sources:
+      shopItems: [0, 1]
+  - joker: DietCola
+    antes: [1, 2, 3]
+  - smallBlindTag: NegativeTag
+    antes: [8]
+should:
+  - joker: Showman
+    antes: [1, 2]
+    score: 300
+  - joker: Showman
+    antes: [3, 4]
+    score: 150
+  - voucher: RerollSurplus
+    antes: [1, 2, 3, 4]
+    score: 120
+  - voucher: RerollGlut
+    antes: [1, 2, 3, 4, 5]
+    score: 120
+  - joker: ChaosTheClown
+    antes: [1, 2, 3, 4]
+    score: 100
+  - voucher: SeedMoney
+    antes: [1, 2, 3, 4]
+    score: 80
+  - voucher: MoneyTree
+    antes: [1, 2, 3, 4, 5]
+    score: 80
+  - voucher: Overstock
+    antes: [1, 2, 3, 4, 5, 6, 7, 8]
+    score: 60
+  - spectralCard: Ankh
+    antes: [1, 2, 3, 4, 5, 6, 7]
+    score: 10
+
+seeds:
+  - BEBDEAVS
+  - ARASRNWG
+  - AXAWX6X7
+  - ADAMD8JO
+  - AQAQQ9RX
+  - J2EZE2J
