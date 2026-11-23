@@ -17,6 +17,9 @@ public partial class AnalyzerViewModel : ObservableObject
 {
     public event EventHandler<string>? CopyToClipboardRequested;
 
+    /// <summary>Monotonic request id so a slow deep walk cannot overwrite a newer shallow one.</summary>
+    private int _analyzeGeneration;
+
     [ObservableProperty]
     private ObservableCollection<string> _seedList = [];
 
@@ -38,9 +41,33 @@ public partial class AnalyzerViewModel : ObservableObject
     [ObservableProperty]
     private int _selectedStakeIndex = 0;
 
+    /// <summary>Inclusive last ante to walk (0–39). Presets: 8, 16, 25, 39.</summary>
+    [ObservableProperty]
+    private int _maxAnte = MotelyUnitTestAnalyzer.DefaultMaxAnte;
+
+    /// <summary>Shop cards per ante; 0 = engine defaults (15 then 50).</summary>
+    [ObservableProperty]
+    private int _shopSlots = 0;
+
+    /// <summary>Paste box: newlines, commas, spaces, or a ?seeds= share URL.</summary>
+    [ObservableProperty]
+    private string _seedPasteText = string.Empty;
+
+    [ObservableProperty]
+    private string _loopWatchSummary = string.Empty;
+
     // Display values from Motely enums (no " Deck" / " Stake" suffix)
     public string[] DeckDisplayValues { get; } = Enum.GetNames(typeof(MotelyDeck));
     public string[] StakeDisplayValues { get; } = Enum.GetNames(typeof(MotelyStake));
+    public int[] MaxAntePresets { get; } = [8, 16, 25, 39];
+    public string[] MaxAnteDisplayValues { get; } = ["8", "16", "25", "39"];
+    public string[] ShopDepthDisplayValues { get; } = ["Deep (default)", "36", "50", "15"];
+
+    [ObservableProperty]
+    private int _maxAntePresetIndex = 1; // 16
+
+    [ObservableProperty]
+    private int _shopDepthIndex = 0; // Deep
 
     [ObservableProperty]
     private MotelyUnitTestAnalysis? _currentAnalysis;
@@ -52,12 +79,16 @@ public partial class AnalyzerViewModel : ObservableObject
     private bool _isAnalyzing = false;
 
     [ObservableProperty]
-    private int _currentAnteIndex = 0; // Which ante we're viewing (0 = Ante 1)
+    private int _currentAnteIndex = 0; // Index into Antes list (may include ante 0)
 
     [ObservableProperty]
     private string _resultCounter = string.Empty;
 
     public int TotalResults => SeedList.Count;
+
+    public ObservableCollection<LoopWatchHit> LoopHits { get; } = [];
+
+    public bool HasLoopHits => LoopHits.Count > 0;
 
     public bool HasPreviousResult => CurrentIndex > 0;
     public bool HasNextResult => CurrentIndex < TotalResults - 1;
@@ -109,6 +140,27 @@ public partial class AnalyzerViewModel : ObservableObject
         {
             SelectedStake = stake;
         }
+    }
+
+    partial void OnMaxAntePresetIndexChanged(int value)
+    {
+        if (value >= 0 && value < MaxAntePresets.Length)
+        {
+            MaxAnte = MaxAntePresets[value];
+            _ = AnalyzeCurrentSeedAsync();
+        }
+    }
+
+    partial void OnShopDepthIndexChanged(int value)
+    {
+        ShopSlots = value switch
+        {
+            1 => 36,
+            2 => 50,
+            3 => 15,
+            _ => 0,
+        };
+        _ = AnalyzeCurrentSeedAsync();
     }
 
     private void UpdateResultCounter()
@@ -175,8 +227,49 @@ public partial class AnalyzerViewModel : ObservableObject
     [RelayCommand]
     private Task LoadMoreAntesAsync()
     {
-        // Placeholder for future pagination
+        // Bump to the next preset depth that covers further antes.
+        if (MaxAntePresetIndex < MaxAntePresets.Length - 1)
+            MaxAntePresetIndex++;
         return Task.CompletedTask;
+    }
+
+    [RelayCommand]
+    private void ApplySeedPaste()
+    {
+        var (seeds, extras) = SeedPaste.ParseWithMeta(SeedPasteText);
+        if (seeds.Count == 0)
+            return;
+
+        if (extras.MaxAnte is int ma)
+        {
+            var preset = Array.FindIndex(MaxAntePresets, p => p >= ma);
+            MaxAntePresetIndex = preset >= 0 ? preset : MaxAntePresets.Length - 1;
+        }
+
+        if (
+            extras.Deck is string deckName
+            && Enum.TryParse<MotelyDeck>(deckName, ignoreCase: true, out var deck)
+        )
+        {
+            var di = Array.IndexOf(DeckDisplayValues, deck.ToString());
+            if (di >= 0)
+                SelectedDeckIndex = di;
+        }
+
+        if (
+            extras.Stake is string stakeName
+            && Enum.TryParse<MotelyStake>(stakeName, ignoreCase: true, out var stake)
+        )
+        {
+            var si = Array.IndexOf(StakeDisplayValues, stake.ToString());
+            if (si >= 0)
+                SelectedStakeIndex = si;
+        }
+
+        SeedList = new ObservableCollection<string>(seeds);
+        var idx = extras.SeedIndex ?? 0;
+        CurrentIndex = Math.Clamp(idx, 0, SeedList.Count - 1);
+        LoadCurrentSeed();
     }
 
     [RelayCommand]
@@ -187,13 +280,29 @@ public partial class AnalyzerViewModel : ObservableObject
 
         try
         {
-            // Format: https://miaklwalker.github.io/Blueprint/?seed={SEED}&deck={DECK}+Deck&antes={MAX_ANTE}&stake={STAKE}+Stake
             var deckName = SelectedDeck.ToString();
             var stakeName = SelectedStake.ToString();
-            var maxAnte = CurrentAnalysis?.Antes.Count ?? 8;
+            var maxAnte = MaxAnte;
 
-            var url =
-                $"https://miaklwalker.github.io/Blueprint/?seed={CurrentSeed}&deck={deckName}+Deck&antes={maxAnte}&stake={stakeName}+Stake";
+            string url;
+            if (SeedList.Count > 1)
+            {
+                var seeds = string.Join(",", SeedList);
+                url =
+                    $"https://optimuspi.github.io/Blueprint/?seeds={Uri.EscapeDataString(seeds)}"
+                    + $"&deck={Uri.EscapeDataString(deckName + " Deck")}"
+                    + $"&stake={Uri.EscapeDataString(stakeName + " Stake")}"
+                    + $"&maxAnte={maxAnte}"
+                    + (CurrentIndex > 0 ? $"&seedIndex={CurrentIndex}" : "");
+            }
+            else
+            {
+                url =
+                    $"https://optimuspi.github.io/Blueprint/?seed={CurrentSeed}"
+                    + $"&deck={Uri.EscapeDataString(deckName + " Deck")}"
+                    + $"&stake={Uri.EscapeDataString(stakeName + " Stake")}"
+                    + $"&maxAnte={maxAnte}";
+            }
 
             CopyToClipboardRequested?.Invoke(this, url);
             Helpers.DebugLogger.Log(
@@ -212,10 +321,10 @@ public partial class AnalyzerViewModel : ObservableObject
         return Task.CompletedTask;
     }
 
-    public void SetSeeds(IEnumerable<string> seeds)
+    public void SetSeeds(IEnumerable<string> seeds, int startIndex = 0)
     {
         SeedList = new ObservableCollection<string>(seeds);
-        CurrentIndex = 0;
+        CurrentIndex = SeedList.Count == 0 ? 0 : Math.Clamp(startIndex, 0, SeedList.Count - 1);
         if (SeedList.Count > 0)
         {
             LoadCurrentSeed();
@@ -240,33 +349,67 @@ public partial class AnalyzerViewModel : ObservableObject
         if (string.IsNullOrWhiteSpace(CurrentSeed))
         {
             CurrentAnalysis = null;
+            LoopHits.Clear();
+            LoopWatchSummary = "";
+            OnPropertyChanged(nameof(HasLoopHits));
             return;
         }
 
+        int generation = System.Threading.Interlocked.Increment(ref _analyzeGeneration);
         IsAnalyzing = true;
 
         try
         {
-            // Run analyzer on background thread
+            var seed = CurrentSeed;
+            var deck = SelectedDeck;
+            var stake = SelectedStake;
+            var maxAnte = MaxAnte;
+            var shopSlots = ShopSlots;
             var analysis = await Task.Run(() =>
             {
-                var config = new MotelyUnitTestAnalysisConfig(CurrentSeed, SelectedDeck, SelectedStake);
+                var config = new MotelyUnitTestAnalysisConfig(seed, deck, stake, maxAnte, shopSlots);
                 return MotelyUnitTestAnalyzer.Analyze(config);
             });
 
-            CurrentAnalysis = analysis;
-            // Update mapped display analysis for shared component
-            UpdateDisplayAnalysis();
+            // A newer depth/seed request started while we were walking — drop this result.
+            if (generation != _analyzeGeneration)
+                return;
+
+            PublishAnalysis(analysis);
         }
         catch (Exception ex)
         {
-            CurrentAnalysis = new MotelyUnitTestAnalysis($"Error: {ex.Message}", []);
-            UpdateDisplayAnalysis();
+            if (generation != _analyzeGeneration)
+                return;
+            PublishAnalysis(new MotelyUnitTestAnalysis($"Error: {ex.Message}", []));
         }
         finally
         {
-            IsAnalyzing = false;
+            if (generation == _analyzeGeneration)
+                IsAnalyzing = false;
         }
+    }
+
+    private void PublishAnalysis(MotelyUnitTestAnalysis analysis)
+    {
+        // Keep the selected ante in range when depth shrinks (e.g. ante 15 → max 8).
+        if (analysis.Antes.Count == 0)
+            CurrentAnteIndex = 0;
+        else if (CurrentAnteIndex >= analysis.Antes.Count)
+            CurrentAnteIndex = analysis.Antes.Count - 1;
+
+        CurrentAnalysis = analysis;
+        RefreshLoopHits(analysis);
+        UpdateDisplayAnalysis();
+    }
+
+    private void RefreshLoopHits(MotelyUnitTestAnalysis analysis)
+    {
+        LoopHits.Clear();
+        foreach (var hit in SeedLoopWatch.Scan(analysis))
+            LoopHits.Add(hit);
+        LoopWatchSummary = SeedLoopWatch.SummarizeKinds(LoopHits);
+        OnPropertyChanged(nameof(HasLoopHits));
     }
 
     public MotelyAnteAnalysis? GetCurrentAnte()

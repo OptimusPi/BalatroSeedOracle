@@ -16,21 +16,17 @@
     </Design.DataContext>
 
     <!-- Compact horizontal layout: Top bar + Full-width content below -->
-    <Grid RowDefinitions="Auto,*">
+    <Grid RowDefinitions="Auto,Auto,*">
 
-        <!-- Top Horizontal Control Bar -->
+        <!-- Top control bar: wraps on narrow windows so COPY URL stays reachable -->
         <Border Grid.Row="0"
                 Background="{StaticResource DarkBackground}"
                 BorderBrush="{StaticResource ModalBorder}"
                 BorderThickness="0,0,0,2"
                 Padding="16,12">
-            <Grid ColumnDefinitions="Auto,16,Auto,Auto,16,Auto,*,Auto,16,Auto">
+            <WrapPanel Orientation="Horizontal">
 
-                <!-- Current Seed Display -->
-                <StackPanel Grid.Column="0"
-                           Orientation="Horizontal"
-                           Spacing="8"
-                           VerticalAlignment="Center">
+                <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center" Margin="0,0,12,8">
                     <TextBlock Text="SEED:"
                                FontFamily="{StaticResource BalatroFont}"
                                FontSize="18"
@@ -43,9 +39,7 @@
                                VerticalAlignment="Center"/>
                 </StackPanel>
 
-                <!-- Deck Spinner -->
-                <controls:SpinnerControl Grid.Column="2"
-                                        Label="Deck"
+                <controls:SpinnerControl Label="Deck"
                                         SpinnerType="deck"
                                         Value="{Binding SelectedDeckIndex}"
                                         Minimum="0"
@@ -54,11 +48,10 @@
                                         DisplayValues="{Binding DeckDisplayValues}"
                                         ShadowDirection="south-east"
                                         Width="160"
-                                        VerticalAlignment="Center"/>
+                                        VerticalAlignment="Center"
+                                        Margin="0,0,12,8"/>
 
-                <!-- Stake Spinner -->
-                <controls:SpinnerControl Grid.Column="3"
-                                        Label="Stake"
+                <controls:SpinnerControl Label="Stake"
                                         SpinnerType="stake"
                                         Value="{Binding SelectedStakeIndex}"
                                         Minimum="0"
@@ -68,74 +61,86 @@
                                         ShadowDirection="south-east"
                                         Width="160"
                                         VerticalAlignment="Center"
-                                        Margin="8,0,0,0"/>
+                                        Margin="0,0,12,8"/>
 
-                <!-- Seed Navigation -->
-                <StackPanel Grid.Column="5"
-                           Orientation="Horizontal"
-                           Spacing="8"
-                           VerticalAlignment="Center">
+                <controls:SpinnerControl Label="Max Ante"
+                                        SpinnerType="number"
+                                        Value="{Binding MaxAntePresetIndex}"
+                                        Minimum="0"
+                                        Maximum="3"
+                                        ReadOnly="True"
+                                        DisplayValues="{Binding MaxAnteDisplayValues}"
+                                        ShadowDirection="south-east"
+                                        Width="120"
+                                        VerticalAlignment="Center"
+                                        Margin="0,0,12,8"/>
+
+                <controls:SpinnerControl Label="Shop"
+                                        SpinnerType="number"
+                                        Value="{Binding ShopDepthIndex}"
+                                        Minimum="0"
+                                        Maximum="3"
+                                        ReadOnly="True"
+                                        DisplayValues="{Binding ShopDepthDisplayValues}"
+                                        ShadowDirection="south-east"
+                                        Width="160"
+                                        VerticalAlignment="Center"
+                                        Margin="0,0,12,8"/>
+
+                <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center" Margin="0,0,12,8">
                     <TextBlock Text="{Binding ResultCounter}"
                                FontSize="18"
                                Foreground="{StaticResource White}"
-                               VerticalAlignment="Center"
-                               Margin="0,0,8,0"/>
+                               VerticalAlignment="Center"/>
                     <Button Command="{Binding PreviousResultCommand}"
                             IsEnabled="{Binding HasPreviousResult}"
                             ToolTip.Tip="Previous Seed (PgUp)"
                             AutomationProperties.Name="Previous Seed"
-                            Width="32"
-                            Height="32"
-                            Padding="0">
+                            Width="32" Height="32" Padding="0">
                         <PathIcon Data="{StaticResource ChevronLeftIconData}" Width="16" Height="16"/>
                     </Button>
                     <Button Command="{Binding NextResultCommand}"
                             IsEnabled="{Binding HasNextResult}"
                             ToolTip.Tip="Next Seed (PgDn)"
                             AutomationProperties.Name="Next Seed"
-                            Width="32"
-                            Height="32"
-                            Padding="0">
+                            Width="32" Height="32" Padding="0">
                         <PathIcon Data="{StaticResource ChevronRightIconData}" Width="16" Height="16"/>
                     </Button>
                 </StackPanel>
 
-                <!-- Ante Navigation -->
-                <StackPanel Grid.Column="7"
-                           Orientation="Horizontal"
-                           Spacing="8"
-                           VerticalAlignment="Center">
+                <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center" Margin="0,0,12,8">
                     <TextBlock Text="{Binding AnteNavigationDisplay}"
                                FontSize="18"
                                Foreground="{StaticResource White}"
-                               VerticalAlignment="Center"
-                               Margin="0,0,8,0"/>
+                               VerticalAlignment="Center"/>
                     <Button Command="{Binding ScrollUpAnteCommand}"
                             ToolTip.Tip="Previous Ante (↑)"
                             AutomationProperties.Name="Previous Ante"
-                            Width="32"
-                            Height="32"
-                            Padding="0">
+                            Width="32" Height="32" Padding="0">
                         <PathIcon Data="{StaticResource ChevronUpIconData}" Width="16" Height="16"/>
                     </Button>
                     <Button Command="{Binding ScrollDownAnteCommand}"
                             ToolTip.Tip="Next Ante (↓)"
                             AutomationProperties.Name="Next Ante"
-                            Width="32"
-                            Height="32"
-                            Padding="0">
+                            Width="32" Height="32" Padding="0">
                         <PathIcon Data="{StaticResource ChevronDownIconData}" Width="16" Height="16"/>
                     </Button>
+                    <Button Command="{Binding LoadMoreAntesCommand}"
+                            ToolTip.Tip="Deepen ante walk to the next preset"
+                            Content="DEEPER"
+                            Classes="btn-orange"
+                            Padding="10,4"
+                            FontSize="14"
+                            VerticalAlignment="Center"/>
                 </StackPanel>
 
-                <!-- Copy URL Button -->
-                <Button Grid.Column="9"
-                        Content="COPY URL"
+                <Button Content="COPY URL"
                         Command="{Binding CopyBlueprintUrlCommand}"
                         Classes="btn-orange"
                         Padding="16,8"
                         ToolTip.Tip="Copy Blueprint-compatible URL to clipboard"
-                        VerticalAlignment="Center">
+                        VerticalAlignment="Center"
+                        Margin="0,0,0,8">
                     <Button.Styles>
                         <Style Selector="Button.btn-orange">
                             <Setter Property="Background" Value="{StaticResource Orange}"/>
@@ -150,11 +155,45 @@
                     </Button.Styles>
                 </Button>
 
-            </Grid>
+            </WrapPanel>
+        </Border>
+
+        <!-- Seed pile + loop landmarks -->
+        <Border Grid.Row="1"
+                Background="{StaticResource DarkBackground}"
+                BorderBrush="{StaticResource ModalBorder}"
+                BorderThickness="0,0,0,2"
+                Padding="16,10">
+            <StackPanel Spacing="8">
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                    <TextBox Grid.Column="0"
+                             Text="{Binding SeedPasteText}"
+                             AcceptsReturn="True"
+                             TextWrapping="Wrap"
+                             MinHeight="40"
+                             MaxHeight="72"
+                             FontSize="16"
+                             PlaceholderText="Paste seeds or a ?seeds= share URL…"
+                             CornerRadius="6"
+                             BorderThickness="0"/>
+                    <Button Grid.Column="1"
+                            Content="LOAD PILE"
+                            Command="{Binding ApplySeedPasteCommand}"
+                            Classes="btn-blue"
+                            Padding="16,8"
+                            FontSize="16"
+                            VerticalAlignment="Top"/>
+                </Grid>
+                <TextBlock Text="{Binding LoopWatchSummary}"
+                           FontSize="16"
+                           Foreground="{StaticResource VeryLightGrey}"
+                           TextWrapping="Wrap"
+                           IsVisible="{Binding HasLoopHits}"/>
+            </StackPanel>
         </Border>
 
         <!-- Main Content Area: Split View -->
-        <Grid Grid.Row="1" ColumnDefinitions="2*,3*">
+        <Grid Grid.Row="2" ColumnDefinitions="2*,3*">
             <!-- Left Side: Ante/Blind Tree -->
             <Border Grid.Column="0"
                     Background="{StaticResource DarkBackground}"
