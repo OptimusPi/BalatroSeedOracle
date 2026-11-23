@@ -16,7 +16,7 @@
     </Design.DataContext>
 
     <!-- Compact horizontal layout: Top bar + Full-width content below -->
-    <Grid RowDefinitions="Auto,*">
+    <Grid RowDefinitions="Auto,Auto,*">
 
         <!-- Top Horizontal Control Bar -->
         <Border Grid.Row="0"
@@ -24,7 +24,7 @@
                 BorderBrush="{StaticResource ModalBorder}"
                 BorderThickness="0,0,0,2"
                 Padding="16,12">
-            <Grid ColumnDefinitions="Auto,16,Auto,Auto,16,Auto,*,Auto,16,Auto">
+            <Grid ColumnDefinitions="Auto,16,Auto,Auto,8,Auto,Auto,16,Auto,*,Auto,16,Auto">
 
                 <!-- Current Seed Display -->
                 <StackPanel Grid.Column="0"
@@ -70,8 +70,35 @@
                                         VerticalAlignment="Center"
                                         Margin="8,0,0,0"/>
 
+                <!-- Max ante depth -->
+                <controls:SpinnerControl Grid.Column="5"
+                                        Label="Max Ante"
+                                        SpinnerType="number"
+                                        Value="{Binding MaxAntePresetIndex}"
+                                        Minimum="0"
+                                        Maximum="3"
+                                        ReadOnly="True"
+                                        DisplayValues="{Binding MaxAnteDisplayValues}"
+                                        ShadowDirection="south-east"
+                                        Width="120"
+                                        VerticalAlignment="Center"/>
+
+                <!-- Shop depth -->
+                <controls:SpinnerControl Grid.Column="6"
+                                        Label="Shop"
+                                        SpinnerType="number"
+                                        Value="{Binding ShopDepthIndex}"
+                                        Minimum="0"
+                                        Maximum="3"
+                                        ReadOnly="True"
+                                        DisplayValues="{Binding ShopDepthDisplayValues}"
+                                        ShadowDirection="south-east"
+                                        Width="160"
+                                        VerticalAlignment="Center"
+                                        Margin="8,0,0,0"/>
+
                 <!-- Seed Navigation -->
-                <StackPanel Grid.Column="5"
+                <StackPanel Grid.Column="8"
                            Orientation="Horizontal"
                            Spacing="8"
                            VerticalAlignment="Center">
@@ -101,7 +128,7 @@
                 </StackPanel>
 
                 <!-- Ante Navigation -->
-                <StackPanel Grid.Column="7"
+                <StackPanel Grid.Column="10"
                            Orientation="Horizontal"
                            Spacing="8"
                            VerticalAlignment="Center">
@@ -126,10 +153,17 @@
                             Padding="0">
                         <PathIcon Data="{StaticResource ChevronDownIconData}" Width="16" Height="16"/>
                     </Button>
+                    <Button Command="{Binding LoadMoreAntesCommand}"
+                            ToolTip.Tip="Deepen ante walk to the next preset"
+                            Content="DEEPER"
+                            Classes="btn-orange"
+                            Padding="10,4"
+                            FontSize="14"
+                            VerticalAlignment="Center"/>
                 </StackPanel>
 
                 <!-- Copy URL Button -->
-                <Button Grid.Column="9"
+                <Button Grid.Column="12"
                         Content="COPY URL"
                         Command="{Binding CopyBlueprintUrlCommand}"
                         Classes="btn-orange"
@@ -153,8 +187,42 @@
             </Grid>
         </Border>
 
+        <!-- Seed pile + loop landmarks -->
+        <Border Grid.Row="1"
+                Background="{StaticResource DarkBackground}"
+                BorderBrush="{StaticResource ModalBorder}"
+                BorderThickness="0,0,0,2"
+                Padding="16,10">
+            <StackPanel Spacing="8">
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                    <TextBox Grid.Column="0"
+                             Text="{Binding SeedPasteText}"
+                             AcceptsReturn="True"
+                             TextWrapping="Wrap"
+                             MinHeight="40"
+                             MaxHeight="72"
+                             FontSize="16"
+                             PlaceholderText="Paste seeds or a ?seeds= share URL…"
+                             CornerRadius="6"
+                             BorderThickness="0"/>
+                    <Button Grid.Column="1"
+                            Content="LOAD PILE"
+                            Command="{Binding ApplySeedPasteCommand}"
+                            Classes="btn-blue"
+                            Padding="16,8"
+                            FontSize="16"
+                            VerticalAlignment="Top"/>
+                </Grid>
+                <TextBlock Text="{Binding LoopWatchSummary}"
+                           FontSize="16"
+                           Foreground="{StaticResource VeryLightGrey}"
+                           TextWrapping="Wrap"
+                           IsVisible="{Binding HasLoopHits}"/>
+            </StackPanel>
+        </Border>
+
         <!-- Main Content Area: Split View -->
-        <Grid Grid.Row="1" ColumnDefinitions="2*,3*">
+        <Grid Grid.Row="2" ColumnDefinitions="2*,3*">
             <!-- Left Side: Ante/Blind Tree -->
             <Border Grid.Column="0"
                     Background="{StaticResource DarkBackground}"

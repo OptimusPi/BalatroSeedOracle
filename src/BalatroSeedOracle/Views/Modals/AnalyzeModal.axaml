@@ -6,6 +6,7 @@
              xmlns:models="using:BalatroSeedOracle.Models"
              xmlns:converters="using:BalatroSeedOracle.Converters"
              xmlns:features="using:BalatroSeedOracle.Features.Analyzer"
+             xmlns:analysis="using:BalatroSeedOracle.Analysis"
              x:Class="BalatroSeedOracle.Views.Modals.AnalyzeModal"
              x:DataType="vm:AnalyzeModalViewModel">
     
@@ -181,53 +182,136 @@
                 <StackPanel>
                     <!-- Input Section -->
                     <Border Classes="modal-content-panel" Margin="10">
-                        <Grid Margin="15" ColumnSpacing="10">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*" MaxWidth="300"/>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
+                        <StackPanel Margin="15" Spacing="12">
+                            <Grid ColumnSpacing="10">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*" MaxWidth="300"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
 
-                            <!-- Seed Input -->
-                            <TextBlock Grid.Column="0"
-                                      Text="Seed:"
-                                      VerticalAlignment="Center"
-                                      Margin="0,0,10,0"
+                                <!-- Seed Input -->
+                                <TextBlock Grid.Column="0"
+                                          Text="Seed:"
+                                          VerticalAlignment="Center"
+                                          Margin="0,0,10,0"
+                                          FontSize="18"
+                                          Foreground="{StaticResource White}"/>
+
+                                <TextBox Grid.Column="1"
+                                        Text="{Binding SeedInput}"
+                                        FontSize="18"
+                                        MaxLength="8"
+                                        PlaceholderText="Enter seed..."
+                                        VerticalAlignment="Center"
+                                        Height="40"
+                                        Margin="0,0,15,0"
+                                        CornerRadius="6"
+                                        BorderThickness="0"/>
+
+                                <TextBlock Grid.Column="2"
+                                          Text="Max ante"
+                                          VerticalAlignment="Center"
+                                          FontSize="18"
+                                          Foreground="{StaticResource White}"/>
+
+                                <TextBox Grid.Column="3"
+                                        Text="{Binding AnalyzeMaxAnte}"
+                                        AutomationProperties.Name="Analyze max ante"
+                                        FontSize="18"
+                                        Width="56"
+                                        MaxLength="2"
+                                        HorizontalContentAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        Height="40"
+                                        CornerRadius="6"
+                                        BorderThickness="0"/>
+
+                                <!-- Analyze Button -->
+                                <Button Grid.Column="4"
+                                       Content="ANALYZE"
+                                       Command="{Binding AnalyzeSeedCommand}"
+                                       MinWidth="120"
+                                       FontSize="18"
+                                       CornerRadius="6"
+                                       Height="44"
+                                       Classes="btn-green"/>
+
+                                <!-- Pop-out Analyzer Button -->
+                                <Button Grid.Column="5"
+                                       Content="POP-OUT"
+                                       Command="{Binding PopOutAnalyzerCommand}"
+                                       MinWidth="100"
+                                       FontSize="18"
+                                       CornerRadius="6"
+                                       Height="44"
+                                       Classes="btn-blue"/>
+                            </Grid>
+
+                            <!-- Seed pile paste -->
+                            <Grid ColumnSpacing="10">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBox Grid.Column="0"
+                                        Text="{Binding SeedPasteText}"
+                                        AcceptsReturn="True"
+                                        TextWrapping="Wrap"
+                                        MinHeight="56"
+                                        MaxHeight="120"
+                                        FontSize="16"
+                                        PlaceholderText="Paste seeds (comma / space / newline) or a ?seeds= share URL…"
+                                        CornerRadius="6"
+                                        BorderThickness="0"/>
+                                <Button Grid.Column="1"
+                                       Content="LOAD PILE"
+                                       Command="{Binding ApplySeedPasteCommand}"
+                                       MinWidth="120"
+                                       FontSize="18"
+                                       CornerRadius="6"
+                                       Height="44"
+                                       VerticalAlignment="Top"
+                                       Classes="btn-blue"/>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Loop landmarks (Cola / Ankh / Negative Tag / Oops …) -->
+                    <Border Classes="modal-content-panel" Margin="10,0,10,10"
+                            IsVisible="{Binding HasLoopHits}">
+                        <StackPanel Margin="15" Spacing="8">
+                            <TextBlock Text="LOOP LANDMARKS"
                                       FontSize="18"
-                                      Foreground="{StaticResource White}"/>
-
-                            <TextBox Grid.Column="1"
-                                    Text="{Binding SeedInput}"
-                                    FontSize="18"
-                                    MaxLength="8"
-                                    PlaceholderText="Enter seed..."
-                                    VerticalAlignment="Center"
-                                    Height="40"
-                                    Margin="0,0,15,0"
-                                    CornerRadius="6"
-                                    BorderThickness="0"/>
-
-                            <!-- Analyze Button -->
-                            <Button Grid.Column="2"
-                                   Content="ANALYZE"
-                                   Command="{Binding AnalyzeSeedCommand}"
-                                   MinWidth="120"
-                                   FontSize="18"
-                                   CornerRadius="6"
-                                   Height="44"
-                                   Classes="btn-green"/>
-
-                            <!-- Pop-out Analyzer Button -->
-                            <Button Grid.Column="3"
-                                   Content="POP-OUT"
-                                   Command="{Binding PopOutAnalyzerCommand}"
-                                   MinWidth="100"
-                                   FontSize="18"
-                                   CornerRadius="6"
-                                   Height="44"
-                                   Classes="btn-blue"/>
-                        </Grid>
+                                      Foreground="{StaticResource Orange}"/>
+                            <TextBlock Text="{Binding LoopWatchSummary}"
+                                      FontSize="16"
+                                      Foreground="{StaticResource VeryLightGrey}"
+                                      TextWrapping="Wrap"/>
+                            <ItemsControl ItemsSource="{Binding LoopHits}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel Orientation="Horizontal"/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="analysis:LoopWatchHit">
+                                        <Border Background="{StaticResource DarkGrey2}"
+                                                CornerRadius="6"
+                                                Padding="10,4"
+                                                Margin="0,2,6,2">
+                                            <TextBlock Text="{Binding Display}"
+                                                       FontSize="16"
+                                                       Foreground="{StaticResource White}"/>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
                     </Border>
 
                     <!-- Find: every ante and place an item appears in this seed -->

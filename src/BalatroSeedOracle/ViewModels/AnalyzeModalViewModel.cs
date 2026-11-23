@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Media;
+using BalatroSeedOracle.Analysis;
 using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -34,10 +35,24 @@ namespace BalatroSeedOracle.ViewModels
         private string _findInput = "";
 
         [ObservableProperty]
-        private int _findMinAnte = 1;
+        private int _findMinAnte = 0;
 
         [ObservableProperty]
-        private int _findMaxAnte = 8;
+        private int _findMaxAnte = MotelyUnitTestAnalyzer.DefaultMaxAnte;
+
+        /// <summary>Inclusive last ante for the full ante breakdown (default 16).</summary>
+        [ObservableProperty]
+        private int _analyzeMaxAnte = MotelyUnitTestAnalyzer.DefaultMaxAnte;
+
+        /// <summary>Shop cards per ante; 0 = engine defaults.</summary>
+        [ObservableProperty]
+        private int _analyzeShopSlots = 0;
+
+        [ObservableProperty]
+        private string _seedPasteText = "";
+
+        [ObservableProperty]
+        private string _loopWatchSummary = "";
 
         [ObservableProperty]
         [NotifyCanExecuteChangedFor(nameof(FindCommand))]
@@ -126,6 +141,10 @@ namespace BalatroSeedOracle.ViewModels
         /// <summary>Every place the last find saw the item, one row per hit.</summary>
         public ObservableCollection<LocateHitRow> FindRows { get; } = new();
 
+        public ObservableCollection<LoopWatchHit> LoopHits { get; } = new();
+
+        public bool HasLoopHits => LoopHits.Count > 0;
+
         public bool HasFindStatus => !string.IsNullOrEmpty(FindStatus);
         public bool HasFindError => !string.IsNullOrEmpty(FindError);
 
@@ -170,10 +189,18 @@ namespace BalatroSeedOracle.ViewModels
                 var deck = SelectedDeck;
                 var stake = SelectedStake;
 
+                var maxAnte = AnalyzeMaxAnte;
+                var shopSlots = AnalyzeShopSlots;
                 var analysisData = await Task.Run(() =>
                 {
-                    var config = new BalatroSeedOracle.Analysis.MotelyUnitTestAnalysisConfig(seed, deck, stake);
-                    return BalatroSeedOracle.Analysis.MotelyUnitTestAnalyzer.Analyze(config);
+                    var config = new MotelyUnitTestAnalysisConfig(
+                        seed,
+                        deck,
+                        stake,
+                        maxAnte,
+                        shopSlots
+                    );
+                    return MotelyUnitTestAnalyzer.Analyze(config);
                 });
 
                 // Map Motely analysis to our models (populate fully BEFORE assigning
@@ -187,12 +214,14 @@ namespace BalatroSeedOracle.ViewModels
                     Error = analysisData.Error,
                 };
 
+                LoopHits.Clear();
                 if (!string.IsNullOrEmpty(analysisData.Error))
                 {
                     DebugLogger.LogError(
                         "AnalyzeModalViewModel",
                         $"Analysis error: {analysisData.Error}"
                     );
+                    LoopWatchSummary = "";
                 }
                 else
                 {
@@ -248,15 +277,20 @@ namespace BalatroSeedOracle.ViewModels
                         Antes.Add(anteModel);
                     }
 
+                    foreach (var hit in SeedLoopWatch.Scan(analysisData))
+                        LoopHits.Add(hit);
+                    LoopWatchSummary = SeedLoopWatch.SummarizeKinds(LoopHits);
+
                     // Attach ante collection to the analysis for the shared display component
                     analysis.Antes = Antes;
 
                     DebugLogger.Log(
                         "AnalyzeModalViewModel",
-                        $"Analysis completed successfully: {Antes.Count} antes"
+                        $"Analysis completed successfully: {Antes.Count} antes (0–{maxAnte})"
                     );
                 }
 
+                OnPropertyChanged(nameof(HasLoopHits));
                 CurrentAnalysis = analysis;
 
                 UpdatePlaceholderVisibility();
@@ -341,10 +375,54 @@ namespace BalatroSeedOracle.ViewModels
         private void ClearResults()
         {
             Antes.Clear();
+            LoopHits.Clear();
+            LoopWatchSummary = "";
+            OnPropertyChanged(nameof(HasLoopHits));
             CurrentAnalysis = null;
             SeedInput = "";
             UpdatePlaceholderVisibility();
             DebugLogger.Log("AnalyzeModalViewModel", "Results cleared");
+        }
+
+        [RelayCommand]
+        private void ApplySeedPaste()
+        {
+            var (seeds, extras) = SeedPaste.ParseWithMeta(SeedPasteText);
+            if (seeds.Count == 0)
+                return;
+
+            if (extras.MaxAnte is int ma)
+                AnalyzeMaxAnte = ma;
+
+            if (
+                extras.Deck is string deckName
+                && Enum.TryParse<MotelyDeck>(deckName, ignoreCase: true, out var deck)
+            )
+            {
+                var di = Array.IndexOf(Decks, deck);
+                if (di >= 0)
+                    DeckIndex = di;
+            }
+
+            if (
+                extras.Stake is string stakeName
+                && Enum.TryParse<MotelyStake>(stakeName, ignoreCase: true, out var stake)
+            )
+            {
+                var si = Array.IndexOf(Stakes, stake);
+                if (si >= 0)
+                    StakeIndex = si;
+            }
+
+            if (seeds.Count == 1)
+            {
+                SetSeedAndAnalyze(seeds[0]);
+                return;
+            }
+
+            var idx = extras.SeedIndex ?? 0;
+            idx = Math.Clamp(idx, 0, seeds.Count - 1);
+            SetSeedsAndAnalyze(seeds[idx], seeds);
         }
 
         [RelayCommand]
@@ -365,8 +443,17 @@ namespace BalatroSeedOracle.ViewModels
             try
             {
                 var seed = SeedInput ?? "";
-                var analyzerViewModel = new AnalyzerViewModel();
-                analyzerViewModel.AddSeed(seed);
+                var analyzerViewModel = new AnalyzerViewModel { ShopSlots = AnalyzeShopSlots };
+                var preset = Array.FindIndex(
+                    analyzerViewModel.MaxAntePresets,
+                    p => p >= AnalyzeMaxAnte
+                );
+                analyzerViewModel.MaxAntePresetIndex =
+                    preset >= 0 ? preset : analyzerViewModel.MaxAntePresets.Length - 1;
+                if (_seedList.Length > 1)
+                    analyzerViewModel.SetSeeds(_seedList);
+                else
+                    analyzerViewModel.AddSeed(seed);
                 var analyzerWindow = new Windows.AnalyzerWindow(analyzerViewModel);
                 analyzerWindow.Show();
 

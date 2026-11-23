@@ -13,8 +13,9 @@ Not affiliated with LocalThunk or Playstack. [Buy Balatro](https://www.playbalat
 - **Designer** — build a filter visually (jokers, tarots, spectrals, vouchers, tags, bosses,
   playing cards, with editions, seals and stickers) or write it in the JAML editor, which has
   completions, error and warning underlines, hover help and folding, all from the engine itself.
-- **Analyzer** — enter a seed and see each ante: boss, voucher, skip tags, the shop queue and
-  every booster pack, with the game's sprites.
+- **Analyzer** — enter a seed (or paste a `?seeds=` pile) and walk antes **0–16 by default**
+  (up to 39): boss, voucher, skip tags, deep shop queue and packs, with the game's sprites.
+  A loop-landmark strip flags Diet Cola / Ankh / Negative Tag / Oops / Soul legendaries at a glance.
 - **Music and sound** — the main-menu music stems loop in sync; volume and mute persist.
 
 ## Run it
