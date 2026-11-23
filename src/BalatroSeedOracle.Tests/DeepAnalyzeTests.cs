@@ -71,6 +71,34 @@ public sealed class DeepAnalyzeTests
     }
 
     [Fact]
+    public void Seed_paste_decodes_plus_as_space_in_deck_stake()
+    {
+        var url =
+            "https://optimuspi.github.io/Blueprint/?seed=EFPEEOX5&deck=Ghost+Deck&stake=White+Stake";
+        var (_, extras) = SeedPaste.ParseWithMeta(url);
+        Assert.Equal("Ghost", extras.Deck);
+        Assert.Equal("White", extras.Stake);
+    }
+
+    [Fact]
+    public void Seed_paste_remaps_seedIndex_when_duplicates_collapse()
+    {
+        var url =
+            "https://optimuspi.github.io/Blueprint/?seeds=EFPEEOX5,EFPEEOX5,AAAA1111,BBBB1111&seedIndex=2";
+        var (seeds, extras) = SeedPaste.ParseWithMeta(url);
+        Assert.Equal(["EFPEEOX5", "AAAA1111", "BBBB1111"], seeds);
+        Assert.Equal(1, extras.SeedIndex); // authored slot 2 → AAAA1111 in unique list
+        Assert.Equal("AAAA1111", seeds[extras.SeedIndex!.Value]);
+    }
+
+    [Fact]
+    public void CleanSeedToken_rejects_oversized_garbage_without_throwing()
+    {
+        var huge = new string('A', 100_000);
+        Assert.Equal("", SeedPaste.CleanSeedToken(huge));
+    }
+
+    [Fact]
     public void Default_max_ante_is_16()
     {
         Assert.Equal(16, MotelyUnitTestAnalyzer.DefaultMaxAnte);

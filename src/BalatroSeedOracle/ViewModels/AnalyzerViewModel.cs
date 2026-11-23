@@ -17,6 +17,9 @@ public partial class AnalyzerViewModel : ObservableObject
 {
     public event EventHandler<string>? CopyToClipboardRequested;
 
+    /// <summary>Monotonic request id so a slow deep walk cannot overwrite a newer shallow one.</summary>
+    private int _analyzeGeneration;
+
     [ObservableProperty]
     private ObservableCollection<string> _seedList = [];
 
@@ -318,10 +321,10 @@ public partial class AnalyzerViewModel : ObservableObject
         return Task.CompletedTask;
     }
 
-    public void SetSeeds(IEnumerable<string> seeds)
+    public void SetSeeds(IEnumerable<string> seeds, int startIndex = 0)
     {
         SeedList = new ObservableCollection<string>(seeds);
-        CurrentIndex = 0;
+        CurrentIndex = SeedList.Count == 0 ? 0 : Math.Clamp(startIndex, 0, SeedList.Count - 1);
         if (SeedList.Count > 0)
         {
             LoadCurrentSeed();
@@ -352,40 +355,52 @@ public partial class AnalyzerViewModel : ObservableObject
             return;
         }
 
+        int generation = System.Threading.Interlocked.Increment(ref _analyzeGeneration);
         IsAnalyzing = true;
 
         try
         {
+            var seed = CurrentSeed;
+            var deck = SelectedDeck;
+            var stake = SelectedStake;
             var maxAnte = MaxAnte;
             var shopSlots = ShopSlots;
             var analysis = await Task.Run(() =>
             {
-                var config = new MotelyUnitTestAnalysisConfig(
-                    CurrentSeed,
-                    SelectedDeck,
-                    SelectedStake,
-                    maxAnte,
-                    shopSlots
-                );
+                var config = new MotelyUnitTestAnalysisConfig(seed, deck, stake, maxAnte, shopSlots);
                 return MotelyUnitTestAnalyzer.Analyze(config);
             });
 
-            CurrentAnalysis = analysis;
-            RefreshLoopHits(analysis);
-            UpdateDisplayAnalysis();
+            // A newer depth/seed request started while we were walking — drop this result.
+            if (generation != _analyzeGeneration)
+                return;
+
+            PublishAnalysis(analysis);
         }
         catch (Exception ex)
         {
-            CurrentAnalysis = new MotelyUnitTestAnalysis($"Error: {ex.Message}", []);
-            LoopHits.Clear();
-            LoopWatchSummary = "";
-            OnPropertyChanged(nameof(HasLoopHits));
-            UpdateDisplayAnalysis();
+            if (generation != _analyzeGeneration)
+                return;
+            PublishAnalysis(new MotelyUnitTestAnalysis($"Error: {ex.Message}", []));
         }
         finally
         {
-            IsAnalyzing = false;
+            if (generation == _analyzeGeneration)
+                IsAnalyzing = false;
         }
+    }
+
+    private void PublishAnalysis(MotelyUnitTestAnalysis analysis)
+    {
+        // Keep the selected ante in range when depth shrinks (e.g. ante 15 → max 8).
+        if (analysis.Antes.Count == 0)
+            CurrentAnteIndex = 0;
+        else if (CurrentAnteIndex >= analysis.Antes.Count)
+            CurrentAnteIndex = analysis.Antes.Count - 1;
+
+        CurrentAnalysis = analysis;
+        RefreshLoopHits(analysis);
+        UpdateDisplayAnalysis();
     }
 
     private void RefreshLoopHits(MotelyUnitTestAnalysis analysis)

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace BalatroSeedOracle.Analysis;
@@ -18,6 +19,8 @@ public sealed record SeedPasteExtras(
 /// </summary>
 public static class SeedPaste
 {
+    public const int MaxSeedChars = 8;
+
     private static readonly Regex SeedToken = new(
         @"^[A-Za-z0-9_-]{1,8}$",
         RegexOptions.Compiled | RegexOptions.CultureInvariant
@@ -33,20 +36,39 @@ public static class SeedPaste
         RegexOptions.IgnoreCase | RegexOptions.Compiled | RegexOptions.CultureInvariant
     );
 
+    /// <summary>
+    /// Clean one token. Rejects oversized garbage early so a huge unbroken paste cannot
+    /// stack-allocate a megabyte buffer.
+    /// </summary>
     public static string CleanSeedToken(string s)
     {
-        var trimmed = s.Trim().ToUpperInvariant();
-        Span<char> buf = stackalloc char[trimmed.Length];
-        int n = 0;
+        var trimmed = s.Trim();
+        if (trimmed.Length == 0)
+            return "";
+        // Seeds are at most 8 chars; anything longer after strip is not a seed.
+        if (trimmed.Length > MaxSeedChars * 4)
+            return "";
+
+        var sb = new StringBuilder(Math.Min(trimmed.Length, MaxSeedChars));
         foreach (var c in trimmed)
         {
-            if (char.IsLetterOrDigit(c) || c is '_' or '-')
-                buf[n++] = c;
+            char u = char.ToUpperInvariant(c);
+            if (char.IsLetterOrDigit(u) || u is '_' or '-')
+            {
+                if (sb.Length >= MaxSeedChars)
+                    return ""; // too many kept chars → not a Balatro seed
+                sb.Append(u);
+            }
         }
-        return new string(buf[..n]);
+        return sb.ToString();
     }
 
-    public static IReadOnlyList<string> Parse(string raw)
+    /// <summary>
+    /// Parse seeds. When <paramref name="preserveDuplicates"/> is false (default for free text),
+    /// duplicates collapse. URL piles keep positions so <c>seedIndex</c> still points at the
+    /// authored slot; callers then map that index onto the unique list.
+    /// </summary>
+    public static IReadOnlyList<string> Parse(string raw, bool preserveDuplicates = false)
     {
         var trimmed = raw.Trim();
         if (trimmed.Length == 0)
@@ -59,7 +81,7 @@ public static class SeedPaste
             {
                 var qs = ParseQuery(uri.Query);
                 if (qs.TryGetValue("seeds", out var pile) && !string.IsNullOrWhiteSpace(pile))
-                    return Parse(pile);
+                    return Parse(pile, preserveDuplicates: true);
 
                 var pathMatch = Regex.Match(
                     uri.AbsolutePath,
@@ -80,23 +102,27 @@ public static class SeedPaste
             }
         }
 
-        return trimmed
+        var tokens = trimmed
             .Split([',', ' ', '\n', '\r', '\t'], StringSplitOptions.RemoveEmptyEntries)
             .Select(CleanSeedToken)
-            .Where(s => s.Length > 0 && SeedToken.IsMatch(s))
-            .Distinct(StringComparer.Ordinal)
-            .ToList();
+            .Where(s => s.Length > 0 && SeedToken.IsMatch(s));
+
+        return preserveDuplicates
+            ? tokens.ToList()
+            : tokens.Distinct(StringComparer.Ordinal).ToList();
     }
 
     public static (IReadOnlyList<string> Seeds, SeedPasteExtras Extras) ParseWithMeta(string raw)
     {
         var extras = new SeedPasteExtras();
         var trimmed = raw.Trim();
+        bool fromUrl = false;
         if (
             trimmed.StartsWith("http://", StringComparison.OrdinalIgnoreCase)
             || trimmed.StartsWith("https://", StringComparison.OrdinalIgnoreCase)
         )
         {
+            fromUrl = true;
             if (Uri.TryCreate(trimmed, UriKind.Absolute, out var uri))
             {
                 var qs = ParseQuery(uri.Query);
@@ -120,7 +146,30 @@ public static class SeedPaste
             }
         }
 
-        return (Parse(raw), extras);
+        var rawSeeds = Parse(raw, preserveDuplicates: fromUrl);
+        // Unique list for the UI pile; remap seedIndex to the unique seed that occupied that slot.
+        var unique = new List<string>();
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var s in rawSeeds)
+        {
+            if (seen.Add(s))
+                unique.Add(s);
+        }
+
+        int? remappedIndex = extras.SeedIndex;
+        if (fromUrl && extras.SeedIndex is int authored && authored < rawSeeds.Count)
+        {
+            var target = rawSeeds[authored];
+            remappedIndex = unique.IndexOf(target);
+            if (remappedIndex < 0)
+                remappedIndex = 0;
+        }
+        else if (remappedIndex is int ri)
+        {
+            remappedIndex = Math.Clamp(ri, 0, Math.Max(0, unique.Count - 1));
+        }
+
+        return (unique, extras with { SeedIndex = remappedIndex });
     }
 
     private static Dictionary<string, string> ParseQuery(string query)
@@ -134,8 +183,9 @@ public static class SeedPaste
             var eq = part.IndexOf('=');
             if (eq < 0)
                 continue;
-            var key = Uri.UnescapeDataString(part[..eq]);
-            var val = Uri.UnescapeDataString(part[(eq + 1)..]);
+            // Form-style query strings use + for space; Uri.UnescapeDataString leaves them alone.
+            var key = Uri.UnescapeDataString(part[..eq].Replace('+', ' '));
+            var val = Uri.UnescapeDataString(part[(eq + 1)..].Replace('+', ' '));
             dict[key] = val;
         }
         return dict;

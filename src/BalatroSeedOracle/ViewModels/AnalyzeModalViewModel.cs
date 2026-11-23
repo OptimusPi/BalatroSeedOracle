@@ -23,6 +23,7 @@ namespace BalatroSeedOracle.ViewModels
         private string[] _seedList = [];
         private int _seedListIndex;
         private bool _analyzeQueued;
+        private int _analyzeGeneration;
 
         [ObservableProperty]
         [NotifyCanExecuteChangedFor(nameof(AnalyzeSeedCommand))]
@@ -170,6 +171,8 @@ namespace BalatroSeedOracle.ViewModels
             if (string.IsNullOrWhiteSpace(SeedInput))
                 return;
 
+            int generation = System.Threading.Interlocked.Increment(ref _analyzeGeneration);
+
             try
             {
                 IsAnalyzing = true;
@@ -202,6 +205,10 @@ namespace BalatroSeedOracle.ViewModels
                     );
                     return MotelyUnitTestAnalyzer.Analyze(config);
                 });
+
+                // A newer paste / depth / Left-Right request superseded this walk.
+                if (generation != _analyzeGeneration)
+                    return;
 
                 // Map Motely analysis to our models (populate fully BEFORE assigning
                 // CurrentAnalysis — SeedAnalysisModel is not observable, so the UI only
@@ -297,6 +304,9 @@ namespace BalatroSeedOracle.ViewModels
             }
             catch (Exception ex)
             {
+                if (generation != _analyzeGeneration)
+                    return;
+
                 DebugLogger.LogError(
                     "AnalyzeModalViewModel",
                     $"Error analyzing seed: {ex.Message}"
@@ -312,12 +322,17 @@ namespace BalatroSeedOracle.ViewModels
             }
             finally
             {
-                IsAnalyzing = false;
-                if (_analyzeQueued)
+                if (generation == _analyzeGeneration)
                 {
-                    // A held arrow key moved past this seed mid-analysis: show the latest one.
-                    _analyzeQueued = false;
-                    Avalonia.Threading.Dispatcher.UIThread.Post(() => _ = AnalyzeSeedCommand.ExecuteAsync(null));
+                    IsAnalyzing = false;
+                    if (_analyzeQueued)
+                    {
+                        // A held arrow key or paste moved past this seed mid-analysis: show the latest.
+                        _analyzeQueued = false;
+                        Avalonia.Threading.Dispatcher.UIThread.Post(
+                            () => _ = AnalyzeSeedCommand.ExecuteAsync(null)
+                        );
+                    }
                 }
             }
         }
@@ -414,12 +429,7 @@ namespace BalatroSeedOracle.ViewModels
                     StakeIndex = si;
             }
 
-            if (seeds.Count == 1)
-            {
-                SetSeedAndAnalyze(seeds[0]);
-                return;
-            }
-
+            // Always replace the pile — a single-seed paste must clear any previous multi-seed list.
             var idx = extras.SeedIndex ?? 0;
             idx = Math.Clamp(idx, 0, seeds.Count - 1);
             SetSeedsAndAnalyze(seeds[idx], seeds);
@@ -451,7 +461,7 @@ namespace BalatroSeedOracle.ViewModels
                 analyzerViewModel.MaxAntePresetIndex =
                     preset >= 0 ? preset : analyzerViewModel.MaxAntePresets.Length - 1;
                 if (_seedList.Length > 1)
-                    analyzerViewModel.SetSeeds(_seedList);
+                    analyzerViewModel.SetSeeds(_seedList, _seedListIndex);
                 else
                     analyzerViewModel.AddSeed(seed);
                 var analyzerWindow = new Windows.AnalyzerWindow(analyzerViewModel);
@@ -483,6 +493,13 @@ namespace BalatroSeedOracle.ViewModels
             SeedInput = seed;
             ActiveTab = AnalyzeModalTab.Analyzer;
 
+            if (IsAnalyzing)
+            {
+                // Queue so a paste / programmatic set during a walk still analyzes the new seed.
+                _analyzeQueued = true;
+                return;
+            }
+
             if (AnalyzeSeedCommand.CanExecute(null))
             {
                 _ = AnalyzeSeedCommand.ExecuteAsync(null);
@@ -507,6 +524,7 @@ namespace BalatroSeedOracle.ViewModels
             _seedList = index >= 0 ? [.. seeds] : [seed];
             _seedListIndex = Math.Max(index, 0);
             OnPropertyChanged(nameof(HasSeedList));
+            OnPropertyChanged(nameof(AnalysisHeader));
             SetSeedAndAnalyze(seed);
         }
 
